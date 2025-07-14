@@ -1,0 +1,136 @@
+export interface MicrochipDetail {
+  microchip: {
+    appointmentDetailId: number | null;
+    appointmentId: number | null;
+    appointmentDetailCode: string;
+    serviceType: number | null;
+    microchipItemId: number | null;
+    appointmentDate: string;
+    appointmentStatus: number;
+    createdAt: string;
+    createdBy: string;
+    modifiedAt: string;
+    modifiedBy: string;
+    vet: {
+      vetId: number | null;
+      accountId: number | null;
+      vetCode: string;
+      name: string;
+      image: string;
+      specialization: string;
+      dateOfBirth: string;
+      phoneNumber: string;
+      account: {
+        accountId: number | null;
+        email: string;
+        role: number;
+      };
+      scheduleResponse: [];
+    };
+    microchipItem: {
+      microchipItemId: number | null;
+      petId: number | null;
+      name: string;
+      description: string;
+      installationDate: string;
+      status: string;
+      createdAt: string;
+      isUsed: boolean;
+      createdBy: string;
+      microchipResponse: {
+        microchipId: number | null;
+        microchipCode: string;
+        name: string;
+        description: string;
+        price: number;
+        status: string;
+        notes: string;
+        createdAt: string;
+        createdBy: string;
+        modifiedAt: string;
+        modifiedBy: string;
+        isDeleted: boolean;
+      };
+    };
+    appointment: {
+      appointmentId: number | null;
+      customerId: number | null;
+      petId: number | null;
+      appointmentCode: string;
+      appointmentDate: string;
+      serviceType: number | null;
+      location: number;
+      address: string;
+      appointmentStatus: number;
+      createdAt: string;
+      createdBy: string;
+      modifiedAt: string;
+      modifiedBy: string;
+      isDeleted: boolean;
+      customerResponseDTO: {
+        customerId: number | null;
+        accountId: number | null;
+        membershipId: number | null;
+        customerCode: string;
+        fullName: string;
+        userName: string;
+        image: string;
+        phoneNumber: string;
+        dateOfBirth: string;
+        gender: string;
+        address: string;
+        currentPoints: number;
+        createdAt: string;
+        createdBy: string;
+        modifiedAt: string;
+        modifiedBy: string;
+        isDeleted: boolean;
+        accountResponseDTO: {
+          accountId: number | null;
+          email: string;
+          role: number;
+        };
+      };
+      petResponseDTO: {
+        petId: number | null;
+        customerId: number | null;
+        petCode: string;
+        name: string;
+        species: string;
+        breed: string;
+        gender: string;
+        dateOfBirth: string;
+        placeToLive: string;
+        placeOfBirth: string;
+        image: string;
+        weight: string;
+        color: string;
+        nationality: string;
+        isSterilized: boolean;
+        isDeleted: boolean;
+      };
+    };
+    payment: {
+      paymentId: number | null;
+      appointmentDetailId: number | null;
+      customerId: number | null;
+      vaccineBatchId: number | null;
+      microchipId: number | null;
+      vaccinationCertificateId: number | null;
+      healthConditionId: number | null;
+      paymentCode: string;
+      amount: number;
+      paymentDate: string;
+      paymentMethod: string;
+      paymentStatus: 1 | 2 | 3;
+      checkoutUrl: string;
+      qrCode: string;
+      createdAt: string;
+      createdBy: string;
+      modifiedAt: string;
+      modifiedBy: string;
+      isDeleted: boolean;
+      url: string;
+    };
+  };
+}

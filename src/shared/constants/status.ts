@@ -1,0 +1,7 @@
+export const APPOINTMENT_STATUS = {
+  PROCESSING: 1,
+  CHECK_IN: 2,
+  IN_PROGRESS: 3,
+  PAYMENT: 4,
+  REJECTED: 8,
+} as const;

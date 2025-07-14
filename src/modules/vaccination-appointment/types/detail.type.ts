@@ -1,0 +1,155 @@
+interface VetSchedules {
+  vetScheduleId: number;
+  vetId: number;
+  scheduleDate: string;
+  slotNumber: number;
+  status: number;
+}
+
+export interface VaccinationDetail {
+  appointmentDetailId: number;
+  appointmentId: number;
+  appointmentDetailCode: string;
+  vetId: number;
+  serviceType: number;
+  vaccineBatchId: number;
+  diseaseId: number;
+  dose: string;
+  reaction: string;
+  nextVaccinationInfo: string;
+  appointmentDate: string;
+  appointmentStatus: number;
+  temperature: string;
+  heartRate: string;
+  generalCondition: string;
+  others: string;
+  notes: string;
+  createdAt: string;
+  createdBy: string;
+  modifiedAt: string;
+  modifiedBy: string;
+  vet: {
+    vetId: number;
+    accountId: number;
+    vetCode: string;
+    name: string;
+    image: string;
+    specialization: string;
+    dateOfBirth: string;
+    phoneNumber: string;
+    account?: {
+      accountId: number;
+      email: string;
+      role: number;
+    };
+    scheduleResponse?: VetSchedules[];
+  } | null;
+  vaccineBatch: {
+    vaccineBatchId: number;
+    vaccineId: number;
+    vaccineCode: string;
+    batchNumber: string;
+    manufactureDate: string;
+    expiryDate: string;
+    quantity: number;
+    createdAt: string;
+    createdBy: string;
+    modifiedAt: string;
+    modifiedBy: string;
+    vaccineResponseDTO: string;
+  };
+  disease: {
+    diseaseId: number;
+    name: string;
+    description: string;
+    species: string;
+    symptoms: string;
+    treatment: string;
+    status: string;
+    createdAt: string;
+    createdBy: string;
+    modifiedAt: string;
+    modifiedBy: string;
+    isDeleted: boolean;
+  };
+  appointment: {
+    appointmentId: number;
+    customerId: number;
+    petId: number;
+    appointmentCode: string;
+    appointmentDate: string;
+    serviceType: number;
+    location: number;
+    address: string;
+    appointmentStatus: number;
+    createdAt: string;
+    createdBy: string;
+    modifiedAt: string;
+    modifiedBy: string;
+    isDeleted: boolean;
+    customerResponseDTO: {
+      customerId: number;
+      accountId: number;
+      membershipId: number;
+      customerCode: string;
+      fullName: string;
+      userName: string;
+      image: string;
+      phoneNumber: string;
+      dateOfBirth: string;
+      gender: string;
+      address: string;
+      currentPoints: number;
+      createdAt: string;
+      createdBy: string;
+      modifiedAt: string;
+      modifiedBy: string;
+      isDeleted: boolean;
+      accountResponseDTO: {
+        accountId: number;
+        email: string;
+        role: number;
+      };
+    };
+    petResponseDTO: {
+      petId: number;
+      customerId: number;
+      petCode: string;
+      name: string;
+      species: string;
+      breed: string;
+      gender: string;
+      dateOfBirth: string;
+      placeToLive: string;
+      placeOfBirth: string;
+      image: string;
+      weight: string;
+      color: string;
+      nationality: string;
+      isSterilized: boolean;
+      isDeleted: boolean;
+    };
+  };
+  payment: {
+    paymentId: number | null;
+    appointmentDetailId: number | null;
+    customerId: number | null;
+    vaccineBatchId: number | null;
+    microchipId: number | null;
+    vaccinationCertificateId: number | null;
+    healthConditionId: number | null;
+    paymentCode: string;
+    amount: number;
+    paymentDate: string;
+    paymentMethod: string;
+    paymentStatus: 1 | 2 | 3;
+    checkoutUrl: string;
+    qrCode: string;
+    createdAt: string;
+    createdBy: string;
+    modifiedAt: string;
+    modifiedBy: string;
+    isDeleted: boolean;
+    url: string;
+  };
+}
