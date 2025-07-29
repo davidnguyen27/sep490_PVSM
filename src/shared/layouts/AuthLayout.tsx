@@ -1,4 +1,4 @@
-import { images } from "@/shared/constants/images";
+import { images } from "@/shared/constants/images.constants";
 
 interface AdminAuthProps {
   children: React.ReactNode;

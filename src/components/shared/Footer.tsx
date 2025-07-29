@@ -1,8 +1,8 @@
-import { icons } from "@/shared/constants/icons";
+import { icons } from "@/shared/constants/icons.constants";
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-gray-200 bg-[#FAF9F6] text-sm text-gray-600">
+    <footer className="w-full border-t border-gray-200 bg-[#E0F7F5] text-sm text-gray-600">
       <div className="container mx-auto grid grid-cols-1 gap-6 px-4 py-6 md:grid-cols-3">
         <div>
           <h3 className="text-primary font-inter-600 text-lg">VaxPet</h3>

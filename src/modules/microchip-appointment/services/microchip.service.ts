@@ -17,11 +17,11 @@ export const microchipAppService = {
   },
 
   async getAppointmentDetail(
-    appointmentDetailId: number | null,
+    appointmentId: number | null,
   ): Promise<MicrochipDetail> {
     return axiosInstance
       .get(
-        `/api/AppointmentForMicrochip/get-appoinment-microchip-by-appointment-detail/${appointmentDetailId}`,
+        `/api/AppointmentForMicrochip/get-appoinment-microchip-by-appointment-detail/${appointmentId}`,
       )
       .then((res) => res.data.data);
   },

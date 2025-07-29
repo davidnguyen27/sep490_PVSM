@@ -4,13 +4,14 @@ import { useNavigate } from "react-router-dom";
 
 import { useMicrochipAppUpdate } from "./useMicrochipUpdate";
 import { useMicrochipStore } from "../store/useMicrochipStore";
-import { APPOINTMENT_STATUS } from "../utils/status.utils";
+import { useAssignMicrochip } from "@/modules/microchip-item";
 
 import type { MicrochipFormData } from "../types/state.type";
 import type { MicrochipDetail } from "../types/detail.type";
-import type { UpdateStatusParams } from "../utils/param.type";
+import type { UpdateStatusParams } from "../types/param.type";
 import { usePaymentStore } from "@/modules/payments";
 import { useUpdatePayment } from "@/modules/payments/hooks/useUpdatePayment";
+import { APPOINTMENT_STATUS } from "@/shared/constants/status.constants";
 
 interface UseMicrochipHandlersProps {
   data?: MicrochipDetail;
@@ -43,6 +44,9 @@ export function useMicrochipHandlers({
     },
   });
 
+  const { mutate: assignMicrochip, isPending: isAssigningMicrochip } =
+    useAssignMicrochip();
+
   const handleStatusUpdate = useCallback(
     (params: UpdateStatusParams) => {
       mutate(params);
@@ -50,83 +54,131 @@ export function useMicrochipHandlers({
     [mutate],
   );
 
-  const handleReject = useCallback(() => {
-    if (!data?.microchip.appointmentDetailId || !data?.microchip.appointmentId)
-      return;
+  const handleReject = useCallback(
+    (note: string) => {
+      if (!data?.microchip?.appointmentId) return;
 
-    handleStatusUpdate({
-      appointmentId: data.microchip.appointmentId,
-      appointmentStatus: APPOINTMENT_STATUS.REJECTED,
-    });
-    setShowReject(false);
-  }, [
-    data?.microchip.appointmentDetailId,
-    data?.microchip.appointmentId,
-    handleStatusUpdate,
-    setShowReject,
-  ]);
+      handleStatusUpdate({
+        appointmentId: data.microchip?.appointmentId,
+        appointmentStatus: APPOINTMENT_STATUS.REJECTED,
+        note,
+      });
+      setShowReject(false);
+    },
+    [data, handleStatusUpdate, setShowReject],
+  );
 
-  const handleConfirmAppointment = useCallback(() => {
+  const handleConfirm = useCallback(() => {
     if (!data?.microchip.appointmentId) return;
 
     handleStatusUpdate({
       appointmentId: data.microchip.appointmentId,
-      appointmentStatus: APPOINTMENT_STATUS.CHECK_IN,
+      appointmentStatus: APPOINTMENT_STATUS.CONFIRMED,
     });
   }, [data?.microchip.appointmentId, handleStatusUpdate]);
 
-  const handleAssignVet = useCallback(() => {
-    if (!data?.microchip.appointmentId || !formData.vetSelection.vetId) return;
+  const handleCheckIn = useCallback(() => {
+    const appointmentId = data?.microchip?.appointmentId;
+    if (!appointmentId || !formData.vetSelection?.vetId) return;
 
     handleStatusUpdate({
-      appointmentId: data.microchip.appointmentId,
-      appointmentStatus: APPOINTMENT_STATUS.IN_PROGRESS,
-      vetId: formData.vetSelection.vetId,
+      appointmentId: appointmentId,
+      appointmentStatus: APPOINTMENT_STATUS.CHECKED_IN,
+      vetId: formData.vetSelection?.vetId,
     });
   }, [
-    data?.microchip.appointmentId,
-    formData.vetSelection.vetId,
+    data?.microchip?.appointmentId,
+    formData.vetSelection?.vetId,
     handleStatusUpdate,
   ]);
 
-  const handleInjectMicrochip = useCallback(() => {
+  const handleInject = useCallback(() => {
     if (
-      !data?.microchip.appointmentId ||
-      !data.microchip.vet.vetId ||
+      !data?.microchip?.appointmentId ||
+      !data.microchip?.vet?.vetId ||
       !formData.microchipItemId ||
       !formData.result.description
     )
       return;
 
-    handleStatusUpdate({
-      appointmentId: data.microchip.appointmentId,
-      appointmentStatus: APPOINTMENT_STATUS.PAYMENT,
-      vetId: data.microchip.vet.vetId,
-      microchipItemId: formData.microchipItemId,
-      description: formData.result.description,
-      note: formData.result.note,
-    });
+    // Đầu tiên gắn microchip vào thú cưng
+    const petId = data?.microchip.appointment?.petResponseDTO?.petId;
+    if (petId && formData.microchipItemId) {
+      assignMicrochip(
+        {
+          microchipItemId: formData.microchipItemId,
+          petId: petId,
+        },
+        {
+          onSuccess: () => {
+            // Sau khi gắn microchip thành công, cập nhật status appointment
+            handleStatusUpdate({
+              appointmentId: data.microchip?.appointmentId,
+              appointmentStatus: APPOINTMENT_STATUS.PROCESSED,
+              vetId: data.microchip?.vet?.vetId,
+              microchipItemId: formData.microchipItemId,
+              description: formData.result.description,
+              note: formData.result.note,
+            });
+          },
+          onError: () => {
+            // Nếu gắn microchip thất bại, vẫn có thể tiếp tục update status
+            console.warn(
+              "Failed to assign microchip, proceeding with status update",
+            );
+            handleStatusUpdate({
+              appointmentId: data.microchip?.appointmentId,
+              appointmentStatus: APPOINTMENT_STATUS.PROCESSED,
+              vetId: data.microchip?.vet?.vetId,
+              microchipItemId: formData.microchipItemId,
+              description: formData.result.description,
+              note: formData.result.note,
+            });
+          },
+        },
+      );
+    } else {
+      // Nếu không có petId hoặc microchipItemId, chỉ update status
+      handleStatusUpdate({
+        appointmentId: data.microchip?.appointmentId,
+        appointmentStatus: APPOINTMENT_STATUS.PROCESSED,
+        vetId: data.microchip?.vet?.vetId,
+        microchipItemId: formData.microchipItemId,
+        description: formData.result.description,
+        note: formData.result.note,
+      });
+    }
   }, [
-    data?.microchip.appointmentId,
-    data?.microchip.vet?.vetId,
+    data?.microchip?.appointmentId,
+    data?.microchip?.vet?.vetId,
+    data?.microchip.appointment?.petResponseDTO?.petId,
     formData,
+    assignMicrochip,
     handleStatusUpdate,
   ]);
 
-  const handleCreatePayment = useCallback(() => {
+  const handlePayment = useCallback(() => {
     if (!data?.microchip.appointmentId || !paymentId) return;
 
-    updatePaymentStatus({
-      paymentId,
-      paymentStatus: 2,
-    });
-  }, [data?.microchip.appointmentId, paymentId, updatePaymentStatus]);
+    updatePaymentStatus(
+      {
+        paymentId,
+        paymentStatus: 2,
+      },
+      {
+        onSuccess: () => {
+          setActiveStep(APPOINTMENT_STATUS.PAID);
+          onSuccess?.();
+        },
+      },
+    );
+  }, [data, paymentId, updatePaymentStatus, onSuccess, setActiveStep]);
 
-  const handleFinalizeMicrochip = useCallback(() => {
-    if (!data?.microchip.appointmentId) return;
+  const handleFinalize = useCallback(() => {
+    if (!data?.microchip?.appointmentId) return;
 
     handleStatusUpdate({
-      appointmentId: data.microchip.appointmentId,
+      appointmentId: data.microchip?.appointmentId,
       appointmentStatus: APPOINTMENT_STATUS.COMPLETED,
       vetId: data.microchip?.vet?.vetId,
       microchipItemId: data?.microchip?.microchipItemId,
@@ -136,7 +188,7 @@ export function useMicrochipHandlers({
   }, [data, formData, handleStatusUpdate]);
 
   const handleExportInvoice = useCallback(() => {
-    if (!data?.microchip.payment.paymentId) return;
+    if (!data?.microchip?.payment?.paymentId) return;
 
     navigate("/staff/invoice", {
       state: {
@@ -146,13 +198,13 @@ export function useMicrochipHandlers({
   }, [data, navigate]);
 
   return {
-    isPending,
+    isPending: isPending || isAssigningMicrochip,
     handleReject,
-    handleConfirmAppointment,
-    handleAssignVet,
-    handleInjectMicrochip,
-    handleCreatePayment,
-    handleFinalizeMicrochip,
+    handleConfirm,
+    handleCheckIn,
+    handleInject,
+    handlePayment,
+    handleFinalize,
     handleExportInvoice,
   };
 }

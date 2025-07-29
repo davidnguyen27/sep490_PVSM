@@ -1,17 +1,20 @@
 import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+
 import { useUpdateStatus } from "./useVaccinationUpdate";
 import { useVaccinationStore } from "../store/useVaccinationStore";
-import { APPOINTMENT_STATUS } from "../utils/status.utils";
+import { useUpdatePayment } from "@/modules/payments/hooks/useUpdatePayment";
+import { usePaymentStore } from "@/modules/payments";
+import { useVaccineExportDetail } from "@/modules/vaccine-export-detail/hooks/useVaccineExportDetail";
+
+import { APPOINTMENT_STATUS } from "@/shared/constants/status.constants";
 import type { UpdateStatusParams } from "../types/params.type";
 import type { VaccinationDetail } from "../types/detail.type";
 import type { VaccinationFormData } from "../types/state.type";
-import { useUpdatePayment } from "@/modules/payments/hooks/useUpdatePayment";
-import { usePaymentStore } from "@/modules/payments";
-import { useNavigate } from "react-router-dom";
 
 interface UseVaccinationHandlersProps {
-  data: VaccinationDetail | undefined;
+  data?: VaccinationDetail;
   formData: VaccinationFormData;
   appointmentId: number;
   onSuccess?: () => void;
@@ -23,11 +26,10 @@ export function useVaccinationHandlers({
   appointmentId,
   onSuccess,
 }: UseVaccinationHandlersProps) {
-  const queryClient = useQueryClient();
-  const { setActiveStep, setShowReject } = useVaccinationStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const { mutate, isPending } = useUpdateStatus({
+  const { mutate: updateStatus, isPending } = useUpdateStatus({
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ["vaccination", "detail", appointmentId],
@@ -37,19 +39,30 @@ export function useVaccinationHandlers({
     },
   });
 
-  const paymentId = usePaymentStore((state) => state.paymentId);
   const { mutate: updatePaymentStatus } = useUpdatePayment();
-
-  const handleStatusUpdate = useCallback(
-    (params: UpdateStatusParams) => {
-      mutate(params);
-    },
-    [mutate],
+  const { refetch: refetchExportDetail } = useVaccineExportDetail(
+    data?.appointmentDetailId ?? null,
   );
 
-  const handleRejectConfirm = useCallback(
+  // Zustand store
+  const {
+    setActiveStep,
+    setShowReject,
+    setExportDetail,
+    setExportDetailVisible,
+  } = useVaccinationStore.getState();
+  const paymentId = usePaymentStore((s) => s.paymentId);
+
+  // --- Handlers ---
+
+  const handleStatusUpdate = useCallback(
+    (params: UpdateStatusParams) => updateStatus(params),
+    [updateStatus],
+  );
+
+  const handleReject = useCallback(
     (notes: string) => {
-      if (!data?.appointment.appointmentId) return;
+      if (!data?.appointment?.appointmentId) return;
 
       handleStatusUpdate({
         appointmentId: data.appointment.appointmentId,
@@ -58,64 +71,73 @@ export function useVaccinationHandlers({
       });
       setShowReject(false);
     },
-    [data?.appointment.appointmentId, handleStatusUpdate, setShowReject],
+    [data, handleStatusUpdate, setShowReject],
   );
 
-  const handleConfirmAppointment = useCallback(() => {
-    if (!data?.appointment.appointmentId || !formData.diseaseId) return;
+  const handleConfirm = useCallback(() => {
+    const appointmentId = data?.appointment?.appointmentId;
+    if (!appointmentId || !formData.diseaseId) return;
 
     handleStatusUpdate({
-      appointmentId: data.appointment.appointmentId,
-      appointmentStatus: APPOINTMENT_STATUS.CHECK_IN,
+      appointmentId,
+      appointmentStatus: APPOINTMENT_STATUS.CONFIRMED,
       diseaseId: formData.diseaseId,
     });
-  }, [data?.appointment.appointmentId, formData.diseaseId, handleStatusUpdate]);
+  }, [data, formData.diseaseId, handleStatusUpdate]);
 
-  const handleProceedToInjection = useCallback(() => {
-    if (!data?.appointment.appointmentId || !formData.vetSelection.vetId)
-      return;
+  const handleCheckIn = useCallback(() => {
+    const appointmentId = data?.appointment?.appointmentId;
+    if (!appointmentId || !formData.vetSelection.vetId) return;
 
     handleStatusUpdate({
-      appointmentId: data.appointment.appointmentId,
-      appointmentStatus: APPOINTMENT_STATUS.IN_PROGRESS,
+      appointmentId,
+      appointmentStatus: APPOINTMENT_STATUS.CHECKED_IN,
       diseaseId: formData.diseaseId ?? undefined,
       vetId: formData.vetSelection.vetId,
+    });
+  }, [data, formData, handleStatusUpdate]);
+
+  const handleInjection = useCallback(() => {
+    const appointmentId = data?.appointment?.appointmentId;
+    if (!appointmentId || !formData.selectedVaccineBatchId) return;
+
+    handleStatusUpdate({
+      appointmentId,
+      appointmentStatus: APPOINTMENT_STATUS.PROCESSED,
+      diseaseId: formData.diseaseId ?? undefined,
+      vaccineBatchId: formData.selectedVaccineBatchId,
+      reaction: formData.resultData.reaction,
+      notes: formData.resultData.notes,
       temperature: formData.healthData.temperature,
       heartRate: formData.healthData.heartRate,
       generalCondition: formData.healthData.generalCondition,
       others: formData.healthData.others,
     });
-  }, [data?.appointment.appointmentId, formData, handleStatusUpdate]);
+  }, [data, formData, handleStatusUpdate]);
 
-  const handleCompleteInjection = useCallback(() => {
-    if (!data?.appointment.appointmentId || !formData.selectedVaccineBatchId)
-      return;
+  const handlePayment = useCallback(() => {
+    const appointmentId = data?.appointment?.appointmentId;
+    if (!appointmentId || !paymentId) return;
 
-    handleStatusUpdate({
-      appointmentId: data.appointment.appointmentId,
-      appointmentStatus: APPOINTMENT_STATUS.PAYMENT,
-      diseaseId: formData.diseaseId ?? undefined,
-      vaccineBatchId: formData.selectedVaccineBatchId,
-      reaction: formData.resultData.reaction,
-      notes: formData.resultData.notes,
-    });
-  }, [data?.appointment.appointmentId, formData, handleStatusUpdate]);
-
-  const handleCompleteVaccination = useCallback(() => {
-    if (!data?.appointment.appointmentId || !paymentId) return;
-
-    updatePaymentStatus({
-      paymentId,
-      paymentStatus: 2,
-    });
-  }, [data?.appointment.appointmentId, paymentId, updatePaymentStatus]);
+    updatePaymentStatus(
+      {
+        paymentId,
+        paymentStatus: 2,
+      },
+      {
+        onSuccess: () => {
+          setActiveStep(APPOINTMENT_STATUS.PAID);
+          onSuccess?.();
+        },
+      },
+    );
+  }, [data, paymentId, updatePaymentStatus, onSuccess, setActiveStep]);
 
   const handleFinalizeVaccination = useCallback(() => {
-    if (!data?.appointment.appointmentId) return;
+    const appointmentId = data?.appointment?.appointmentId;
+    if (!appointmentId) return;
 
     const {
-      appointment: { appointmentId },
-      vet,
       vaccineBatch,
       disease,
       reaction,
@@ -129,7 +151,6 @@ export function useVaccinationHandlers({
     handleStatusUpdate({
       appointmentId,
       appointmentStatus: APPOINTMENT_STATUS.COMPLETED,
-      vetId: vet?.vetId,
       vaccineBatchId: vaccineBatch?.vaccineBatchId,
       diseaseId: disease?.diseaseId,
       temperature,
@@ -142,7 +163,8 @@ export function useVaccinationHandlers({
   }, [data, handleStatusUpdate]);
 
   const handleExportInvoice = useCallback(() => {
-    if (!data?.payment?.paymentId) return;
+    const paymentId = data?.payment?.paymentId;
+    if (!paymentId) return;
 
     navigate("/staff/invoice", {
       state: {
@@ -151,14 +173,33 @@ export function useVaccinationHandlers({
     });
   }, [data, navigate]);
 
+  const handleShowExportDetail = useCallback(async () => {
+    if (!data?.appointmentDetailId) return;
+
+    try {
+      const { data: detail } = await refetchExportDetail();
+      setExportDetail(detail ?? null);
+      setExportDetailVisible(!!detail);
+    } catch {
+      setExportDetail(null);
+      setExportDetailVisible(false);
+    }
+  }, [
+    data?.appointmentDetailId,
+    refetchExportDetail,
+    setExportDetail,
+    setExportDetailVisible,
+  ]);
+
   return {
     isPending,
-    handleRejectConfirm,
-    handleConfirmAppointment,
-    handleProceedToInjection,
-    handleCompleteInjection,
-    handleCompleteVaccination,
+    handleReject,
+    handleConfirm,
+    handleCheckIn,
+    handleInjection,
+    handlePayment,
     handleFinalizeVaccination,
     handleExportInvoice,
+    handleShowExportDetail,
   };
 }

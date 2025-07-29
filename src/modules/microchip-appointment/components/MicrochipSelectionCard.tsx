@@ -9,8 +9,8 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { useMicrochipItems } from "@/modules/microchips/hooks/useMicrochipItem";
 import { Cpu } from "lucide-react";
+import { useMicrochipItems } from "@/modules/microchip-item";
 
 interface Props {
   selectedId: number | null;

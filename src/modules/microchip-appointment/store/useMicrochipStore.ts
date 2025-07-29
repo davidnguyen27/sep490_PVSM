@@ -4,7 +4,7 @@ import type { MicrochipFormData, MicrochipState } from "../types/state.type";
 const initialFormData: MicrochipFormData = {
   vetSelection: { date: "", time: "", slot: null, vetId: null },
   microchipItemId: null,
-  result: { location: "", note: "" },
+  result: { description: "", note: "" },
 };
 
 export const useMicrochipStore = create<MicrochipState>((set) => ({

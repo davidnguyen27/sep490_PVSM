@@ -1,7 +1,7 @@
 import StaffLayout from "@/shared/layouts/StaffLayout";
 import VetLayout from "@/shared/layouts/VetLayout";
 import { RoleGuard } from "@/routes/guards.route";
-import { UserRole } from "@/shared/constants/roles";
+import { UserRole } from "@/shared/constants/roles.constants";
 import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
 
@@ -10,6 +10,9 @@ const VaccinationAppListPage = lazy(
 );
 const VaccinationAppDetailPage = lazy(
   () => import("../pages/VaccinationDetailPage"),
+);
+const VaccinationPaymentSuccessPage = lazy(
+  () => import("../pages/VaccinationPaymentSuccess"),
 );
 
 export const vaccinationAppRoutes: RouteObject[] = [
@@ -31,6 +34,10 @@ export const vaccinationAppRoutes: RouteObject[] = [
           {
             path: "detail",
             element: <VaccinationAppDetailPage />,
+          },
+          {
+            path: "success",
+            element: <VaccinationPaymentSuccessPage />,
           },
         ],
       },

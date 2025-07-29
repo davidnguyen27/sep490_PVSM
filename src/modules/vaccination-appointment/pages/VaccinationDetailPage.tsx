@@ -4,17 +4,19 @@ import { useSearchParams } from "react-router-dom";
 import { SendToBack } from "lucide-react";
 
 // Shared Components
-import { PageBreadcrumb, PageLoader } from "@/components/shared";
+import { PageBreadcrumb, StepProgress } from "@/components/shared";
 
 // Auth & External Modules
 import { useAuth } from "@/modules/auth";
 import { useVaccineBatchId } from "@/modules/vaccine-batch/hooks/useVaccineBatchId";
 
 // Constants
-import { UserRole } from "@/shared/constants/roles";
+import { UserRole } from "@/shared/constants/roles.constants";
+import { APPOINTMENT_STATUS } from "@/shared/constants/status.constants";
+import { VACCINATION_APPOINTMENT_STEPS } from "../constants/steps.constants";
 
 // Local Components
-import { RejectModal, StepProgress } from "../components";
+import { RejectModal } from "../components";
 import { StepContent } from "../components/StepContent";
 
 // Local Hooks
@@ -25,7 +27,6 @@ import { useVaccinationValidation } from "../hooks/useVaccinationValidation";
 // Store
 import { useVaccinationStore } from "../store/useVaccinationStore";
 import { usePaymentStore } from "@/modules/payments";
-import { APPOINTMENT_STATUS } from "../utils/status.utils";
 
 export default function VaccinationAppDetailPage() {
   const [searchParams] = useSearchParams();
@@ -42,18 +43,16 @@ export default function VaccinationAppDetailPage() {
   } = useVaccinationStore();
   const { reset: resetPayment } = usePaymentStore();
 
-  const { data, isPending: loading } = useVaccinationDetail(
-    Number(appointmentId),
-  );
+  const { data } = useVaccinationDetail(Number(appointmentId));
 
   // Custom hooks for handlers and validation
   const {
     isPending,
-    handleRejectConfirm,
-    handleConfirmAppointment,
-    handleProceedToInjection,
-    handleCompleteInjection,
-    handleCompleteVaccination,
+    handleReject,
+    handleConfirm,
+    handleCheckIn,
+    handleInjection,
+    handlePayment,
     handleFinalizeVaccination,
     handleExportInvoice,
   } = useVaccinationHandlers({
@@ -62,7 +61,7 @@ export default function VaccinationAppDetailPage() {
     appointmentId: Number(appointmentId),
   });
 
-  const { isStep1Valid, isStep2Valid, isStep3Valid } =
+  const { isConfirmValid, isCheckInValid, isInjectValid } =
     useVaccinationValidation(formData);
 
   const { data: vaccineBatchDetail } = useVaccineBatchId(
@@ -71,6 +70,7 @@ export default function VaccinationAppDetailPage() {
 
   const isVet = useMemo(() => user?.role === UserRole.VET, [user?.role]);
   const status = data?.appointment.appointmentStatus;
+  const effectiveStep = activeStep ?? status ?? 0;
 
   const currentViewStatus = useMemo(
     () => activeStep ?? status ?? 0,
@@ -79,9 +79,9 @@ export default function VaccinationAppDetailPage() {
 
   const canEdit = useCallback(
     (step: number) => {
-      return step === (status ?? 0);
+      return effectiveStep === step && status === step;
     },
-    [status],
+    [effectiveStep, status],
   );
 
   const handleStepClick = useCallback(
@@ -96,14 +96,18 @@ export default function VaccinationAppDetailPage() {
   useEffect(() => {
     if (data) {
       initializeFromAPI(data);
-    }
-    const payment = data?.payment;
-    if (payment?.paymentId && payment?.paymentMethod) {
-      const paymentMethod = payment.paymentMethod.toLowerCase() as
-        | "cash"
-        | "transfer";
-      usePaymentStore.getState().setPaymentId(payment.paymentId);
-      usePaymentStore.getState().setPaymentMethod(paymentMethod);
+
+      // Get payment information from appointment detail
+      const payment = data.payment;
+      if (payment?.paymentId && payment?.paymentMethod) {
+        // Format paymentMethod to match our app's expected format
+        const paymentMethod =
+          payment.paymentMethod === "CASH" ? "Cash" : "BankTransfer";
+
+        // Set payment information in store
+        usePaymentStore.getState().setPaymentId(payment.paymentId);
+        usePaymentStore.getState().setPaymentMethod(paymentMethod);
+      }
     }
   }, [data, initializeFromAPI]);
 
@@ -114,15 +118,19 @@ export default function VaccinationAppDetailPage() {
   if (!data) return null;
 
   return (
-    <PageLoader loading={loading}>
+    <>
       <div className="space-y-2">
         <h1 className="text-primary font-inter-700 flex items-center gap-2 text-xl">
           <SendToBack /> Theo dõi quá trình tiêm
         </h1>
-        <PageBreadcrumb items={["Dashboard", "Lịch tiêm chủng", "Chi tiết"]} />
+        <PageBreadcrumb items={["Trang chủ", "Tiêm chủng", "Chi tiết"]} />
       </div>
 
-      <StepProgress currentStep={status ?? 0} onStepClick={handleStepClick} />
+      <StepProgress
+        steps={VACCINATION_APPOINTMENT_STEPS}
+        currentStep={status ?? 0}
+        onStepClick={handleStepClick}
+      />
 
       <StepContent
         currentViewStatus={currentViewStatus}
@@ -131,16 +139,16 @@ export default function VaccinationAppDetailPage() {
         canEdit={canEdit}
         isVet={isVet}
         isPending={isPending}
-        isStep1Valid={isStep1Valid}
-        isStep2Valid={isStep2Valid}
-        isStep3Valid={isStep3Valid}
+        isConfirmValid={isConfirmValid}
+        isCheckInValid={isCheckInValid}
+        isInjectValid={isInjectValid}
         vaccineBatchDetail={vaccineBatchDetail}
-        onConfirmAppointment={handleConfirmAppointment}
-        onProceedToInjection={handleProceedToInjection}
-        onCompleteInjection={handleCompleteInjection}
+        onConfirmAppointment={handleConfirm}
+        onProceedToInjection={handleCheckIn}
+        onCompleteInjection={handleInjection}
         onShowReject={() => setShowReject(true)}
-        onPaymentSuccess={handleCompleteVaccination}
-        onCompleteVaccination={handleCompleteVaccination}
+        onPaymentSuccess={handlePayment}
+        onCompleteVaccination={handlePayment}
         onFinalizeVaccination={handleFinalizeVaccination}
         onExportInvoice={() => handleExportInvoice()}
       />
@@ -148,9 +156,9 @@ export default function VaccinationAppDetailPage() {
       <RejectModal
         open={showReject}
         onClose={() => setShowReject(false)}
-        onConfirm={handleRejectConfirm}
+        onConfirm={handleReject}
         loading={isPending}
       />
-    </PageLoader>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { formatData } from "@/shared/utils/format.utils";
 import { useState } from "react";
-import { icons } from "@/shared/constants/icons";
+import { icons } from "@/shared/constants/icons.constants";
 import type { MicrochipDetail } from "../types/detail.type";
 
 interface Props {

@@ -1,17 +1,22 @@
 import { Button } from "@/components/ui";
-import { PetInfoCard } from "./PetInfoCard";
-import { AppointmentInfoCard } from "./AppointmentInfoCard";
-import { VetSelectionCard } from "./VetSelectionCard";
-import { MicrochipSelectionCard } from "./MicrochipSelectionCard";
-import { ResultCard } from "./ResultCard";
-import { APPOINTMENT_STATUS } from "../utils/status.utils";
+import { FinalizedCard } from "@/components/shared";
+import {
+  PetInfoCard,
+  AppointmentInfoCard,
+  VetSelectionCard,
+  MicrochipSelectionCard,
+  ResultCard,
+  PaymentInfoCard,
+  CompletedCard,
+} from ".";
+
 import type { MicrochipFormData } from "../types/state.type";
 import type { MicrochipDetail } from "../types/detail.type";
+
 import { useMicrochipStore } from "../store/useMicrochipStore";
-import type { JSX } from "react";
-import { PaymentInfoCard } from "./PaymentInfoCard";
 import { usePaymentStore } from "@/modules/payments";
-import { CompletedCard } from "./CompletedCard";
+
+import { APPOINTMENT_STATUS } from "@/shared/constants/status.constants";
 
 interface Props {
   currentViewStatus: number;
@@ -52,10 +57,10 @@ export function StepContent({
 
   const paymentId = usePaymentStore((state) => state.paymentId);
   const paymentMethod = usePaymentStore((state) => state.paymentMethod);
-  // const isPaymentLoading = usePaymentStore((state) => state.isPaymentLoading);
   const setPaymentId = usePaymentStore((state) => state.setPaymentId);
   const setPaymentMethod = usePaymentStore((state) => state.setPaymentMethod);
 
+  const appointmentStatus = data.microchip.appointmentStatus;
   const isPaymentCompleted = Boolean(paymentId && paymentMethod);
 
   const renderCommonInfo = () => (
@@ -65,58 +70,60 @@ export function StepContent({
     </>
   );
 
-  const renderActionButtons = (actions: JSX.Element[]) => (
-    <div className="flex justify-end gap-2">{actions}</div>
+  const renderStepConfirm = () => (
+    <div className="space-y-6">
+      {renderCommonInfo()}
+      {currentViewStatus === appointmentStatus && (
+        <div className="flex justify-end gap-4">
+          <Button key="reject" variant="destructive" onClick={onShowReject}>
+            Hủy
+          </Button>
+          <Button
+            key="confirm"
+            className="bg-primary text-white"
+            onClick={onConfirmAppointment}
+            disabled={isPending || !canEdit(APPOINTMENT_STATUS.PROCESSING)}
+          >
+            Xác nhận lịch
+          </Button>
+        </div>
+      )}
+    </div>
   );
 
   const renderStepCheckIn = () => (
     <div className="space-y-6">
       {renderCommonInfo()}
-      {renderActionButtons([
-        <Button key="reject" variant="destructive" onClick={onShowReject}>
-          Hủy
-        </Button>,
-        <Button
-          key="confirm"
-          className="bg-primary text-white"
-          onClick={onConfirmAppointment}
-          disabled={isPending}
-        >
-          Xác nhận lịch
-        </Button>,
-      ])}
-    </div>
-  );
 
-  const renderStepAssignVet = () => (
-    <div className="space-y-6">
-      {renderCommonInfo()}
       <VetSelectionCard
-        appointmentDate={data.microchip.appointmentDate}
         value={formData.vetSelection}
         onChange={setVetSelection}
-        disabled={isPending || !isVet}
-        canEdit={!canEdit(APPOINTMENT_STATUS.CHECK_IN)}
+        disabled={isPending || !canEdit(APPOINTMENT_STATUS.CONFIRMED)}
+        appointmentDate={data?.microchip.appointmentDate}
+        canEdit={canEdit(APPOINTMENT_STATUS.CONFIRMED)}
       />
-      {renderActionButtons([
-        <Button key="reject" variant="destructive" onClick={onShowReject}>
-          Từ chối
-        </Button>,
-        <Button
-          key="next"
-          className="bg-primary text-white"
-          onClick={onAssignVet}
-          disabled={isPending || !isStep2Valid}
-        >
-          Tiến hành
-        </Button>,
-      ])}
+      {currentViewStatus === appointmentStatus && (
+        <div className="flex justify-end">
+          <Button
+            className="bg-primary text-white"
+            onClick={onAssignVet}
+            disabled={
+              isPending ||
+              !isStep2Valid ||
+              !canEdit(APPOINTMENT_STATUS.CONFIRMED)
+            }
+          >
+            Tiếp tục
+          </Button>
+        </div>
+      )}
     </div>
   );
 
   const renderStepInject = () => (
     <div className="space-y-6">
       {renderCommonInfo()}
+
       <MicrochipSelectionCard
         selectedId={formData.microchipItemId}
         onChange={(id) => setFormData({ microchipItemId: id })}
@@ -127,16 +134,18 @@ export function StepContent({
         onChange={(field, value) => setResult({ [field]: value })}
         readOnly={!isVet}
       />
-      {renderActionButtons([
-        <Button
-          key="finish"
-          className="bg-primary text-white"
-          disabled={isPending || !isStep3Valid}
-          onClick={onInjectMicrochip}
-        >
-          Hoàn thành
-        </Button>,
-      ])}
+      {currentViewStatus === appointmentStatus && (
+        <div className="flex justify-end">
+          <Button
+            key="finish"
+            className="bg-primary text-white"
+            disabled={isPending || !isStep3Valid}
+            onClick={onInjectMicrochip}
+          >
+            Tiếp tục
+          </Button>
+        </div>
+      )}
     </div>
   );
 
@@ -144,32 +153,34 @@ export function StepContent({
     <div className="space-y-6">
       {renderCommonInfo()}
       <PaymentInfoCard
-        ownerName={data.microchip.appointment.customerResponseDTO.fullName}
-        petName={data.microchip.appointment.petResponseDTO.name}
+        ownerName={data.microchip.appointment?.customerResponseDTO?.fullName}
+        petName={data.microchip.appointment?.petResponseDTO?.name}
         memberRank=""
         discountPercent={0}
-        productName={data.microchip.microchipItem.name}
-        unitPrice={data.microchip.microchipItem.microchipResponse.price}
+        productName={data.microchip?.microchipItem?.name}
+        unitPrice={data.microchip?.microchipItem?.microchipResponse?.price}
         quantity={1}
-        appointmentDetailId={data.microchip.appointmentDetailId}
-        customerId={data.microchip.appointment.customerResponseDTO.customerId}
-        microchipItemId={data.microchip.microchipItemId}
+        appointmentDetailId={data.microchip?.appointmentDetailId}
+        customerId={data.microchip.appointment?.customerResponseDTO?.customerId}
+        microchipItemId={formData.microchipItemId!}
+        invoiceData={data}
         onPaymentSuccess={(paymentId, method) => {
           setPaymentId(paymentId);
           setPaymentMethod(method);
         }}
         onExportInvoice={onExportInvoice}
       />
-      {isPaymentCompleted &&
-        renderActionButtons([
+      {isPaymentCompleted && paymentMethod !== "BankTransfer" && (
+        <div className="flex justify-end">
           <Button
             className="bg-primary text-white"
-            disabled={isPending}
             onClick={onCompleteMicrochip}
+            disabled={isPending}
           >
-            Tiếp tục
-          </Button>,
-        ])}
+            Xác nhận thanh toán
+          </Button>
+        </div>
+      )}
     </div>
   );
 
@@ -189,18 +200,25 @@ export function StepContent({
     </div>
   );
 
+  const renderFinally = () => (
+    <div className="space-y-6">
+      {renderCommonInfo()}
+      <FinalizedCard />
+    </div>
+  );
+
   switch (currentViewStatus) {
     case APPOINTMENT_STATUS.PROCESSING:
+      return renderStepConfirm();
+    case APPOINTMENT_STATUS.CONFIRMED:
       return renderStepCheckIn();
-    case APPOINTMENT_STATUS.CHECK_IN:
-      return renderStepAssignVet();
-    case APPOINTMENT_STATUS.IN_PROGRESS:
+    case APPOINTMENT_STATUS.CHECKED_IN:
       return renderStepInject();
-    case APPOINTMENT_STATUS.PAYMENT:
+    case APPOINTMENT_STATUS.PROCESSED:
       return renderStepPayment();
     case APPOINTMENT_STATUS.PAID:
       return renderStepCompleted();
     default:
-      return null;
+      return renderFinally();
   }
 }

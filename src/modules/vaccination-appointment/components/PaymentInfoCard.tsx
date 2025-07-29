@@ -16,9 +16,8 @@ import {
   type PaymentPayload,
 } from "@/modules/payments";
 import type { VaccinationDetail } from "../types/detail.type";
-import { QRCodeSVG } from "qrcode.react";
 
-interface PaymentInfoCardProps {
+interface Props {
   ownerName: string;
   petName: string;
   memberRank: string;
@@ -30,7 +29,10 @@ interface PaymentInfoCardProps {
   customerId: number;
   vaccineBatchId: number;
   disabled?: boolean;
-  onPaymentSuccess?: (paymentId: number, method: "cash" | "transfer") => void;
+  onPaymentSuccess?: (
+    paymentId: number,
+    method: "Cash" | "BankTransfer",
+  ) => void;
   invoiceData?: VaccinationDetail;
   onExportInvoice?: () => void;
 }
@@ -49,7 +51,8 @@ export function PaymentInfoCard({
   disabled = false,
   onPaymentSuccess,
   onExportInvoice,
-}: PaymentInfoCardProps) {
+  invoiceData,
+}: Props) {
   const { paymentMethod, setPaymentMethod, setPaymentId } = usePaymentStore();
   const { setQrCode } = usePaymentStore.getState();
   const { mutate, isPending: isLoading } = useCreatePayment();
@@ -58,11 +61,27 @@ export function PaymentInfoCard({
   const discountAmount = (totalPrice * discountPercent) / 100;
   const finalAmount = totalPrice - discountAmount;
 
-  const paymentId = usePaymentStore((state) => state.paymentId);
-  const qrCode = usePaymentStore((state) => state.qrCode);
+  // Lấy paymentId từ cả store và invoiceData, ưu tiên lấy từ invoiceData nếu có
+  const storePaymentId = usePaymentStore((state) => state.paymentId);
+  const paymentId = invoiceData?.payment?.paymentId || storePaymentId;
+  const { setPaymentType } = usePaymentStore.getState();
+
+  // Lấy phương thức thanh toán từ invoiceData nếu có
+  const savedPaymentMethod = invoiceData?.payment?.paymentMethod;
+  const displayPaymentMethod =
+    savedPaymentMethod === "Cash" ||
+    savedPaymentMethod === "BankTransfer" ||
+    savedPaymentMethod === "CASH" ||
+    savedPaymentMethod === "BANK_TRANSFER"
+      ? savedPaymentMethod === "CASH"
+        ? "Cash"
+        : savedPaymentMethod === "BANK_TRANSFER"
+          ? "BankTransfer"
+          : savedPaymentMethod
+      : paymentMethod;
 
   const handlePaymentMethodChange = useCallback(
-    (method: "cash" | "transfer") => {
+    (method: "Cash" | "BankTransfer") => {
       setPaymentMethod(method);
     },
     [setPaymentMethod],
@@ -73,18 +92,34 @@ export function PaymentInfoCard({
       appointmentDetailId,
       customerId,
       vaccineBatchId,
-      paymentMethod: paymentMethod === "cash" ? 1 : 2,
+      paymentMethod: paymentMethod === "Cash" ? 1 : 2,
     };
+
     mutate(payload, {
       onSuccess: (response) => {
-        console.log("✅ PAYMENT RESPONSE:", response.data);
-        const id = response.data?.paymentId;
-        if (id) {
-          setPaymentId(id);
-          onPaymentSuccess?.(id, paymentMethod);
+        const data = response.data;
+        const id = data?.paymentId;
+
+        if (!id) return;
+
+        setPaymentType("vaccination");
+        setPaymentId(id);
+        setQrCode(data.qrCode ?? null);
+
+        if (paymentMethod === "Cash") {
+          onPaymentSuccess?.(id, "Cash");
+        } else if (
+          paymentMethod === "BankTransfer" &&
+          data.checkoutUrl &&
+          data.paymentId
+        ) {
+          const url = new URL(data.checkoutUrl);
+          url.searchParams.set("paymentId", String(data.paymentId));
+          // The orderCode parameter will already contain the appointmentDetailId
+          // No need to add an extra parameter
+
+          window.location.href = url.toString();
         }
-        console.log(response.data?.qrCode);
-        setQrCode(response.data?.qrCode ?? null);
       },
     });
   }, [
@@ -94,11 +129,10 @@ export function PaymentInfoCard({
     paymentMethod,
     mutate,
     setPaymentId,
-    onPaymentSuccess,
     setQrCode,
+    setPaymentType,
+    onPaymentSuccess,
   ]);
-
-  console.log(qrCode);
 
   return (
     <Card className="bg-linen rounded-none">
@@ -178,99 +212,102 @@ export function PaymentInfoCard({
             <p className="text-sm font-medium">Phương thức thanh toán:</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => handlePaymentMethodChange("cash")}
-              disabled={disabled || isLoading}
-              className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                paymentMethod === "cash"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-gray-200 hover:border-gray-300"
-              } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-            >
-              <Banknote size={18} />
-              <span className="text-sm font-medium">Tiền mặt</span>
-            </button>
+          {paymentId ? (
+            // Đã thanh toán - chỉ hiển thị phương thức đã chọn
+            <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
+              {displayPaymentMethod === "Cash" ||
+              invoiceData?.payment?.paymentMethod === "Cash" ||
+              invoiceData?.payment?.paymentMethod === "CASH" ? (
+                <>
+                  <Banknote size={18} />
+                  <span className="text-sm font-medium">Tiền mặt</span>
+                </>
+              ) : (
+                <>
+                  <Building2 size={18} />
+                  <span className="text-sm font-medium">Chuyển khoản</span>
+                </>
+              )}
+              {invoiceData?.payment?.paymentDate && (
+                <span className="ml-auto text-xs text-gray-500">
+                  {new Date(invoiceData.payment.paymentDate).toLocaleDateString(
+                    "vi-VN",
+                    {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    },
+                  )}
+                </span>
+              )}
+            </div>
+          ) : (
+            // Chưa thanh toán - cho phép chọn phương thức
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handlePaymentMethodChange("Cash")}
+                disabled={disabled || isLoading}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
+                  paymentMethod === "Cash"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-gray-200 hover:border-gray-300"
+                } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+              >
+                <Banknote size={18} />
+                <span className="text-sm font-medium">Tiền mặt</span>
+              </button>
 
-            <button
-              onClick={() => handlePaymentMethodChange("transfer")}
-              disabled={disabled}
-              className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                paymentMethod === "transfer"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-gray-200 hover:border-gray-300"
-              } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-            >
-              <Building2 size={18} />
-              <span className="text-sm font-medium">Chuyển khoản</span>
-            </button>
-          </div>
+              <button
+                onClick={() => handlePaymentMethodChange("BankTransfer")}
+                disabled={disabled}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
+                  paymentMethod === "BankTransfer"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-gray-200 hover:border-gray-300"
+                } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+              >
+                <Building2 size={18} />
+                <span className="text-sm font-medium">Chuyển khoản</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Transfer Details (only show when transfer is selected) */}
-        {paymentMethod === "transfer" && qrCode && (
-          <div className="rounded-md border border-blue-200 bg-blue-50 p-4">
-            <h4 className="mb-2 font-medium text-blue-900">
-              Thông tin chuyển khoản:
-            </h4>
-            <div className="space-y-1 text-sm text-blue-800">
-              <p>
-                Tên tài khoản:{" "}
-                <span className="font-medium">Phòng khám thú y ABC</span>
-              </p>
-              <p>
-                Số tài khoản: <span className="font-medium">1234567890</span>
-              </p>
-              <p>
-                Ngân hàng: <span className="font-medium">Vietcombank</span>
-              </p>
-              <p>
-                Chi nhánh: <span className="font-medium">Quận 1, TP.HCM</span>
-              </p>
-              <p>
-                Nội dung:{" "}
-                <span className="font-medium">
-                  Thanh toan vaccine {petName}
-                </span>
-              </p>
+        {/* Payment Action and Payment Status */}
+        <div className="flex items-center justify-between pt-4">
+          {/* Payment Status */}
+          {paymentId && (
+            <div className="flex items-center">
+              <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                Đã thanh toán
+              </span>
             </div>
-
-            <div className="mt-6 space-y-3 border-t pt-4 text-center">
-              <p className="text-primary font-semibold">
-                Quét mã QR để thanh toán
-              </p>
-              <QRCodeSVG
-                value={qrCode}
-                size={200}
-                includeMargin
-                className="mx-auto rounded-md border"
-              />
-              <p className="text-muted-foreground text-xs italic">
-                Mã được tạo bởi PayOS. Vui lòng quét bằng ứng dụng ngân hàng.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Payment Action */}
-        <div className="flex justify-end pt-4">
-          {paymentId ? (
-            <Button
-              className="bg-secondary hover:bg-secondary/90 px-8 py-2 text-white"
-              onClick={onExportInvoice}
-            >
-              Xuất hóa đơn
-            </Button>
-          ) : (
-            <Button
-              onClick={handlePaymentComplete}
-              disabled={disabled || isLoading}
-              className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
-            >
-              {isLoading && <Loader2 className="animate-spin" size={16} />}
-              Đồng ý
-            </Button>
           )}
+
+          {/* Action Button */}
+          <div>
+            {paymentId ? (
+              <Button
+                className="bg-secondary hover:bg-secondary/90 px-8 py-2 text-white"
+                onClick={onExportInvoice}
+              >
+                In hóa đơn
+              </Button>
+            ) : (
+              <Button
+                onClick={handlePaymentComplete}
+                disabled={disabled || isLoading}
+                className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
+              >
+                {isLoading && (
+                  <Loader2 className="mr-2 animate-spin" size={16} />
+                )}
+                Thanh toán
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

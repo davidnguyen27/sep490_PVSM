@@ -1,7 +1,7 @@
 import Footer from "@/components/shared/Footer";
 import Header from "@/components/shared/Header";
 import Sidebar from "@/components/shared/Sidebar";
-import { icons } from "@/shared/constants/icons";
+import { icons } from "@/shared/constants/icons.constants";
 import { Outlet } from "react-router-dom";
 
 const adminSidebarItems = [

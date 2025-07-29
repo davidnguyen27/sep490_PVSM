@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import { images } from "@/shared/constants/images";
-import { icons } from "@/shared/constants/icons";
+import { images } from "@/shared/constants/images.constants";
+import { icons } from "@/shared/constants/icons.constants";
 import { useSidebar } from "@/shared/hooks/useSidebar";
 import { Link, useLocation } from "react-router-dom";
 

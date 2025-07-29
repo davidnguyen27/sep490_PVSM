@@ -1,7 +1,9 @@
+import { Spinner } from "@/components/shared";
 import Footer from "@/components/shared/Footer";
 import Header from "@/components/shared/Header";
 import Sidebar from "@/components/shared/Sidebar";
-import { icons } from "@/shared/constants/icons";
+import { icons } from "@/shared/constants/icons.constants";
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 
 const staffSidebarItems = [
@@ -48,7 +50,7 @@ const staffSidebarItems = [
       {
         label: "Chứng nhận",
         icon: <icons.BookCheck size={20} />,
-        path: "/staff/appointments-at-home",
+        path: "/staff/condition-appointments",
       },
     ],
   },
@@ -62,7 +64,9 @@ export default function StaffLayout() {
         <Header />
         <main className="grid flex-1 grid-rows-[1fr_auto] overflow-auto">
           <div className="space-y-6 p-10">
-            <Outlet />
+            <Suspense fallback={<Spinner />}>
+              <Outlet />
+            </Suspense>
           </div>
           <Footer />
         </main>

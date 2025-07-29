@@ -8,5 +8,7 @@ export const authService = {
     axiosInstance.post("/api/Auth/verify-otp", payload).then((res) => res.data),
 
   currentUser: () =>
-    axiosInstance.get("/api/Account/current-account").then((res) => res.data),
+    axiosInstance
+      .get("/api/Account/current-account")
+      .then((res) => res.data.data),
 };

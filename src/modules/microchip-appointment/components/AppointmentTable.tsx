@@ -9,14 +9,13 @@ import {
 import { Badge } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { formatData } from "@/shared/utils/format.utils";
-import { AppStatusMapped, getBadgeColor } from "../utils/status.utils";
 import TableSkeleton from "@/components/shared/TableSkeleton";
 import EmptyTable from "@/components/shared/EmptyTable";
 import { BadgeInfo, SquarePen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/modules/auth";
 import type { MicrochipAppointment } from "../types/microchip.type";
-import { formatAppointmentData } from "../utils/format.utils";
+import { AppStatusMapped, getBadgeColor } from "@/shared/utils/status.utils";
 
 interface Props {
   appointmentData: MicrochipAppointment[];
@@ -95,7 +94,7 @@ export function AppointmentTable({
                   {formatData.formatDateTime(item.microchip.appointmentDate)}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
-                  {formatAppointmentData.formatLocation(
+                  {formatData.formatLocation(
                     item.microchip.appointment.location,
                   )}
                 </TableCell>
@@ -111,7 +110,7 @@ export function AppointmentTable({
                     )}
                     onClick={() =>
                       navigate(
-                        `${basePath}/detail?appointmentId=${item.microchip.appointmentDetailId}`,
+                        `${basePath}/detail?appointmentId=${item.microchip.appointmentId}`,
                       )
                     }
                   >

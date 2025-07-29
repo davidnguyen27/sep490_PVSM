@@ -41,7 +41,7 @@ export function PetModalUpdate({
   defaultValues,
 }: Props) {
   const [imagePreview, setImagePreview] = useState<string | null>(
-    defaultValues?.image ?? null,
+    typeof defaultValues?.image === "string" ? defaultValues.image : null,
   );
   const form = useForm<PetSchema>({
     resolver: zodResolver(petSchema),
@@ -268,7 +268,7 @@ export function PetModalUpdate({
             <FormField
               control={form.control}
               name="image"
-              render={({ field }) => (
+              render={() => (
                 <FormItem className="md:col-span-2">
                   <FormLabel>Hình ảnh</FormLabel>
                   <FormControl>

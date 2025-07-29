@@ -2,17 +2,17 @@ import { useMemo } from "react";
 import type { VaccinationFormData } from "../types/state.type";
 
 export function useVaccinationValidation(formData: VaccinationFormData) {
-  const isStep1Valid = useMemo(
+  const isConfirmValid = useMemo(
     () => formData.diseaseId !== null,
     [formData.diseaseId],
   );
 
-  const isStep2Valid = useMemo(
+  const isCheckInValid = useMemo(
     () => !!formData.vetSelection.vetId,
     [formData.vetSelection.vetId],
   );
 
-  const isStep3Valid = useMemo(
+  const isInjectValid = useMemo(
     () =>
       !!formData.selectedVaccineBatchId &&
       !!formData.resultData.reaction &&
@@ -25,8 +25,8 @@ export function useVaccinationValidation(formData: VaccinationFormData) {
   );
 
   return {
-    isStep1Valid,
-    isStep2Valid,
-    isStep3Valid,
+    isConfirmValid,
+    isCheckInValid,
+    isInjectValid,
   };
 }

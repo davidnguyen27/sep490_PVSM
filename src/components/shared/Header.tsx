@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/modules/auth";
-import { icons } from "@/shared/constants/icons";
+import { icons } from "@/shared/constants/icons.constants";
 
 export default function Header() {
   const { logout } = useAuth();
@@ -10,7 +10,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-linen flex h-16 items-center justify-between border-b border-gray-200 px-4 sm:px-6">
+    <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-[#E0F7F5] px-4 sm:px-6">
       <div className="text-primary font-inter-700 truncate text-base sm:text-lg lg:text-xl">
         Hệ thống VaxPet
       </div>
@@ -22,7 +22,7 @@ export default function Header() {
         />
         <Input
           placeholder="Tìm kiếm..."
-          className="text-dark border-none bg-[#eeeeee] pr-3 pl-9 shadow-sm"
+          className="text-dark bg-linen border-none pr-3 pl-9 shadow-sm"
         />
       </div>
 

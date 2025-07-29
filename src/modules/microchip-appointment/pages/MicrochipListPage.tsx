@@ -1,9 +1,12 @@
 import { useState } from "react";
 import Pagination from "@/components/shared/Pagination";
 import { useDebounce } from "@/shared/hooks/useDebounce";
-import { PageBreadcrumb, SearchLabel } from "@/components/shared";
+import {
+  AppointmentFilter,
+  PageBreadcrumb,
+  SearchLabel,
+} from "@/components/shared";
 import { useMicrochipApps } from "../hooks/useMicrochips";
-import { AppointmentFilter } from "../components/AppointmentFilter";
 import { AppointmentTable } from "../components/AppointmentTable";
 import { Cpu } from "lucide-react";
 
@@ -15,7 +18,7 @@ export default function MicrochipAppListPage() {
     status: "",
   });
 
-  const debouncedSearch = useDebounce(search, 400);
+  const debouncedSearch = useDebounce(search, 500, { leading: true });
   const { data, isPending, isFetching } = useMicrochipApps({
     pageNumber: page,
     pageSize: 10,
@@ -41,9 +44,9 @@ export default function MicrochipAppListPage() {
     <>
       <div className="space-y-1">
         <h1 className="text-primary font-inter-600 flex items-center gap-2 text-xl">
-          <Cpu /> Lịch hẹn cấy microchip
+          <Cpu /> Cấy microchip
         </h1>
-        <PageBreadcrumb items={["Dashboard", "Lịch hẹn cấy"]} />
+        <PageBreadcrumb items={["Trang chủ", "Danh sách lịch hẹn"]} />
       </div>
 
       <div className="bg-linen flex flex-wrap items-end gap-4 p-4 shadow-md">

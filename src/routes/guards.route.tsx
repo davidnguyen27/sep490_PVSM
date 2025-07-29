@@ -1,6 +1,6 @@
 import { useAuth } from "@/modules/auth";
-import type { UserRole } from "@/shared/constants/roles";
-import { LOGIN_ROUTES } from "@/shared/constants/routes";
+import type { UserRole } from "@/shared/constants/roles.constants";
+import { LOGIN_ROUTES } from "@/shared/constants/routes.constants";
 import { useLocation, Navigate } from "react-router-dom";
 
 interface RoleGuardProps {

@@ -21,10 +21,13 @@ interface Props {
   data: HealthCheckData;
   onChange: (data: HealthCheckData) => void;
   disabled?: boolean;
+  canEdit?: boolean;
 }
 
-export function HealthCheckCard({ data, onChange, disabled }: Props) {
+export function HealthCheckCard({ data, onChange, disabled, canEdit }: Props) {
   const [open, setOpen] = useState(true);
+
+  console.log("disabled", disabled);
 
   return (
     <Card className="bg-linen rounded-none">
@@ -58,32 +61,36 @@ export function HealthCheckCard({ data, onChange, disabled }: Props) {
               label="Nhiệt độ cơ thể (°C)"
               icon={<Thermometer size={16} />}
               placeholder="Nhập nhiệt độ cơ thể..."
+              inputType="number"
               value={data.temperature}
-              disabled={disabled}
+              disabled={disabled || canEdit}
               onChange={(val) => onChange({ ...data, temperature: val })}
             />
             <InputInfo
               label="Tình trạng tổng quát"
               icon={<Activity size={16} />}
               placeholder="Nhập tình trạng tổng quát..."
+              inputType="text"
               value={data.generalCondition}
-              disabled={disabled}
+              disabled={disabled || canEdit}
               onChange={(val) => onChange({ ...data, generalCondition: val })}
             />
             <InputInfo
               label="Nhịp tim (lần/phút)"
               icon={<HeartPulse size={16} />}
               placeholder="Nhập nhịp tim..."
+              inputType="number"
               value={data.heartRate}
-              disabled={disabled}
+              disabled={disabled || canEdit}
               onChange={(val) => onChange({ ...data, heartRate: val })}
             />
             <InputInfo
               label="Dấu hiệu sinh tồn khác"
               icon={<Stethoscope size={16} />}
               placeholder="Nhập dấu hiệu khác..."
+              inputType="text"
               value={data.others}
-              disabled={disabled}
+              disabled={disabled || canEdit}
               onChange={(val) => onChange({ ...data, others: val })}
             />
           </div>
@@ -98,6 +105,7 @@ interface InputInfoProps {
   value: string;
   icon: React.ReactNode;
   placeholder: string;
+  inputType?: "text" | "number";
   onChange: (val: string) => void;
   disabled?: boolean;
 }
@@ -107,9 +115,29 @@ function InputInfo({
   value,
   icon,
   placeholder,
+  inputType,
   onChange,
   disabled,
 }: InputInfoProps) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+
+    if (inputType === "number") {
+      if (val === "") {
+        return onChange("");
+      }
+
+      const valid = /^[0-9]*\.?[0-9]*$/.test(val);
+      if (!valid) return;
+
+      const numberValue = Number(val);
+      if (numberValue < 0) return;
+
+      return onChange(val);
+    }
+    onChange(val);
+  };
+
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-[#E3E3E3] bg-[#FFFDFB] p-3">
       <div className="flex items-start gap-2">
@@ -117,10 +145,12 @@ function InputInfo({
         <div className="flex flex-1 flex-col">
           <span className="text-dark font-nunito-600 text-xs">{label}</span>
           <Input
+            inputMode={inputType === "number" ? "decimal" : "text"}
+            type="text"
             placeholder={placeholder}
             value={value}
             disabled={disabled}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={handleChange}
           />
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { icons } from "@/shared/constants/icons";
+import { icons } from "@/shared/constants/icons.constants";
 import {
   Form,
   FormField,

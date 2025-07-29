@@ -1,10 +1,13 @@
 import { useState } from "react";
-import Pagination from "@/components/shared/Pagination";
 import { useDebounce } from "@/shared/hooks/useDebounce";
-import { AppointmentTable } from "../components/AppointmentTable";
-import { PageBreadcrumb, SearchLabel } from "@/components/shared";
+import { AppointmentTable } from "../components";
+import {
+  AppointmentFilter,
+  PageBreadcrumb,
+  SearchLabel,
+  Pagination,
+} from "@/components/shared";
 import { useVaccinationApps } from "../hooks/useVaccinations";
-import { AppointmentFilter } from "../components/AppointmentFilter";
 import { Syringe } from "lucide-react";
 
 export default function VaccinationAppListPage() {
@@ -15,7 +18,7 @@ export default function VaccinationAppListPage() {
     status: "",
   });
 
-  const debouncedSearch = useDebounce(search, 400);
+  const debouncedSearch = useDebounce(search, 500, { leading: true });
   const { data, isPending, isFetching } = useVaccinationApps({
     pageNumber: page,
     pageSize: 10,
@@ -43,7 +46,7 @@ export default function VaccinationAppListPage() {
         <h1 className="text-primary font-inter-600 flex items-center gap-2 text-xl">
           <Syringe /> Tiêm chủng tại Phòng khám
         </h1>
-        <PageBreadcrumb items={["Dashboard", "Lịch hẹn tiêm"]} />
+        <PageBreadcrumb items={["Trang chủ", "Danh sách lịch hẹn"]} />
       </div>
 
       <div className="bg-linen flex flex-wrap items-end gap-4 p-4 shadow-md">

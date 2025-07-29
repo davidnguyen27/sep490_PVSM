@@ -1,14 +1,22 @@
+export interface Schedule {
+  vetScheduleId: number | null;
+  vetId: number | null;
+  scheduleDate: string;
+  slotNumber: number;
+  status: number;
+}
+
 export interface VetSchedule {
-  vetScheduleId: number;
-  vetId: number;
+  vetScheduleId: number | null;
+  vetId: number | null;
   scheduleDate: string;
   slotNumber: number;
   status: number;
   createdAt: string;
   createdBy: string;
   vetResponse: {
-    vetId: number;
-    accountId: number;
+    vetId: number | null;
+    accountId: number | null;
     vetCode: string;
     name: string;
     image: string;
@@ -16,5 +24,6 @@ export interface VetSchedule {
     dateOfBirth: string;
     phoneNumber: string;
     account: object;
+    scheduleResponse: Schedule[];
   };
 }

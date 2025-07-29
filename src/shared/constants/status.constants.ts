@@ -1,0 +1,10 @@
+export const APPOINTMENT_STATUS = {
+  PROCESSING: 1,
+  CONFIRMED: 2,
+  CHECKED_IN: 3,
+  PROCESSED: 4,
+  PAID: 5,
+  COMPLETED: 9,
+  CANCELLED: 10,
+  REJECTED: 11,
+} as const;

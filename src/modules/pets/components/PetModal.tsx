@@ -33,7 +33,7 @@ export function PetModal({ open, onClose, pet }: Props) {
           {/* Image */}
           <div className="col-span-1 flex justify-center md:col-span-2">
             <img
-              src={pet.image}
+              src={pet.image ? URL.createObjectURL(pet.image) : undefined}
               alt={pet.name}
               className="border-border h-40 w-40 rounded-xl border object-cover shadow"
             />

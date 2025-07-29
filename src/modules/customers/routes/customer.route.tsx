@@ -1,7 +1,7 @@
 import AdminLayout from "@/shared/layouts/AdminLayout";
 import StaffLayout from "@/shared/layouts/StaffLayout";
 import { RoleGuard } from "@/routes/guards.route";
-import { UserRole } from "@/shared/constants/roles";
+import { UserRole } from "@/shared/constants/roles.constants";
 import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
 

@@ -9,8 +9,7 @@ import {
 import { Badge } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { formatData } from "@/shared/utils/format.utils";
-import { formatAppointmentData } from "../utils/format.utils";
-import { AppStatusMapped, getBadgeColor } from "../utils/status.utils";
+import { AppStatusMapped, getBadgeColor } from "@/shared/utils/status.utils";
 import TableSkeleton from "@/components/shared/TableSkeleton";
 import EmptyTable from "@/components/shared/EmptyTable";
 import { BadgeInfo, SquarePen } from "lucide-react";
@@ -95,9 +94,7 @@ export function AppointmentTable({
                   {formatData.formatDateTime(item.appointment.appointmentDate)}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
-                  {formatAppointmentData.formatLocation(
-                    item.appointment.location,
-                  )}
+                  {formatData.formatLocation(item.appointment.location)}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
                   {item.appointment.address}

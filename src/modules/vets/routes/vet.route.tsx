@@ -1,26 +1,39 @@
 import { RoleGuard } from "@/routes/guards.route";
-import { UserRole } from "@/shared/constants/roles";
+import { UserRole } from "@/shared/constants/roles.constants";
+import AdminLayout from "@/shared/layouts/AdminLayout";
+import StaffLayout from "@/shared/layouts/StaffLayout";
 import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
 
-const AdminPage = lazy(() => import("../pages/admin"));
-const StaffPage = lazy(() => import("../pages/staff"));
+const VetManagementPage = lazy(() => import("../pages/VetManagementPage"));
 
 export const vetRoutes: RouteObject[] = [
   {
-    path: "/admin/vets",
+    path: "/admin",
     element: (
       <RoleGuard allowedRole={[UserRole.ADMIN]}>
-        <AdminPage />
+        <AdminLayout />
       </RoleGuard>
     ),
+    children: [
+      {
+        path: "vets",
+        element: <VetManagementPage />,
+      },
+    ],
   },
   {
-    path: "/admin/vets",
+    path: "/staff",
     element: (
       <RoleGuard allowedRole={[UserRole.STAFF]}>
-        <StaffPage />
+        <StaffLayout />
       </RoleGuard>
     ),
+    children: [
+      {
+        path: "vets",
+        element: <VetManagementPage />,
+      },
+    ],
   },
 ];

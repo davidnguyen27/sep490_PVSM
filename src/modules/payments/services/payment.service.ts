@@ -7,11 +7,12 @@ export interface PaymentPayload {
   customerId: number | null;
   vaccineBatchId?: number | null;
   microchipItemId?: number | null;
+  healthConditionId?: number | null;
   paymentMethod: number;
 }
 
 export interface UpdatePaymentPayload {
-  paymentStatus: 1 | 2 | 3;
+  paymentStatus: number;
   paymentId: number;
 }
 
@@ -26,7 +27,15 @@ export const paymentService = {
   // Update payment status and appointment status
   async updatePaymentStatus(payload: UpdatePaymentPayload): Promise<Payment> {
     return await axiosInstance
-      .post("/api/Payment/paymen-callback", payload)
+      .post("/api/Payment/payment-callback", payload)
       .then((res) => res.data);
+  },
+
+  async getPaymentByAppointment(
+    appointmentDetailId: number | null,
+  ): Promise<Payment> {
+    return await axiosInstance
+      .get(`/api/Payment/get-by-appointment-detail-id/${appointmentDetailId}`)
+      .then((res) => res.data.data);
   },
 };

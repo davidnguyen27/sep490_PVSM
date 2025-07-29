@@ -21,12 +21,12 @@ export const petService = {
   updatePet: async (
     payload: PetPayload,
     petId: string,
-  ): Promise<BaseResponse> =>
+  ): Promise<BaseResponse<Pet>> =>
     axiosInstance
       .put(`/api/Pets/update-pet/${petId}`, payload)
       .then((res) => res.data),
 
-  deletePet: async (petId: number): Promise<BaseResponse> =>
+  deletePet: async (petId: number): Promise<BaseResponse<Pet>> =>
     axiosInstance
       .delete(`/api/Pets/delete-pet/${petId}`)
       .then((res) => res.data),

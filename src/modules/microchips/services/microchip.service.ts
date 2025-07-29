@@ -18,7 +18,9 @@ export const microchipService = {
       .get(`/api/Microchips/GetMicrochipById/${microchipId}`)
       .then((res) => res.data.data),
 
-  createMicrochip: async (payload: MicrochipPayload): Promise<BaseResponse> =>
+  createMicrochip: async (
+    payload: MicrochipPayload,
+  ): Promise<BaseResponse<Microchip>> =>
     axiosInstance
       .post("/api/Microchips/CreateMicrochip", payload)
       .then((res) => res.data),
@@ -26,12 +28,14 @@ export const microchipService = {
   updateMicrochip: async (
     payload: MicrochipPayload,
     microchipId: number,
-  ): Promise<BaseResponse> =>
+  ): Promise<BaseResponse<Microchip>> =>
     axiosInstance
       .put(`/api/Microchips/UpdateMicrochip/${microchipId}`, payload)
       .then((res) => res.data),
 
-  deleteMicrochip: async (microchipId: number): Promise<BaseResponse> =>
+  deleteMicrochip: async (
+    microchipId: number,
+  ): Promise<BaseResponse<Microchip>> =>
     axiosInstance
       .delete(`/api/Microchips/DeleteMicrochip/${microchipId}`)
       .then((res) => res.data),

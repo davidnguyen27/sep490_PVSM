@@ -1,5 +1,5 @@
 // components
-import { PageBreadcumb, SearchLabel, Pagination } from "@/components/shared";
+import { PageBreadcrumb, SearchLabel, Pagination } from "@/components/shared";
 import { PetTable, PetFilter } from "../components";
 
 // hooks
@@ -28,7 +28,7 @@ export default function PetManagementPage() {
         <h1 className="text-primary font-inter-700 text-2xl">
           Quản lý thú cưng
         </h1>
-        <PageBreadcumb items={["Bảng điều khiển", "Thú cưng"]} />
+        <PageBreadcrumb items={["Trang chủ", "Thú cưng"]} />
       </div>
 
       <div className="bg-linen flex flex-wrap items-end gap-4 p-4 shadow-md">

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { images } from "../constants/images";
+import { images } from "../constants/images.constants";
 
 export default function NotFoundPage() {
   const navigate = useNavigate();

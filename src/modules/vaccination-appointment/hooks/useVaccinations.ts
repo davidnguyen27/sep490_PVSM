@@ -9,7 +9,7 @@ interface Params {
 
 export function useVaccinationApps(params: Params) {
   return useQuery({
-    queryKey: ["vaccinationApp", params],
+    queryKey: ["vaccination", params],
     queryFn: () => vaccinationService.getAllVaccinationApps(params),
     placeholderData: (prev) => prev,
     refetchOnWindowFocus: false,

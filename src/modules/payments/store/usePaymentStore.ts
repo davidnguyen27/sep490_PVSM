@@ -3,18 +3,15 @@ import { immer } from "zustand/middleware/immer";
 import { devtools } from "zustand/middleware";
 import type { PaymentState } from "../types/state.type";
 
-/**
- * Zustand store for managing payment-related state in the Pet Vaccination Management System.
- * Handles payment method, payment ID, loading state, and error state for payment operations.
- */
 export const usePaymentStore = create<PaymentState>()(
   devtools(
     immer((set) => ({
-      paymentMethod: "cash",
+      paymentMethod: "Cash",
       paymentId: null,
       isPaymentLoading: false,
       paymentError: null,
       qrCode: null,
+      paymentType: null,
       setPaymentMethod: (method) =>
         set((state) => {
           state.paymentMethod = method;
@@ -39,10 +36,15 @@ export const usePaymentStore = create<PaymentState>()(
         set((state) => {
           state.qrCode = qr;
         }),
+      setPaymentType: (type) =>
+        set((state) => {
+          state.paymentType = type;
+        }),
       reset: () =>
         set((state) => {
-          state.paymentMethod = "cash";
+          state.paymentMethod = "Cash";
           state.paymentId = null;
+          state.paymentType = null;
           state.qrCode = null;
           state.isPaymentLoading = false;
           state.paymentError = null;

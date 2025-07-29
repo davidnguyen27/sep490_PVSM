@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
-import { icons } from "@/shared/constants/icons";
-import { calculateYearOld } from "../utils/calculate-year-old.utils";
+import { icons } from "@/shared/constants/icons.constants";
+import { Utils } from "@/shared/utils/utils.utils";
 import type { MicrochipDetail } from "../types/detail.type";
 
 interface Props {
@@ -89,7 +89,7 @@ export function PetInfoCard({ data }: Props) {
             <InfoItem
               icon={<icons.Ruler size={16} />}
               label="Tuổi"
-              value={calculateYearOld(pet?.dateOfBirth)}
+              value={Utils.calculateYearOld(pet?.dateOfBirth)}
             />
             <InfoItem
               icon={<icons.Weight size={16} />}

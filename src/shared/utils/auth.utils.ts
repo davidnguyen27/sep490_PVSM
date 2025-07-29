@@ -1,5 +1,8 @@
-import { UserRole } from "@/shared/constants/roles";
-import { LOGIN_API_ROUTES, LOGIN_ROUTES } from "@/shared/constants/routes";
+import { UserRole } from "@/shared/constants/roles.constants";
+import {
+  LOGIN_API_ROUTES,
+  LOGIN_ROUTES,
+} from "@/shared/constants/routes.constants";
 
 export const isLoginRoute = (url?: string): boolean => {
   if (!url) return false;

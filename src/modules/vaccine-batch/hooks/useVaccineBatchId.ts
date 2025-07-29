@@ -3,7 +3,7 @@ import { vaccineBatchService } from "../services/vaccine-batch.service";
 
 export function useVaccineBatchId(vaccineBatchId: number | null) {
   return useQuery({
-    queryKey: ["vaccine-batch", "detail", vaccineBatchId],
+    queryKey: ["vaccine-batches", "detail", vaccineBatchId],
     queryFn: () => vaccineBatchService.getVaccineBatchById(vaccineBatchId!),
     enabled: !!vaccineBatchId,
     refetchOnWindowFocus: false,

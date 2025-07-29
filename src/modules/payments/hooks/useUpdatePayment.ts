@@ -5,12 +5,8 @@ import {
   type UpdatePaymentPayload,
 } from "../services/payment.service";
 import type { Payment } from "../types/payment.type";
+import { toast } from "sonner";
 
-/**
- * Hook to update payment status using React Query mutation.
- * Manages payment state in usePaymentStore and invalidates related queries on success.
- * @returns Mutation object for updating payment status
- */
 export function useUpdatePayment({
   onSuccess,
   onError,
@@ -31,12 +27,17 @@ export function useUpdatePayment({
         paymentId: payment.paymentId,
         isPaymentLoading: false,
       });
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["vaccination"] });
+      queryClient.invalidateQueries({
+        queryKey: ["vaccination", "detail", payment.appointmentDetailId],
+      });
 
-      onSuccess?.(payment); // allow external behavior
+      toast.success("Cập nhật trạng thái thanh toán thành công");
+      onSuccess?.(payment);
     },
     onError: (error) => {
       setPaymentState({ isPaymentLoading: false, paymentError: error.message });
+      toast.error("Cập nhật trạng thái thanh toán thất bại");
       onError?.(error);
     },
   });

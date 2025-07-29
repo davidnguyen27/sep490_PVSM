@@ -25,7 +25,7 @@ axiosInstance.interceptors.request.use(
 // Response
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => response,
-  (error: AxiosError<BaseResponse>) => {
+  (error: AxiosError<BaseResponse<unknown>>) => {
     if (!error.response) {
       toast.error("Không thể kết nối đến máy chủ.");
       return Promise.reject({ message: "Không thể kết nối đến máy chủ." });

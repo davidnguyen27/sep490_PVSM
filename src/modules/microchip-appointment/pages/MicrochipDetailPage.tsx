@@ -4,10 +4,10 @@ import { useSearchParams } from "react-router-dom";
 import { SendToBack } from "lucide-react";
 
 // Shared Components
-import { PageBreadcrumb, PageLoader } from "@/components/shared";
+import { PageBreadcrumb, StepProgress, RejectModal } from "@/components/shared";
 
 // Local Components
-import { StepProgress, StepContent } from "../components";
+import { StepContent } from "../components";
 
 // Store & Hooks
 import { useMicrochipStore } from "../store/useMicrochipStore";
@@ -15,10 +15,12 @@ import { useMicrochipAppDetail } from "../hooks/useMicrochipDetail";
 import { useMicrochipHandlers } from "../hooks/useMicrochipHandlers";
 import { useMicrochipValidation } from "../hooks/useMicrochipValidation";
 import { useAuth } from "@/modules/auth";
-import { RejectModal } from "@/modules/vaccination-appointment/components";
+import { usePaymentStore } from "@/modules/payments";
 
 // Constants
-import { UserRole } from "@/shared/constants/roles";
+import { UserRole } from "@/shared/constants/roles.constants";
+import { MICROCHIP_APPOINTMENT_STEPS } from "../constants/steps.constants";
+import { APPOINTMENT_STATUS } from "@/shared/constants/status.constants";
 
 export default function MicrochipAppDetailPage() {
   const [searchParams] = useSearchParams();
@@ -33,17 +35,18 @@ export default function MicrochipAppDetailPage() {
     setShowReject,
     initializeFromAPI,
   } = useMicrochipStore();
+  const { reset: resetPayment } = usePaymentStore();
 
-  const { data, isPending: loading } = useMicrochipAppDetail(appointmentId);
+  const { data } = useMicrochipAppDetail(appointmentId);
 
   const {
     isPending,
-    handleConfirmAppointment,
-    handleAssignVet,
-    handleInjectMicrochip,
+    handleConfirm,
+    handleCheckIn,
+    handleInject,
     handleReject,
-    handleCreatePayment,
-    handleFinalizeMicrochip,
+    handlePayment,
+    handleFinalize,
     handleExportInvoice,
   } = useMicrochipHandlers({
     data,
@@ -53,19 +56,25 @@ export default function MicrochipAppDetailPage() {
 
   const { isStep2Valid, isStep3Valid } = useMicrochipValidation(formData);
 
-  const status = data?.microchip.appointmentStatus ?? 0;
+  const isVet = useMemo(() => user?.role === UserRole.VET, [user?.role]);
+  const status = data?.microchip?.appointment?.appointmentStatus;
+  const effectiveStep = activeStep ?? status ?? 0;
 
   const currentViewStatus = useMemo(
-    () => activeStep ?? status,
+    () => activeStep ?? status ?? 0,
     [activeStep, status],
   );
 
-  const canEdit = useCallback((step: number) => step === status, [status]);
-  const isVet = useMemo(() => user?.role === UserRole.VET, [user?.role]);
+  const canEdit = useCallback(
+    (step: number) => {
+      return effectiveStep === step && status === step;
+    },
+    [effectiveStep, status],
+  );
 
   const handleStepClick = useCallback(
     (step: number) => {
-      if (step <= status) {
+      if (step <= (status ?? 0)) {
         setActiveStep(step);
       }
     },
@@ -75,23 +84,41 @@ export default function MicrochipAppDetailPage() {
   useEffect(() => {
     if (data) {
       initializeFromAPI(data);
+
+      // Get payment information from appointment detail
+      const payment = data.microchip.payment;
+      if (payment?.paymentId && payment?.paymentMethod) {
+        // Format paymentMethod to match our app's expected format
+        const paymentMethod =
+          payment.paymentMethod === "CASH" ? "Cash" : "BankTransfer";
+
+        // Set payment information in store
+        usePaymentStore.getState().setPaymentId(payment.paymentId);
+        usePaymentStore.getState().setPaymentMethod(paymentMethod);
+      }
     }
   }, [data, initializeFromAPI]);
+
+  useEffect(() => {
+    if (status === APPOINTMENT_STATUS.COMPLETED) resetPayment();
+  }, [status, resetPayment]);
 
   if (!data) return null;
 
   return (
-    <PageLoader loading={loading}>
+    <>
       <div className="space-y-2">
         <h1 className="text-primary font-inter-700 flex items-center gap-2 text-xl">
           <SendToBack /> Theo dõi quá trình cấy microchip
         </h1>
-        <PageBreadcrumb
-          items={["Dashboard", "Lịch cấy microchip", "Chi tiết"]}
-        />
+        <PageBreadcrumb items={["Trang chủ", "Lịch hẹn", "Chi tiết"]} />
       </div>
 
-      <StepProgress currentStep={status} onStepClick={handleStepClick} />
+      <StepProgress
+        steps={MICROCHIP_APPOINTMENT_STEPS}
+        currentStep={status ?? 0}
+        onStepClick={handleStepClick}
+      />
 
       <StepContent
         currentViewStatus={currentViewStatus}
@@ -102,12 +129,12 @@ export default function MicrochipAppDetailPage() {
         isStep3Valid={isStep3Valid}
         canEdit={canEdit}
         isVet={isVet}
-        onConfirmAppointment={handleConfirmAppointment}
-        onAssignVet={handleAssignVet}
-        onInjectMicrochip={handleInjectMicrochip}
+        onConfirmAppointment={handleConfirm}
+        onAssignVet={handleCheckIn}
+        onInjectMicrochip={handleInject}
         onShowReject={() => setShowReject(true)}
-        onCompleteMicrochip={handleCreatePayment}
-        onFinalizeMicrochip={handleFinalizeMicrochip}
+        onCompleteMicrochip={handlePayment}
+        onFinalizeMicrochip={handleFinalize}
         onExportInvoice={() => handleExportInvoice()}
       />
 
@@ -117,6 +144,6 @@ export default function MicrochipAppDetailPage() {
         onConfirm={handleReject}
         loading={isPending}
       />
-    </PageLoader>
+    </>
   );
 }

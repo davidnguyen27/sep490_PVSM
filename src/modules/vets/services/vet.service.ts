@@ -18,18 +18,18 @@ export const vetService = {
       .get(`/api/Vets/get-vet-by-id/${vetId}`)
       .then((res) => res.data.data),
 
-  createVet: async (payload: VetPayload): Promise<BaseResponse> =>
+  createVet: async (payload: VetPayload): Promise<BaseResponse<Vet>> =>
     axiosInstance.post("/api/Vets/create-vet", payload).then((res) => res.data),
 
   updateVet: async (
     vetId: number,
     payload: VetPayload,
-  ): Promise<BaseResponse> =>
+  ): Promise<BaseResponse<Vet>> =>
     axiosInstance
       .put(`/api/Vets/update-vet/${vetId}`, payload)
       .then((res) => res.data),
 
-  deleteVet: async (vetId: number): Promise<BaseResponse> =>
+  deleteVet: async (vetId: number): Promise<BaseResponse<Vet>> =>
     axiosInstance
       .delete(`/api/Vets/delete-vet/${vetId}`)
       .then((res) => res.data),

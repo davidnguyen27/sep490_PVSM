@@ -7,158 +7,192 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { type VaccineBatch } from "@/modules/vaccine-batch";
+import { Syringe, PackageOpen, FileText, BadgeDollarSign } from "lucide-react";
+
+import { useVaccinationStore } from "../store/useVaccinationStore";
 import { useVaccineBatchForVaccine } from "@/modules/vaccine-batch/hooks/useVaccineBatchForVaccine";
-import type { Vaccine } from "@/modules/vaccines";
+import { useVaccineBatchId } from "@/modules/vaccine-batch/hooks/useVaccineBatchId";
+import { useMemo, useState, useEffect } from "react";
 import { useVaccineByDisease } from "@/modules/vaccines/hooks/useVaccineByDisease";
-import {
-  Lock,
-  Syringe,
-  PackageOpen,
-  FileText,
-  BadgeDollarSign,
-} from "lucide-react";
-import { useState } from "react";
+import type { VaccineBatch } from "@/modules/vaccine-batch";
+import type { Vaccine } from "@/modules/vaccines";
 
 interface Props {
   disabled?: boolean;
-  onChange?: (batch: VaccineBatch | null) => void;
   canEdit?: boolean;
   diseaseId: number;
 }
 
-export function VaccineInjectionTable({
-  disabled,
-  onChange,
-  canEdit,
-  diseaseId,
-}: Props) {
+export function VaccineInjectionTable({ disabled, canEdit, diseaseId }: Props) {
+  const selectedVaccineBatchId = useVaccinationStore(
+    (s) => s.formData.selectedVaccineBatchId,
+  );
+  const setSelectedVaccineBatchId = useVaccinationStore(
+    (s) => s.setSelectedVaccineBatchId,
+  );
+
   const [selectedVaccineId, setSelectedVaccineId] = useState<number | null>(
     null,
   );
-  const [selectedBatch, setSelectedBatch] = useState<VaccineBatch | null>(null);
 
-  const { data: vaccineData, isLoading: isLoadingVaccine } =
+  // Step 1: Get vaccine list by disease
+  const { data: vaccines, isLoading: isVaccineLoading } =
     useVaccineByDisease(diseaseId);
-  const vaccineList = Array.isArray(vaccineData) ? vaccineData : [];
 
-  const { data: batchData, isLoading: isLoadingBatch } =
-    useVaccineBatchForVaccine(selectedVaccineId!);
-  const batchList = batchData ? [batchData] : [];
+  // Nếu có selectedVaccineBatchId, lấy thông tin của lô vaccine đó
+  const { data: savedBatchDetail, isLoading: isSavedBatchLoading } =
+    useVaccineBatchId(selectedVaccineBatchId || null);
+
+  // Nếu có savedBatchDetail và chưa chọn vaccineId, sử dụng vaccineId từ savedBatchDetail
+  const defaultVaccineId = useMemo(() => {
+    if (savedBatchDetail && !selectedVaccineId) {
+      return savedBatchDetail.vaccineResponseDTO?.vaccineId;
+    }
+    if (Array.isArray(vaccines)) return vaccines[0]?.vaccineId;
+    return vaccines?.vaccineId;
+  }, [vaccines, savedBatchDetail, selectedVaccineId]);
+
+  const vaccineId = selectedVaccineId ?? defaultVaccineId;
+
+  // Đồng bộ vaccine ID từ savedBatchDetail khi có
+  useEffect(() => {
+    if (
+      savedBatchDetail &&
+      savedBatchDetail.vaccineResponseDTO?.vaccineId &&
+      !selectedVaccineId
+    ) {
+      setSelectedVaccineId(savedBatchDetail.vaccineResponseDTO.vaccineId);
+    }
+  }, [savedBatchDetail, selectedVaccineId]);
+
+  // Step 2: Get batch list by vaccineId
+  const { data: vaccineBatches, isLoading: isBatchLoading } =
+    useVaccineBatchForVaccine(vaccineId ?? 0);
+
+  // Find selected batch from the list or use saved batch detail
+  const selectedBatch = useMemo(() => {
+    // Nếu đã có savedBatchDetail, ưu tiên sử dụng
+    if (savedBatchDetail) {
+      return savedBatchDetail;
+    }
+
+    // Nếu không, tìm trong danh sách batches hiện tại
+    if (Array.isArray(vaccineBatches)) {
+      return vaccineBatches.find(
+        (batch: VaccineBatch) =>
+          batch.vaccineBatchId === selectedVaccineBatchId,
+      );
+    }
+
+    // Nếu vaccineBatches không phải là mảng mà là object
+    if (
+      vaccineBatches &&
+      selectedVaccineBatchId === vaccineBatches.vaccineBatchId
+    ) {
+      return vaccineBatches;
+    }
+
+    return undefined;
+  }, [vaccineBatches, selectedVaccineBatchId, savedBatchDetail]);
+
+  const handleSelectBatch = (id: string) => {
+    setSelectedVaccineBatchId(Number(id));
+  };
 
   const handleSelectVaccine = (id: string) => {
     setSelectedVaccineId(Number(id));
-    setSelectedBatch(null);
-    onChange?.(null);
-  };
-
-  const handleSelectBatch = (id: string) => {
-    const batchId = Number(id);
-    const batch = batchList.find((b) => b.vaccineBatchId === batchId) || null;
-    setSelectedBatch(batch);
-    onChange?.(batch);
+    setSelectedVaccineBatchId(null);
   };
 
   return (
     <Card className="bg-linen relative rounded-none">
-      {disabled && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
-          <div className="flex flex-col items-center text-gray-500">
-            <Lock className="mb-2 h-8 w-8" />
-            <span>Bạn không có quyền chỉnh sửa</span>
-          </div>
-        </div>
-      )}
-
       <CardContent className="space-y-4 p-6">
-        {/* Header */}
         <h2 className="font-nunito-700 text-primary flex items-center gap-2 text-lg underline">
           <Syringe size={16} />
           Thông tin vaccine
         </h2>
 
         <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+          {/* Vaccine select */}
           <div className="flex flex-col gap-2">
             <span className="text-dark font-nunito-600 flex items-center gap-1 text-xs">
               <PackageOpen size={14} />
-              Loại vaccine
+              Vaccine
             </span>
             <Select
               onValueChange={handleSelectVaccine}
-              disabled={disabled || canEdit || isLoadingVaccine}
-              value={selectedVaccineId?.toString() ?? ""}
+              disabled={disabled || canEdit}
+              value={vaccineId?.toString() ?? ""}
             >
               <SelectTrigger>
                 <SelectValue
                   placeholder={
-                    isLoadingVaccine ? "Đang tải..." : "Chọn vaccine"
+                    isVaccineLoading ? "Đang tải..." : "Chọn vaccine"
                   }
                 />
               </SelectTrigger>
               <SelectContent>
-                {vaccineList.map((vaccine: Vaccine) => (
-                  <SelectItem
-                    key={vaccine.vaccineId}
-                    value={vaccine.vaccineId.toString()}
-                  >
-                    {vaccine.name}
+                {Array.isArray(vaccines) && vaccines.length > 0 ? (
+                  vaccines.map((vaccine: Vaccine) => (
+                    <SelectItem
+                      key={vaccine.vaccineId}
+                      value={vaccine.vaccineId.toString()}
+                    >
+                      {vaccine.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="none" disabled>
+                    Không có vaccine
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
           </div>
 
+          {/* Batch select */}
           <div className="flex flex-col gap-2">
             <span className="text-dark font-nunito-600 flex items-center gap-1 text-xs">
               <PackageOpen size={14} />
-              Chọn lô vaccine
+              Lô vaccine
             </span>
             <Select
               onValueChange={handleSelectBatch}
-              disabled={
-                disabled ||
-                canEdit ||
-                !selectedVaccineId ||
-                isLoadingBatch ||
-                batchList.length === 0
-              }
-              value={
-                selectedBatch?.vaccineBatchId
-                  ? selectedBatch.vaccineBatchId.toString()
-                  : ""
-              }
+              disabled={disabled || canEdit || !vaccineId}
+              value={selectedVaccineBatchId?.toString() ?? ""}
             >
               <SelectTrigger>
                 <SelectValue
                   placeholder={
-                    !selectedVaccineId
-                      ? "Chọn loại vaccine trước"
-                      : isLoadingBatch
-                        ? "Đang tải lô vaccine..."
-                        : "Chọn lô vaccine"
+                    isVaccineLoading || isBatchLoading || isSavedBatchLoading
+                      ? "Đang tải..."
+                      : "Chọn lô vaccine"
                   }
                 />
               </SelectTrigger>
               <SelectContent>
-                {batchList.map((batch) => (
-                  <SelectItem
-                    key={batch.vaccineBatchId}
-                    value={batch.vaccineBatchId.toString()}
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-medium">
-                        {batch.vaccineResponseDTO.name}
-                      </span>
-                      <span className="text-muted-foreground text-xs">
-                        {batch.quantity ?? 0} liều còn lại
-                      </span>
-                    </div>
+                {vaccineBatches ? (
+                  <SelectItem value={vaccineBatches.vaccineBatchId.toString()}>
+                    {vaccineBatches.vaccineResponseDTO.name} –{" "}
+                    {vaccineBatches.quantity ?? 0} liều
                   </SelectItem>
-                ))}
+                ) : savedBatchDetail ? (
+                  <SelectItem
+                    value={savedBatchDetail.vaccineBatchId.toString()}
+                  >
+                    {savedBatchDetail.vaccineResponseDTO.name} –{" "}
+                    {savedBatchDetail.quantity ?? 0} liều
+                  </SelectItem>
+                ) : (
+                  <SelectItem value="none" disabled>
+                    Không có lô vaccine phù hợp
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
 
+          {/* Vaccine description */}
           <div className="flex flex-col gap-2">
             <span className="text-dark font-nunito-600 flex items-center gap-1 text-xs">
               <FileText size={14} />
@@ -172,6 +206,7 @@ export function VaccineInjectionTable({
             />
           </div>
 
+          {/* Vaccine price */}
           <div className="flex flex-col gap-2">
             <span className="text-dark font-nunito-600 flex items-center gap-1 text-xs">
               <BadgeDollarSign size={14} />

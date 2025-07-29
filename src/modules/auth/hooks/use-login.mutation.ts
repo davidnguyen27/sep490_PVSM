@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { extractErrorMessage } from "@/shared/utils/error.utils";
 import type { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
-import { DASHBOARD_ROUTES } from "@/shared/constants/routes";
+import { DASHBOARD_ROUTES } from "@/shared/constants/routes.constants";
 
 export function useLoginMutation() {
   const queryClient = useQueryClient();

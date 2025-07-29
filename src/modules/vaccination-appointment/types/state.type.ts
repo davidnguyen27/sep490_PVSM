@@ -1,3 +1,4 @@
+import type { VaccineExportDetail } from "@/modules/vaccine-export-detail";
 import type { VaccinationDetail } from "./detail.type";
 
 export interface VetSelection {
@@ -29,6 +30,8 @@ export interface VaccinationState {
   activeStep: number | null;
   showReject: boolean;
   isSubmitting: boolean;
+  exportDetail: VaccineExportDetail | null;
+  exportDetailVisible: boolean;
 
   updateFormData: (updates: Partial<VaccinationFormData>) => void;
   setActiveStep: (step: number | null) => void;
@@ -57,4 +60,6 @@ export interface VaccinationState {
     step3: boolean;
     step4: boolean;
   };
+  setExportDetailVisible: (visible: boolean) => void;
+  setExportDetail: (detail: VaccineExportDetail | null) => void;
 }

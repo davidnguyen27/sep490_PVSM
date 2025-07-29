@@ -1,0 +1,222 @@
+import { Button } from "@/components/ui";
+import {
+  PetInfoCard,
+  AppointmentInfoCard,
+  VetSelectionCard,
+  GeneralHealthCheckCard,
+  PaymentInfoCard,
+  CompletedCard,
+} from ".";
+import { APPOINTMENT_STATUS } from "@/shared/constants/status.constants";
+import type { ConditionFormData } from "../types/state.type";
+import { useConditionStore } from "../store/useConditionStore";
+import type { ConditionAppointments } from "../types/condition.type";
+import { usePaymentStore } from "@/modules/payments";
+import { FinalizedCard } from "@/components/shared";
+
+interface Props {
+  currentViewStatus: number;
+  data: ConditionAppointments;
+  formData: ConditionFormData;
+  isPending: boolean;
+  isCheckedIn: boolean;
+  canEdit: (step: number) => boolean;
+  isVet: boolean;
+  onConfirmAppointment: () => void;
+  onAssignVet: () => void;
+  onInject: () => void;
+  onShowReject: () => void;
+  onCompleteCondition: () => void;
+  onFinalizeCondition: () => void;
+  onExportInvoice: () => void;
+}
+
+export function StepContent({
+  currentViewStatus,
+  data,
+  formData,
+  isPending,
+  isCheckedIn,
+  canEdit,
+  isVet,
+  onConfirmAppointment,
+  onAssignVet,
+  onInject,
+  onShowReject,
+  onCompleteCondition,
+  onFinalizeCondition,
+  onExportInvoice,
+}: Props) {
+  const { setVetSelection } = useConditionStore();
+
+  const paymentId = usePaymentStore((state) => state.paymentId);
+  const paymentMethod = usePaymentStore((state) => state.paymentMethod);
+  const setPaymentId = usePaymentStore((state) => state.setPaymentId);
+  const setPaymentMethod = usePaymentStore((state) => state.setPaymentMethod);
+  const setHealthCheck = useConditionStore((state) => state.setHealthCheck);
+  const setVitalSigns = useConditionStore((state) => state.setVitalSigns);
+
+  const appointmentStatus = data.appointment.appointmentStatus;
+  const isPaymentCompleted = Boolean(paymentId && paymentMethod);
+
+  const renderCommonInfo = () => (
+    <>
+      <PetInfoCard data={data} />
+      <AppointmentInfoCard data={data} />
+    </>
+  );
+
+  const renderStepConfirm = () => (
+    <div className="space-y-6">
+      {renderCommonInfo()}
+
+      {currentViewStatus === appointmentStatus && (
+        <div className="flex justify-end gap-4">
+          <Button key="reject" variant="destructive" onClick={onShowReject}>
+            Hủy
+          </Button>
+          <Button
+            key="confirm"
+            className="bg-primary text-white"
+            onClick={onConfirmAppointment}
+            disabled={isPending || !canEdit(APPOINTMENT_STATUS.PROCESSING)}
+          >
+            Xác nhận lịch
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderStepCheckIn = () => (
+    <div className="space-y-6">
+      {renderCommonInfo()}
+      <VetSelectionCard
+        appointmentDate={data?.appointmentDate}
+        value={formData.vetSelection}
+        onChange={setVetSelection}
+        disabled={isPending || !isVet}
+        canEdit={canEdit(APPOINTMENT_STATUS.CONFIRMED)}
+      />
+      {currentViewStatus === appointmentStatus && (
+        <div className="flex justify-end gap-4">
+          <Button
+            key="next"
+            className="bg-primary text-white"
+            onClick={onAssignVet}
+            disabled={isPending || !isCheckedIn}
+          >
+            Tiếp tục
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderStepInject = () => (
+    <div className="space-y-6">
+      {renderCommonInfo()}
+
+      <GeneralHealthCheckCard
+        values={formData.healthCheck}
+        vitalSigns={formData.vitalSigns}
+        disabled={!isVet}
+        canEdit={!canEdit(APPOINTMENT_STATUS.CHECKED_IN)}
+        onChange={(section, field, value) => {
+          if (section === "healthCheck") {
+            setHealthCheck({ [field]: value });
+          } else {
+            setVitalSigns({ [field]: value });
+          }
+        }}
+      />
+
+      {currentViewStatus === appointmentStatus && (
+        <div className="flex justify-end gap-4">
+          <Button
+            key="finish"
+            className="bg-primary text-white"
+            disabled={isPending || !isVet}
+            onClick={onInject}
+          >
+            Tiếp tục
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderStepPayment = () => (
+    <div className="space-y-6">
+      {renderCommonInfo()}
+      <PaymentInfoCard
+        ownerName={data.appointment.customerResponseDTO.fullName}
+        petName={data.appointment.petResponseDTO.name}
+        memberRank=""
+        discountPercent={0}
+        healthConditionCode={data.healthCondition?.conditionCode}
+        unitPrice={data.healthCondition?.price}
+        quantity={1}
+        appointmentDetailId={data.appointmentDetailId}
+        customerId={data.appointment.customerResponseDTO.customerId}
+        healthConditionId={data.healthConditionId}
+        invoiceData={data}
+        onPaymentSuccess={(paymentId, method) => {
+          setPaymentId(paymentId);
+          setPaymentMethod(method);
+        }}
+        onExportInvoice={onExportInvoice}
+      />
+      {(isPaymentCompleted || data.payment?.paymentId) &&
+        paymentMethod !== "BankTransfer" && (
+          <div className="flex justify-end">
+            <Button
+              className="bg-primary text-white"
+              onClick={onCompleteCondition}
+              disabled={isPending}
+            >
+              Xác nhận thanh toán
+            </Button>
+          </div>
+        )}
+    </div>
+  );
+
+  const renderStepCompleted = () => (
+    <div className="space-y-6">
+      <CompletedCard data={data} onExportInvoice={onExportInvoice} />
+
+      <div className="flex justify-end">
+        <Button
+          className="bg-primary text-white"
+          disabled={isPending}
+          onClick={onFinalizeCondition}
+        >
+          Hoàn thành
+        </Button>
+      </div>
+    </div>
+  );
+
+  const renderFinally = () => (
+    <div className="space-y-6">
+      {renderCommonInfo()}
+      <FinalizedCard />
+    </div>
+  );
+
+  switch (currentViewStatus) {
+    case APPOINTMENT_STATUS.PROCESSING:
+      return renderStepConfirm();
+    case APPOINTMENT_STATUS.CONFIRMED:
+      return renderStepCheckIn();
+    case APPOINTMENT_STATUS.CHECKED_IN:
+      return renderStepInject();
+    case APPOINTMENT_STATUS.PROCESSED:
+      return renderStepPayment();
+    case APPOINTMENT_STATUS.PAID:
+      return renderStepCompleted();
+    default:
+      return renderFinally();
+  }
+}

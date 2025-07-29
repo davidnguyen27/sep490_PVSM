@@ -7,7 +7,7 @@ import type {
   VaccinationState,
 } from "../types/state.type";
 import type { VaccinationDetail } from "../types/detail.type";
-import { mapSlotToTime } from "../utils/map-slot.utils";
+import { mappingUtils } from "@/shared/utils/mapping.utils";
 
 const initialFormData: VaccinationFormData = {
   diseaseId: null,
@@ -37,6 +37,8 @@ export const useVaccinationStore = create<VaccinationState>()(
       formData: initialFormData,
       activeStep: null,
       showReject: false,
+      exportDetail: null,
+      exportDetailVisible: false,
       isSubmitting: false,
 
       // Actions
@@ -72,7 +74,10 @@ export const useVaccinationStore = create<VaccinationState>()(
 
       setVetSelection: (vetSelection) =>
         set((state) => {
-          state.formData.vetSelection = vetSelection;
+          state.formData.vetSelection = {
+            ...state.formData.vetSelection,
+            ...vetSelection,
+          };
         }),
 
       setHealthData: (healthData) =>
@@ -93,6 +98,15 @@ export const useVaccinationStore = create<VaccinationState>()(
           state.formData.selectedVaccineBatchId = vaccineBatchId;
         }),
 
+      setExportDetailVisible: (visible: boolean) =>
+        set((state) => {
+          state.exportDetailVisible = visible;
+        }),
+
+      setExportDetail: (detail) =>
+        set((state) => {
+          state.exportDetail = detail;
+        }),
       resetForm: () =>
         set(() => ({
           formData: initialFormData,
@@ -111,7 +125,8 @@ export const useVaccinationStore = create<VaccinationState>()(
             vetSelection: {
               date: data.vet?.scheduleResponse?.[0]?.scheduleDate ?? "",
               time: scheduleResponse?.slotNumber
-                ? (mapSlotToTime(scheduleResponse.slotNumber) ?? "")
+                ? (mappingUtils.mapSlotToTime(scheduleResponse.slotNumber) ??
+                  "")
                 : "",
               slot: scheduleResponse?.slotNumber ?? null,
               vetId: data.vet?.vetId ?? null,
@@ -176,22 +191,6 @@ export const useVaccinationStore = create<VaccinationState>()(
 );
 
 // Selectors for better performance
-export const useVaccinationFormData = () =>
-  useVaccinationStore((state) => state.formData);
-
-export const useVaccinationActions = () =>
-  useVaccinationStore((state) => ({
-    setSelectedDiseaseId: state.setSelectedDiseaseId,
-    setVetSelection: state.setVetSelection,
-    setHealthData: state.setHealthData,
-    setResultData: state.setResultData,
-    setSelectedVaccineBatchId: state.setSelectedVaccineBatchId,
-    setActiveStep: state.setActiveStep,
-    setShowReject: state.setShowReject,
-    resetForm: state.resetForm,
-    initializeFromAPI: state.initializeFromAPI,
-  }));
-
 export const useVaccinationValidation = () =>
   useVaccinationStore((state) => ({
     isStepValid: state.isStepValid,
