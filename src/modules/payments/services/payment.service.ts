@@ -6,6 +6,7 @@ export interface PaymentPayload {
   appointmentDetailId: number | null;
   customerId: number | null;
   vaccineBatchId?: number | null;
+  voucherCode?: string | null;
   microchipItemId?: number | null;
   healthConditionId?: number | null;
   paymentMethod: number;
