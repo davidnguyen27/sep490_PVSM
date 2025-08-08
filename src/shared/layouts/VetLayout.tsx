@@ -42,17 +42,22 @@ const vetSidebarItems = [
 
 export default function VetLayout() {
   return (
-    <div className="flex h-screen">
-      <Sidebar items={vetSidebarItems} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header />
-        <main className="grid flex-1 grid-rows-[1fr_auto] overflow-auto">
-          <div className="space-y-6 p-10">
-            <Suspense fallback={<Spinner />}>
-              <Outlet />
-            </Suspense>
+    <div className="fixed inset-0 flex h-screen w-screen flex-col overflow-hidden">
+      <Header />
+
+      <div className="flex min-h-0 flex-1">
+        <Sidebar items={vetSidebarItems} />
+
+        <main className="flex min-h-0 flex-1 flex-col bg-gray-50">
+          <div className="flex-1 overflow-y-auto">
+            <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8">
+              <Suspense fallback={<Spinner />}>
+                <Outlet />
+              </Suspense>
+            </div>
+
+            <Footer />
           </div>
-          <Footer />
         </main>
       </div>
     </div>

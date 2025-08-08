@@ -10,8 +10,8 @@ import {
 import { Syringe, PackageOpen, FileText, BadgeDollarSign } from "lucide-react";
 
 import { useVaccinationStore } from "../store/useVaccinationStore";
-import { useVaccineBatchForVaccine } from "@/modules/vaccine-batch/hooks/useVaccineBatchForVaccine";
-import { useVaccineBatchId } from "@/modules/vaccine-batch/hooks/useVaccineBatchId";
+import { useVaccineBatchByVaccine } from "@/modules/vaccine-batch/hooks/useVaccineBatchByVaccine";
+import { useVaccineBatchById } from "@/modules/vaccine-batch/hooks/useVaccineBatchById";
 import { useMemo, useState, useEffect } from "react";
 import { useVaccineByDisease } from "@/modules/vaccines/hooks/useVaccineByDisease";
 import type { VaccineBatch } from "@/modules/vaccine-batch";
@@ -20,7 +20,7 @@ import type { Vaccine } from "@/modules/vaccines";
 interface Props {
   disabled?: boolean;
   canEdit?: boolean;
-  diseaseId: number;
+  diseaseId: number | null;
 }
 
 export function VaccineInjectionTable({ disabled, canEdit, diseaseId }: Props) {
@@ -36,12 +36,13 @@ export function VaccineInjectionTable({ disabled, canEdit, diseaseId }: Props) {
   );
 
   // Step 1: Get vaccine list by disease
-  const { data: vaccines, isLoading: isVaccineLoading } =
-    useVaccineByDisease(diseaseId);
+  const { data: vaccines, isLoading: isVaccineLoading } = useVaccineByDisease(
+    diseaseId!,
+  );
 
   // Nếu có selectedVaccineBatchId, lấy thông tin của lô vaccine đó
   const { data: savedBatchDetail, isLoading: isSavedBatchLoading } =
-    useVaccineBatchId(selectedVaccineBatchId || null);
+    useVaccineBatchById(selectedVaccineBatchId || null);
 
   // Nếu có savedBatchDetail và chưa chọn vaccineId, sử dụng vaccineId từ savedBatchDetail
   const defaultVaccineId = useMemo(() => {
@@ -67,7 +68,7 @@ export function VaccineInjectionTable({ disabled, canEdit, diseaseId }: Props) {
 
   // Step 2: Get batch list by vaccineId
   const { data: vaccineBatches, isLoading: isBatchLoading } =
-    useVaccineBatchForVaccine(vaccineId ?? 0);
+    useVaccineBatchByVaccine(vaccineId ?? 0);
 
   // Find selected batch from the list or use saved batch detail
   const selectedBatch = useMemo(() => {
@@ -136,7 +137,7 @@ export function VaccineInjectionTable({ disabled, canEdit, diseaseId }: Props) {
                   vaccines.map((vaccine: Vaccine) => (
                     <SelectItem
                       key={vaccine.vaccineId}
-                      value={vaccine.vaccineId.toString()}
+                      value={vaccine.vaccineId?.toString() ?? ""}
                     >
                       {vaccine.name}
                     </SelectItem>

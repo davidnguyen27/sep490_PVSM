@@ -3,3 +3,4 @@ export { usePets } from "./usePets";
 export { usePetUpdate } from "./usePetUpdate";
 export { usePetDelete } from "./usePetDelete";
 export { usePetDetail } from "./usePetDetail";
+export { usePetFilters } from "./usePetFilters";

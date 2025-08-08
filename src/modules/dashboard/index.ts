@@ -1,5 +1,5 @@
 // pages
-export * from "./pages/AdminDashboardPage";
+export * from "./pages";
 
 // routes
 export * from "./routes/dashboard.route";

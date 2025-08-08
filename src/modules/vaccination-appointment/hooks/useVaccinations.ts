@@ -5,6 +5,7 @@ interface Params {
   pageNumber: number;
   pageSize: number;
   keyWord?: string;
+  vetId?: number;
 }
 
 export function useVaccinationApps(params: Params) {

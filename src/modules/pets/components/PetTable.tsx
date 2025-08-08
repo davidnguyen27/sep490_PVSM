@@ -10,6 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import TableSkeleton from "@/components/shared/TableSkeleton";
 import EmptyTable from "@/components/shared/EmptyTable";
 import { ConfirmDelete } from "@/components/shared";
@@ -19,6 +25,10 @@ import { PetModal } from "./PetModal";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePetDetail, usePetDelete } from "../hooks";
+import { useAuth } from "@/modules/auth";
+
+// utils
+import { getPetRoutePaths } from "../utils/pet-route.utils";
 
 interface Props {
   pets: Pet[];
@@ -36,7 +46,7 @@ const tableHeaders = [
   "Giới tính",
   "Màu sắc",
   "Cân nặng (kg)",
-  "Hành động",
+  "Thao tác",
 ];
 
 export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
@@ -44,18 +54,23 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
   const [selectedPetId, setSelectedPetId] = useState<number | null>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const { data } = usePetDetail(selectedPetId);
+  const { data, isLoading: isPetDetailLoading } = usePetDetail(selectedPetId);
   const petId = searchParams.get("petId");
+  const action = searchParams.get("action");
 
   const { mutate: deletePet, isPending: isDeleting } = usePetDelete();
 
+  // Get role-based paths
+  const paths = getPetRoutePaths(user?.role || 2); // Default to staff role
+
   useEffect(() => {
-    if (petId) {
+    if (petId && action !== "update") {
       setSelectedPetId(Number(petId));
       setOpenDetail(true);
     }
-  }, [petId]);
+  }, [petId, action]);
 
   return (
     <div className="bg-linen shadow-md">
@@ -92,13 +107,13 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
                   {item.name}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.species}
+                  {item.species === "Dog" ? "Chó" : "Mèo"}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
                   {item.breed}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.gender}
+                  {item.gender === "Male" ? "Đực" : "Cái"}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
                   {item.color}
@@ -108,38 +123,67 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-center gap-3">
-                    <BadgeInfo
-                      size={16}
-                      className="text-info cursor-pointer transition-transform hover:scale-110"
-                      onClick={() => {
-                        setSelectedPetId(item.petId);
-                        setOpenDetail(true);
-                        navigate(`?petId=${item.petId}`, {
-                          replace: false,
-                        });
-                      }}
-                    />
-                    <SquarePen
-                      size={16}
-                      className="text-purple cursor-pointer transition-transform hover:scale-110"
-                      onClick={() =>
-                        navigate(
-                          `/staff/pet-profiles/update?petId=${item.petId}`,
-                          {
-                            replace: false,
-                          },
-                        )
-                      }
-                    />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <BadgeInfo
+                            size={16}
+                            className="text-info cursor-pointer transition-transform hover:scale-110"
+                            onClick={() => {
+                              setSelectedPetId(item.petId);
+                              setOpenDetail(true);
+                              navigate(`?petId=${item.petId}`, {
+                                replace: false,
+                              });
+                            }}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Xem chi tiết</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SquarePen
+                            size={16}
+                            className="text-purple cursor-pointer transition-transform hover:scale-110"
+                            onClick={() =>
+                              navigate(
+                                `${paths.base}?petId=${item.petId}&action=update`,
+                                {
+                                  replace: false,
+                                },
+                              )
+                            }
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Chỉnh sửa</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
                     <ConfirmDelete onConfirm={() => deletePet(item.petId)}>
-                      <Trash2
-                        size={16}
-                        className={`cursor-pointer transition-transform hover:scale-110 ${
-                          isDeleting
-                            ? "pointer-events-none opacity-50"
-                            : "text-danger"
-                        }`}
-                      />
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Trash2
+                              size={16}
+                              className={`cursor-pointer transition-transform hover:scale-110 ${
+                                isDeleting
+                                  ? "pointer-events-none opacity-50"
+                                  : "text-danger"
+                              }`}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Xóa</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </ConfirmDelete>
                   </div>
                 </TableCell>
@@ -156,9 +200,10 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
         onClose={() => {
           setOpenDetail(false);
           setSelectedPetId(null);
-          navigate("/staff/pet-profiles", { replace: true });
+          navigate(paths.base, { replace: true });
         }}
         pet={data ?? undefined}
+        isLoading={isPetDetailLoading}
       />
     </div>
   );

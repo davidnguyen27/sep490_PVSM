@@ -1,5 +1,5 @@
 export interface Vaccine {
-  vaccineId: number;
+  vaccineId: number | null;
   vaccineCode: string;
   name: string;
   description: string;

@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui";
 import { FinalizedCard } from "@/components/shared";
 import { APPOINTMENT_STATUS } from "@/shared/constants/status.constants";
-import { useVaccinationHandlers } from "../hooks/useVaccinationHandlers";
 
 // Local components
 import {
@@ -13,7 +12,6 @@ import {
   ResultCard,
   VaccineInjectionTable,
   VetSelection,
-  VaccineExportDetailCard,
   CompletedCard,
 } from ".";
 
@@ -76,17 +74,9 @@ export function StepContent({
   const paymentMethod = usePaymentStore((state) => state.paymentMethod);
   const setPaymentId = usePaymentStore((state) => state.setPaymentId);
   const setPaymentMethod = usePaymentStore((state) => state.setPaymentMethod);
-  const showExportInfo = useVaccinationStore((s) => s.exportDetailVisible);
-  const exportDetail = useVaccinationStore((s) => s.exportDetail);
 
   const appointmentStatus = data.appointment.appointmentStatus;
   const isPaymentCompleted = Boolean(paymentId && paymentMethod);
-
-  const { handleShowExportDetail } = useVaccinationHandlers({
-    data,
-    formData,
-    appointmentId: data.appointment.appointmentId,
-  });
 
   const renderCommonCards = () => (
     <>
@@ -132,7 +122,7 @@ export function StepContent({
         onChange={setVetSelection}
         disabled={isPending || !canEdit(APPOINTMENT_STATUS.CONFIRMED)}
         appointmentDate={data?.appointmentDate}
-        canEdit={!canEdit(APPOINTMENT_STATUS.CONFIRMED)}
+        canEdit={canEdit(APPOINTMENT_STATUS.CONFIRMED)}
       />
       {currentViewStatus === appointmentStatus && (
         <div className="flex justify-end gap-2">
@@ -192,25 +182,36 @@ export function StepContent({
   const renderStepPayment = () => (
     <div className="space-y-6">
       {renderCommonCards()}
-      <PaymentInfoCard
-        ownerName={data.appointment.customerResponseDTO.fullName}
-        petName={data.appointment.petResponseDTO.name}
-        memberRank=""
-        discountPercent={0}
-        productName={vaccineBatchDetail?.vaccineResponseDTO.name ?? ""}
-        unitPrice={vaccineBatchDetail?.vaccineResponseDTO.price ?? 0}
-        quantity={1}
-        appointmentDetailId={data.appointmentDetailId}
-        customerId={data.appointment.customerResponseDTO.customerId}
-        vaccineBatchId={formData.selectedVaccineBatchId!}
-        invoiceData={data}
-        onPaymentSuccess={(paymentId, method) => {
-          setPaymentId(paymentId);
-          setPaymentMethod(method);
-        }}
-        onExportInvoice={onExportInvoice}
-      />
-      {isPaymentCompleted && paymentMethod !== "BankTransfer" && (
+      {!isVet ? (
+        <PaymentInfoCard
+          ownerName={data.appointment.customerResponseDTO.fullName}
+          petName={data.appointment.petResponseDTO.name}
+          memberRank=""
+          discountPercent={0}
+          productName={vaccineBatchDetail?.vaccineResponseDTO.name ?? ""}
+          unitPrice={vaccineBatchDetail?.vaccineResponseDTO.price ?? 0}
+          quantity={1}
+          appointmentDetailId={data.appointmentDetailId}
+          customerId={data.appointment.customerResponseDTO.customerId}
+          vaccineBatchId={formData.selectedVaccineBatchId!}
+          invoiceData={data}
+          onPaymentSuccess={(paymentId, method) => {
+            setPaymentId(paymentId);
+            setPaymentMethod(method);
+          }}
+          onExportInvoice={onExportInvoice}
+        />
+      ) : (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
+          <div className="text-center text-gray-600">
+            <p className="text-lg font-medium">Bước thanh toán</p>
+            <p className="mt-2 text-sm">
+              Bạn không có quyền thực hiện thanh toán.
+            </p>
+          </div>
+        </div>
+      )}
+      {isPaymentCompleted && paymentMethod !== "BankTransfer" && !isVet && (
         <div className="flex justify-end">
           <Button
             className="bg-primary text-white"
@@ -244,14 +245,6 @@ export function StepContent({
     <div className="space-y-6">
       {renderCommonCards()}
       <FinalizedCard />
-
-      <div className="flex justify-end gap-2">
-        <Button onClick={handleShowExportDetail}>Chi tiết vaccine</Button>
-      </div>
-
-      {showExportInfo && exportDetail && (
-        <VaccineExportDetailCard data={exportDetail} />
-      )}
     </div>
   );
 

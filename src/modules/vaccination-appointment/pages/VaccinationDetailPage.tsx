@@ -8,7 +8,7 @@ import { PageBreadcrumb, StepProgress } from "@/components/shared";
 
 // Auth & External Modules
 import { useAuth } from "@/modules/auth";
-import { useVaccineBatchId } from "@/modules/vaccine-batch/hooks/useVaccineBatchId";
+import { useVaccineBatchById } from "@/modules/vaccine-batch/hooks/useVaccineBatchById";
 
 // Constants
 import { UserRole } from "@/shared/constants/roles.constants";
@@ -64,7 +64,7 @@ export default function VaccinationAppDetailPage() {
   const { isConfirmValid, isCheckInValid, isInjectValid } =
     useVaccinationValidation(formData);
 
-  const { data: vaccineBatchDetail } = useVaccineBatchId(
+  const { data: vaccineBatchDetail } = useVaccineBatchById(
     formData.selectedVaccineBatchId,
   );
 
@@ -123,7 +123,7 @@ export default function VaccinationAppDetailPage() {
         <h1 className="text-primary font-inter-700 flex items-center gap-2 text-xl">
           <SendToBack /> Theo dõi quá trình tiêm
         </h1>
-        <PageBreadcrumb items={["Trang chủ", "Tiêm chủng", "Chi tiết"]} />
+        <PageBreadcrumb items={["Tiêm chủng", "Chi tiết"]} />
       </div>
 
       <StepProgress

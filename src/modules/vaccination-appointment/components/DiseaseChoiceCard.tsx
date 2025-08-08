@@ -17,7 +17,7 @@ import { useDiseases } from "@/modules/diseases";
 
 interface Props {
   selectedDiseaseId: number | null;
-  onSelect: (diseaseId: number) => void;
+  onSelect: (diseaseId: number | null) => void;
   disabled?: boolean;
   petSpecies?: "Dog" | "Cat";
 }

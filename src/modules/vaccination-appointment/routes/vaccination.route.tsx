@@ -8,11 +8,14 @@ import type { RouteObject } from "react-router-dom";
 const VaccinationAppListPage = lazy(
   () => import("../pages/VaccinationListPage"),
 );
-const VaccinationAppDetailPage = lazy(
-  () => import("../pages/VaccinationDetailPage"),
-);
+// const VaccinationAppDetailPage = lazy(
+//   () => import("../pages/VaccinationDetailPage"),
+// );
 const VaccinationPaymentSuccessPage = lazy(
   () => import("../pages/VaccinationPaymentSuccess"),
+);
+const VaccinationPaymentCancelPage = lazy(
+  () => import("../pages/VaccinationPaymentCancel"),
 );
 
 export const vaccinationAppRoutes: RouteObject[] = [
@@ -32,12 +35,12 @@ export const vaccinationAppRoutes: RouteObject[] = [
             element: <VaccinationAppListPage />,
           },
           {
-            path: "detail",
-            element: <VaccinationAppDetailPage />,
-          },
-          {
             path: "success",
             element: <VaccinationPaymentSuccessPage />,
+          },
+          {
+            path: "cancel",
+            element: <VaccinationPaymentCancelPage />,
           },
         ],
       },
@@ -57,10 +60,6 @@ export const vaccinationAppRoutes: RouteObject[] = [
           {
             index: true,
             element: <VaccinationAppListPage />,
-          },
-          {
-            path: "detail",
-            element: <VaccinationAppDetailPage />,
           },
         ],
       },

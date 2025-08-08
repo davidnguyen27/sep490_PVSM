@@ -8,6 +8,8 @@ export const petService = {
     pageNumber: number;
     pageSize: number;
     keyWord?: string;
+    gender?: string;
+    species?: string;
   }): Promise<BaseListResponse<Pet>> =>
     axiosInstance
       .get("/api/Pets/get-all-pets", { params })

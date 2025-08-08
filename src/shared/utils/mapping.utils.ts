@@ -43,7 +43,7 @@ export const mappingUtils = {
       case 3:
         return "Đã đặt";
       default:
-        return "Không rõ";
+        return "Không có lịch";
     }
   },
 };

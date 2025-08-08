@@ -1,4 +1,5 @@
 import { BadgeInfo, SquarePen } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -33,6 +34,8 @@ export function CustomerTable({
   currentPage,
   pageSize,
 }: Props) {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-linen shadow-md">
       <Table>
@@ -84,23 +87,20 @@ export function CustomerTable({
                     <BadgeInfo
                       size={16}
                       className="text-info cursor-pointer transition-transform hover:scale-110"
-                      // onClick={() =>
-                      //   navigate(`?microchipId=${item.microchipId}`, {
-                      //     replace: false,
-                      //   })
-                      // }
+                      onClick={() =>
+                        navigate(`?customerId=${item.customerId}`, {
+                          replace: false,
+                        })
+                      }
                     />
                     <SquarePen
                       size={16}
                       className="text-purple cursor-pointer transition-transform hover:scale-110"
-                      // onClick={() =>
-                      //   navigate(
-                      //     `?microchipId=${item.microchipId}&action=edit`,
-                      //     {
-                      //       replace: false,
-                      //     },
-                      //   )
-                      // }
+                      onClick={() =>
+                        navigate(`?customerId=${item.customerId}&action=edit`, {
+                          replace: false,
+                        })
+                      }
                     />
                     {/* <ConfirmDelete
                       onConfirm={() => deleteMicrochip(item.microchipId)}

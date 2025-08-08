@@ -1,43 +1,87 @@
 import { useState } from "react";
 import { PageBreadcrumb } from "@/components/shared";
 import { useScheduleByVet } from "../hooks/useScheduleByVet";
+import { useDeleteSchedule } from "../hooks/useDeleteSchedule";
 import { useDateNavigation } from "../hooks/useDateNavigation";
-import { useScheduleModal } from "../hooks/useScheduleModal";
 import { useDateFormatting } from "../hooks/useDateFormatting";
-
+import type { VetSchedule } from "../types/vet-schedule.type";
 import {
-  VetScheduleHeader,
-  VetScheduleCalendar,
-  VetScheduleStats,
-  VetScheduleStatusLegend,
-  VetScheduleUpcoming,
+  SimpleVetScheduleForm,
+  WeeklyStatsCards,
+  ScheduleHeader,
+  WeeklyCalendar,
+  StatusLegend,
+  ScheduleLoadingSkeleton,
+  ScheduleErrorState,
 } from "../components";
 
-type SlotStatus = "available" | "unavailable" | "booked" | "completed";
+// Types
+type SlotStatus = "available" | "unavailable" | "booked" | "late";
 
-interface ScheduleFormValues {
-  date: string;
-  timeSlot: string;
-  status: "available" | "unavailable";
-}
+// Constants
+const timeSlots = [
+  { id: 8, time: "08:00 - 09:00", label: "Ca 1" },
+  { id: 9, time: "09:00 - 10:00", label: "Ca 2" },
+  { id: 10, time: "10:00 - 11:00", label: "Ca 3" },
+  { id: 11, time: "11:00 - 12:00", label: "Ca 4" },
+  { id: 13, time: "13:00 - 14:00", label: "Ca 5" },
+  { id: 14, time: "14:00 - 15:00", label: "Ca 6" },
+  { id: 15, time: "15:00 - 16:00", label: "Ca 7" },
+  { id: 16, time: "16:00 - 17:00", label: "Ca 8" },
+];
+
+const statusConfig = {
+  available: {
+    color: "bg-green-100 text-green-800 border-green-200",
+    label: "Trống",
+  },
+  unavailable: {
+    color: "bg-gray-100 text-gray-600 border-gray-200",
+    label: "Không có lịch",
+  },
+  booked: {
+    color: "bg-blue-100 text-blue-800 border-blue-200",
+    label: "Đã đặt",
+  },
+  late: {
+    color: "bg-orange-100 text-orange-800 border-orange-200",
+    label: "Trễ hẹn",
+  },
+};
+
+// Utility functions
+const getDayName = (date: Date) => {
+  const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+  return days[date.getDay()];
+};
+
+const isToday = (date: Date) => {
+  const today = new Date();
+  return date.toDateString() === today.toDateString();
+};
+
+const isSameDay = (date1: Date, date2: Date) => {
+  return date1.toDateString() === date2.toDateString();
+};
 
 const VetSchedulesPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"week" | "month">("week");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
+  const [selectedSlot, setSelectedSlot] = useState<{
+    date: Date;
+    slotId: number;
+  } | null>(null);
+  const [existingSchedule, setExistingSchedule] = useState<VetSchedule | null>(
+    null,
+  );
 
   // Custom hooks
-  const { currentDate, weekDays, handlePreviousPeriod, handleNextPeriod } =
+  const { weekDays, handlePreviousPeriod, handleNextPeriod } =
     useDateNavigation();
-  const {
-    isAddingSchedule,
-    isEditingSchedule,
-    selectedSlot,
-    openAddModal,
-    closeAddModal,
-    openEditModal,
-    closeEditModal,
-  } = useScheduleModal();
-  const { formatDateToDMY, getMonthName } = useDateFormatting();
+  const { formatDateToDMY } = useDateFormatting();
+  const { mutate: deleteSchedule } = useDeleteSchedule();
 
   // Lấy lịch làm việc của bác sĩ hiện tại
   const {
@@ -45,43 +89,6 @@ const VetSchedulesPage = () => {
     isLoading: isLoadingVetSchedules,
     error: vetSchedulesError,
   } = useScheduleByVet();
-
-  // Debug logging
-  console.log("=== VetSchedulesPage Debug ===");
-  console.log("vetSchedules data:", vetSchedules);
-  console.log("isLoadingVetSchedules:", isLoadingVetSchedules);
-  console.log("vetSchedulesError:", vetSchedulesError);
-  console.log("vetSchedules length:", vetSchedules?.length);
-
-  // Kiểm tra cấu trúc dữ liệu chi tiết
-  if (vetSchedules && vetSchedules.length > 0) {
-    console.log("First schedule item:", vetSchedules[0]);
-    console.log(
-      "Schedule dates:",
-      vetSchedules.map((s) => s?.scheduleDate),
-    );
-    console.log(
-      "Schedule sample properties:",
-      Object.keys(vetSchedules[0] || {}),
-    );
-
-    // Kiểm tra các schedule không hợp lệ
-    const invalidSchedules = vetSchedules.filter((s) => !s || !s.scheduleDate);
-    if (invalidSchedules.length > 0) {
-      console.warn("Found invalid schedules:", invalidSchedules);
-    }
-
-    // Log chi tiết schedule đầu tiên
-    if (vetSchedules[0]) {
-      console.log("First schedule detailed:", {
-        scheduleDate: vetSchedules[0].scheduleDate,
-        slotNumber: vetSchedules[0].slotNumber,
-        status: vetSchedules[0].status,
-        allProperties: vetSchedules[0],
-      });
-    }
-  }
-  console.log("==============================");
 
   // Lọc và làm sạch dữ liệu vetSchedules
   const validVetSchedules =
@@ -94,209 +101,155 @@ const VetSchedulesPage = () => {
         typeof schedule.status === "number",
     ) || [];
 
-  // Debug validVetSchedules
-  console.log("=== validVetSchedules Debug ===");
-  console.log("validVetSchedules length:", validVetSchedules.length);
-  if (validVetSchedules.length > 0) {
-    console.log("First valid schedule:", validVetSchedules[0]);
-    console.log("Valid schedule sample:", {
-      scheduleDate: validVetSchedules[0]?.scheduleDate,
-      slotNumber: validVetSchedules[0]?.slotNumber,
-      status: validVetSchedules[0]?.status,
-    });
-
-    // Log tất cả schedule dates và slots để debug
-    console.log("All schedule dates and slots:");
-    validVetSchedules.slice(0, 5).forEach((schedule, index) => {
-      console.log(`Schedule ${index}:`, {
-        scheduleDate: schedule.scheduleDate,
-        formattedDate: schedule.scheduleDate.split("T")[0],
-        slotNumber: schedule.slotNumber,
-        status: schedule.status,
-      });
-    });
-  }
-  console.log("=====================================");
-
-  // Tính toán thống kê từ dữ liệu thực (sử dụng validVetSchedules)
+  // Tính toán thống kê từ dữ liệu thực
   const weeklyStats = {
     totalShifts: validVetSchedules.length,
     bookedAppointments: validVetSchedules.filter(
-      (schedule) => schedule.status === 2,
+      (schedule) => schedule.status === 3, // Đã đặt
     ).length,
     availableSlots: validVetSchedules.filter(
-      (schedule) => schedule.status === 1,
+      (schedule) => schedule.status === 1, // Trống
+    ).length,
+    lateAppointments: validVetSchedules.filter(
+      (schedule) => schedule.status === 2, // Trễ hẹn
     ).length,
   };
-
-  const upcomingAppointments = [
-    {
-      id: "1",
-      type: "Khám sức khỏe cho chó",
-      date: "Hôm nay",
-      time: "10:00 - 12:00",
-      customerName: "Nguyễn Văn A",
-    },
-    {
-      id: "2",
-      type: "Tiêm phòng cho mèo",
-      date: "Ngày mai",
-      time: "08:00 - 10:00",
-      customerName: "Trần Thị B",
-    },
-  ];
 
   // Event handlers
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
   };
 
-  const handleSlotEdit = (date: Date, slotId: number) => {
-    setSelectedDate(date);
-    openEditModal(slotId);
+  const handleAddSchedule = () => {
+    setModalMode("add");
+    setSelectedSlot(null);
+    setExistingSchedule(null);
+    setIsModalOpen(true);
   };
 
-  const onSubmitSchedule = (values: ScheduleFormValues) => {
-    console.log("Submitted values:", values);
-    // Here you would call your API to save the schedule
-    closeAddModal();
-    closeEditModal();
+  const handleSlotEdit = (date: Date, slotId: number) => {
+    setSelectedDate(date);
+    setSelectedSlot({ date, slotId });
+
+    // Tìm schedule tương ứng
+    const dateString = date.toISOString().split("T")[0];
+    const schedule = validVetSchedules.find((schedule) => {
+      const scheduleDateString = schedule.scheduleDate.split("T")[0];
+      return (
+        scheduleDateString === dateString && schedule.slotNumber === slotId
+      );
+    });
+
+    if (schedule) {
+      // Nếu có schedule -> edit mode
+      setExistingSchedule(schedule);
+      setModalMode("edit");
+    } else {
+      // Nếu không có schedule -> add mode
+      setExistingSchedule(null);
+      setModalMode("add");
+    }
+
+    setIsModalOpen(true);
+  };
+
+  const handleSlotDelete = (date: Date, slotId: number) => {
+    // Tìm schedule tương ứng để lấy ID
+    const dateString = date.toISOString().split("T")[0];
+    const schedule = validVetSchedules.find((schedule) => {
+      const scheduleDateString = schedule.scheduleDate.split("T")[0];
+      return (
+        scheduleDateString === dateString && schedule.slotNumber === slotId
+      );
+    });
+
+    if (schedule?.vetScheduleId) {
+      deleteSchedule(schedule.vetScheduleId);
+    }
   };
 
   const getSlotStatus = (date: Date, slotId: number): SlotStatus => {
-    console.log("=== getSlotStatus Debug ===");
-    console.log("Input date:", date);
-    console.log("Input slotId:", slotId);
-    console.log("validVetSchedules available:", !!validVetSchedules);
-    console.log("validVetSchedules length:", validVetSchedules.length);
-
     if (!validVetSchedules || validVetSchedules.length === 0) {
-      console.log("No valid vetSchedules data, returning unavailable");
       return "unavailable";
     }
 
-    // Format date để so sánh với dữ liệu từ API
     const dateString = date.toISOString().split("T")[0];
-    console.log("Formatted dateString:", dateString);
 
-    // Debug: Show available dates and slots
-    console.log("Available schedule dates and slots:");
-    const availableDatesSlots = validVetSchedules.map((s) => ({
-      date: s.scheduleDate.split("T")[0],
-      slot: s.slotNumber,
-      status: s.status,
-    }));
-    console.log(availableDatesSlots);
-
-    // Check if we have any matches for the date first
-    const dateMatches = validVetSchedules.filter(
-      (s) => s.scheduleDate.split("T")[0] === dateString,
-    );
-    console.log(`Schedules for date ${dateString}:`, dateMatches);
-
-    // Check if we have any matches for the slot
-    const slotMatches = validVetSchedules.filter(
-      (s) => s.slotNumber === slotId,
-    );
-    console.log(`Schedules for slot ${slotId}:`, slotMatches);
-
-    // Tìm lịch làm việc tương ứng với ngày và slot
     const schedule = validVetSchedules.find((schedule) => {
-      // Dữ liệu đã được validate, không cần kiểm tra thêm
       const scheduleDateString = schedule.scheduleDate.split("T")[0];
-      const dateMatch = scheduleDateString === dateString;
-      const slotMatch = schedule.slotNumber === slotId;
-
-      console.log(`Checking schedule:`, {
-        scheduleDate: schedule.scheduleDate,
-        scheduleDateString,
-        slotNumber: schedule.slotNumber,
-        dateMatch,
-        slotMatch,
-        status: schedule.status,
-      });
-
-      return dateMatch && slotMatch;
+      return (
+        scheduleDateString === dateString && schedule.slotNumber === slotId
+      );
     });
 
-    console.log("Found schedule:", schedule);
-
     if (!schedule) {
-      console.log("No matching schedule found, returning unavailable");
       return "unavailable";
     }
 
-    // Map status từ API sang SlotStatus (giả sử status là number)
-    let result: SlotStatus;
+    // Map status từ API sang SlotStatus theo mapping.utils.ts
+    // 1: Trống (available), 2: Trễ hẹn (late), 3: Đã đặt (booked)
     switch (schedule.status) {
-      case 1: // Available
-        result = "available";
-        break;
-      case 0: // Unavailable
-        result = "unavailable";
-        break;
-      case 2: // Booked
-        result = "booked";
-        break;
-      case 3: // Completed
-        result = "completed";
-        break;
+      case 1:
+        return "available"; // Trống
+      case 2:
+        return "late"; // Trễ hẹn
+      case 3:
+        return "booked"; // Đã đặt
       default:
-        result = "unavailable";
-        break;
+        return "unavailable"; // Không rõ
     }
-
-    console.log(`Status mapping: ${schedule.status} -> ${result}`);
-    console.log("========================");
-    return result;
-  };
-
-  const handleViewAll = () => {
-    // Navigate to full appointments page
-    console.log("Navigate to appointments page");
   };
 
   // Hiển thị lỗi nếu có
   if (vetSchedulesError) {
-    console.error("Error loading vet schedules:", vetSchedulesError);
+    return <ScheduleErrorState />;
+  }
+
+  // Loading state
+  if (isLoadingVetSchedules) {
+    return <ScheduleLoadingSkeleton />;
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto space-y-6 p-6">
       <PageBreadcrumb items={["Trang chủ", "Lịch làm việc"]} />
 
-      <VetScheduleHeader viewMode={viewMode} onViewModeChange={setViewMode} />
+      {/* Header đơn giản */}
+      <ScheduleHeader viewMode={viewMode} onViewModeChange={setViewMode} />
 
-      <VetScheduleCalendar
-        currentDate={currentDate}
-        selectedDate={selectedDate}
-        viewMode={viewMode}
-        isAddingSchedule={isAddingSchedule}
-        isEditingSchedule={isEditingSchedule}
-        selectedSlot={selectedSlot}
+      {/* Thống kê nhanh */}
+      <WeeklyStatsCards stats={weeklyStats} onAddSchedule={handleAddSchedule} />
+
+      {/* Lịch tuần đơn giản */}
+      <WeeklyCalendar
         weekDays={weekDays}
-        onPreviousPeriod={() => handlePreviousPeriod(viewMode)}
-        onNextPeriod={() => handleNextPeriod(viewMode)}
-        onAddSchedule={openAddModal}
-        onEditSchedule={closeEditModal}
+        timeSlots={timeSlots}
+        statusConfig={statusConfig}
+        selectedDate={selectedDate}
+        formatDateToDMY={formatDateToDMY}
+        getDayName={getDayName}
+        isToday={isToday}
+        isSameDay={isSameDay}
+        getSlotStatus={getSlotStatus}
         onDayClick={handleDayClick}
         onSlotEdit={handleSlotEdit}
-        onSubmitSchedule={onSubmitSchedule}
-        formatDateToDMY={formatDateToDMY}
-        getMonthName={getMonthName}
-        getSlotStatus={getSlotStatus}
+        onSlotDelete={handleSlotDelete}
+        onPreviousPeriod={() => handlePreviousPeriod(viewMode)}
+        onNextPeriod={() => handleNextPeriod(viewMode)}
       />
 
-      {/* Thống kê & thông tin bổ sung */}
-      <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-3">
-        <VetScheduleStats weeklyStats={weeklyStats} />
-        <VetScheduleStatusLegend />
-        <VetScheduleUpcoming
-          appointments={upcomingAppointments}
-          isLoading={isLoadingVetSchedules}
-          onViewAll={handleViewAll}
-        />
-      </div>
+      {/* Legend đơn giản */}
+      <StatusLegend statusConfig={statusConfig} />
+
+      {/* Modal form */}
+      <SimpleVetScheduleForm
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        selectedDate={selectedDate}
+        mode={modalMode}
+        selectedSlot={selectedSlot?.slotId}
+        existingSchedule={existingSchedule || undefined}
+      />
     </div>
   );
 };

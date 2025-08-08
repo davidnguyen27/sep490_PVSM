@@ -12,7 +12,8 @@ export function useVaccineBatches(params: Params) {
     queryKey: ["vaccine-batches", params],
     queryFn: () => vaccineBatchService.getAllVaccineBatches(params),
     placeholderData: (prev) => prev,
-    staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

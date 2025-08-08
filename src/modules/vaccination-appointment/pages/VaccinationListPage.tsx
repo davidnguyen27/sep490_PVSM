@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
+import { useSearchParams } from "react-router-dom";
 import { AppointmentTable } from "../components";
 import {
   AppointmentFilter,
@@ -9,21 +10,50 @@ import {
 } from "@/components/shared";
 import { useVaccinationApps } from "../hooks/useVaccinations";
 import { Syringe } from "lucide-react";
+import VaccinationDetailPage from "./VaccinationDetailPage";
 
 export default function VaccinationAppListPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState({
     location: "",
     status: "",
   });
 
+  // Get vetId from localStorage
+  const vetId = useMemo(() => {
+    try {
+      const userStr = localStorage.getItem("user");
+
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        return user.vetId ? Number(user.vetId) : undefined;
+      }
+      return undefined;
+    } catch (error) {
+      console.error("Error getting vetId from localStorage:", error);
+      return undefined;
+    }
+  }, []);
+
   const debouncedSearch = useDebounce(search, 500, { leading: true });
+
   const { data, isPending, isFetching } = useVaccinationApps({
     pageNumber: page,
     pageSize: 10,
     keyWord: debouncedSearch,
+    vetId,
   });
+
+  // Check if we should show detail page
+  const appointmentId = searchParams.get("appointmentId");
+  const isDetailMode = !!appointmentId;
+
+  // If in detail mode, render VaccinationDetailPage
+  if (isDetailMode) {
+    return <VaccinationDetailPage />;
+  }
 
   const vaccinationApps = data?.data.pageData ?? [];
   const totalPages = data?.data.pageInfo.totalPage ?? 1;
@@ -41,12 +71,12 @@ export default function VaccinationAppListPage() {
   });
 
   return (
-    <>
+    <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-primary font-inter-600 flex items-center gap-2 text-xl">
           <Syringe /> Tiêm chủng tại Phòng khám
         </h1>
-        <PageBreadcrumb items={["Trang chủ", "Danh sách lịch hẹn"]} />
+        <PageBreadcrumb items={["Danh sách lịch hẹn"]} />
       </div>
 
       <div className="bg-linen flex flex-wrap items-end gap-4 p-4 shadow-md">
@@ -73,6 +103,6 @@ export default function VaccinationAppListPage() {
         totalPages={totalPages}
         onPageChange={(newPage) => setPage(newPage)}
       />
-    </>
+    </div>
   );
 }

@@ -44,6 +44,8 @@ import {
   Home,
   MapPin,
   CalendarCheck,
+  Bell,
+  ShoppingCart,
 } from "lucide-react";
 
 export const icons = {
@@ -90,6 +92,8 @@ export const icons = {
   Home,
   MapPin,
   CalendarCheck,
+  Bell,
+  ShoppingCart,
 };
 
 export type IconName = keyof typeof icons;

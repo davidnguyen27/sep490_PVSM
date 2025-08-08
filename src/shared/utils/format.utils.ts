@@ -2,6 +2,13 @@ export const formatData = {
   formatDate: (date: string) => new Date(date).toLocaleDateString("vi-VN"),
   formatDateTime: (date: string) => new Date(date).toLocaleString("vi-VN"),
 
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(amount);
+  },
+
   formatServiceType(type: number): string {
     switch (type) {
       case 1:

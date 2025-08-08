@@ -108,7 +108,7 @@ export function AppointmentTable({
                     )}
                     onClick={() =>
                       navigate(
-                        `${basePath}/detail?appointmentId=${item.appointment.appointmentId}`,
+                        `${basePath}?appointmentId=${item.appointment.appointmentId}`,
                       )
                     }
                   >

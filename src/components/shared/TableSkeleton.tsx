@@ -12,10 +12,10 @@ export default function TableSkeleton({ columnCount, rowCount = 10 }: Props) {
   return (
     <TableBody>
       {Array.from({ length: rowCount }).map((_, rowIdx) => (
-        <TableRow key={rowIdx}>
+        <TableRow key={rowIdx} className="hover:bg-accent/10">
           {columns.map((__, colIdx) => (
-            <TableCell key={colIdx}>
-              <Skeleton className="h-4 w-full rounded-md" />
+            <TableCell key={colIdx} className="px-4 py-3">
+              <Skeleton className="h-4 w-full rounded-md bg-gray-200" />
             </TableCell>
           ))}
         </TableRow>

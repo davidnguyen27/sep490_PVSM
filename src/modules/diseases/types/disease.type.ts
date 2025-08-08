@@ -1,5 +1,5 @@
 export interface Disease {
-  diseaseId: number;
+  diseaseId: number | null;
   name: string;
   description: string;
   species: string;

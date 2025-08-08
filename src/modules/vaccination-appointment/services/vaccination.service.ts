@@ -8,6 +8,7 @@ interface Params {
   pageNumber: number;
   pageSize: number;
   keyWord?: string;
+  vetId?: number;
 }
 
 export const vaccinationService = {

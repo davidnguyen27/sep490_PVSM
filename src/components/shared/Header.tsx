@@ -1,57 +1,237 @@
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/modules/auth";
 import { icons } from "@/shared/constants/icons.constants";
+import { images } from "@/shared/constants/images.constants";
+import { useSidebar } from "@/shared/hooks/useSidebar";
+import { Menu, Plus, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+
+// Types for better type safety
+interface User {
+  name: string;
+  email: string;
+  initials: string;
+  role: string;
+}
+
+// Constants for better maintainability
+const HEADER_STYLES = {
+  container: "w-full bg-[#E0F7F5]",
+  menuButton:
+    "bg-primary flex size-16 items-center justify-center text-white transition-colors duration-200",
+  createButton:
+    "bg-primary hover:bg-secondary items-center space-x-2 px-3 py-2.5 text-sm font-inter-500 text-white transition-colors duration-200 md:flex rounded-sm",
+  iconButton:
+    "rounded-lg p-2 text-gray-600 transition-colors duration-200 hover:bg-gray-100 hover:text-dark",
+  notificationBadge:
+    "absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white",
+  searchInput:
+    "w-full border-gray-300 bg-gray-50 py-3 pr-4 pl-12 text-sm font-nunito-400 focus:border-transparent focus:ring-2 focus:ring-blue-500",
+  brandTitle: "hidden text-2xl font-inter-700 text-[#2D3748] sm:block",
+  userProfile: "relative flex items-center space-x-3",
+  userButton:
+    "flex items-center space-x-2 cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors duration-200",
+  userAvatar:
+    "flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-primary to-teal-600",
+  userName: "hidden text-sm font-inter-600 text-dark md:block",
+  dropdown:
+    "absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 shadow-lg z-50",
+  dropdownItem:
+    "flex items-center space-x-3 px-4 py-3 text-sm font-nunito-400 text-gray-700 hover:bg-gray-50 transition-colors duration-200 w-full text-left",
+  dropdownSeparator: "border-t border-gray-200",
+} as const;
 
 export default function Header() {
-  const { logout } = useAuth();
+  const { toggleCollapse } = useSidebar();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = () => {
-    logout();
+  // Mock user data - replace with actual user state
+  const currentUser: User = {
+    name: "Trần Anh",
+    email: "trananh@vaxpet.vn",
+    initials: "TA",
+    role: "Admin",
   };
 
+  // Optimized event handlers with useCallback to prevent unnecessary re-renders
+  const handleDropdownToggle = useCallback(() => {
+    setIsDropdownOpen((prev) => !prev);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    console.log("Logging out...");
+    setIsDropdownOpen(false);
+    // Add actual logout logic here
+  }, []);
+
+  const handleViewProfile = useCallback(() => {
+    console.log("Viewing profile...");
+    setIsDropdownOpen(false);
+    // Add actual view profile logic here
+  }, []);
+
+  const handleSettings = useCallback(() => {
+    console.log("Opening settings...");
+    setIsDropdownOpen(false);
+    // Add actual settings logic here
+  }, []);
+
+  const handleCreateAppointment = useCallback(() => {
+    console.log("Creating appointment...");
+    // Add actual create appointment logic here
+  }, []);
+
+  // Optimized outside click handler - only add listener when dropdown is open
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isDropdownOpen]);
+
   return (
-    <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-[#E0F7F5] px-4 sm:px-6">
-      <div className="text-primary font-inter-700 truncate text-base sm:text-lg lg:text-xl">
-        Hệ thống VaxPet
-      </div>
+    <header className={HEADER_STYLES.container}>
+      <div className="flex items-center justify-between gap-4">
+        {/* Left section */}
+        <div className="flex items-center">
+          <button onClick={toggleCollapse} className={HEADER_STYLES.menuButton}>
+            <Menu className="size-5" />
+          </button>
 
-      <div className="relative mx-4 hidden w-full max-w-xs md:block lg:max-w-sm">
-        <icons.Search
-          size={20}
-          className="text-dark absolute top-1/2 left-3 -translate-y-1/2"
-        />
-        <Input
-          placeholder="Tìm kiếm..."
-          className="text-dark bg-linen border-none pr-3 pl-9 shadow-sm"
-        />
-      </div>
-
-      <div className="text-dark flex items-center gap-3 sm:gap-5">
-        <icons.Settings
-          size={22}
-          strokeWidth={1.5}
-          className="cursor-pointer"
-        />
-
-        <div className="hidden items-center gap-1 sm:flex">
-          <icons.CircleUserRound
-            size={24}
-            strokeWidth={1.5}
-            className="cursor-pointer"
-          />
-          <span className="text-sm md:text-base">Xin chào</span>
-          <span className="text-primary font-nunito-700 cursor-pointer text-sm underline md:text-base">
-            Thế Anh
-          </span>
+          <div className="flex items-center px-4">
+            <img
+              src={images.VaxPetLogo}
+              alt="VaxPet Logo"
+              className="h-16 object-contain"
+            />
+            <h1 className={HEADER_STYLES.brandTitle}>VaxPet</h1>
+          </div>
         </div>
 
-        {/* Logout */}
-        <icons.LogOut
-          size={20}
-          strokeWidth={1.5}
-          className="cursor-pointer"
-          onClick={handleLogout}
-        />
+        {/* Center section - Search */}
+        <div className="mx-4 max-w-md flex-1 py-3">
+          <div className="relative">
+            <icons.Search
+              size={20}
+              className="absolute top-1/2 left-4 -translate-y-1/2 transform text-gray-400"
+            />
+            <Input
+              placeholder="Tìm kiếm lịch hẹn"
+              className={HEADER_STYLES.searchInput}
+            />
+          </div>
+        </div>
+
+        {/* Right section - Actions */}
+        <div className="flex items-center space-x-3 px-4">
+          {/* Create Appointment Button */}
+          <button
+            onClick={handleCreateAppointment}
+            className={HEADER_STYLES.createButton}
+          >
+            <Plus size={18} />
+            <span>Tạo lịch hẹn</span>
+          </button>
+
+          {/* Settings Button */}
+          <button className={HEADER_STYLES.iconButton}>
+            <icons.Settings size={20} />
+          </button>
+
+          {/* Notification Button */}
+          <button className={`${HEADER_STYLES.iconButton} relative`}>
+            <icons.Bell size={20} />
+            <span className={HEADER_STYLES.notificationBadge}>3</span>
+          </button>
+
+          {/* User Profile Dropdown */}
+          <div className={HEADER_STYLES.userProfile} ref={dropdownRef}>
+            <div
+              className={HEADER_STYLES.userButton}
+              onClick={handleDropdownToggle}
+            >
+              <div className={HEADER_STYLES.userAvatar}>
+                <span className="text-sm font-medium text-white">
+                  {currentUser.initials}
+                </span>
+              </div>
+
+              <div className="hidden md:flex md:flex-col">
+                <span className={HEADER_STYLES.userName}>
+                  {currentUser.name}
+                </span>
+                <span className="font-nunito-400 text-xs text-gray-500">
+                  {currentUser.role}
+                </span>
+              </div>
+
+              <ChevronDown
+                size={16}
+                className={`text-gray-500 transition-transform duration-200 ${
+                  isDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className={HEADER_STYLES.dropdown}>
+                {/* User Info Section */}
+                <div className="border-b border-gray-200 p-4">
+                  <div className="font-inter-600 text-sm text-gray-900">
+                    {currentUser.name}
+                  </div>
+                  <div className="font-nunito-400 text-xs text-gray-500">
+                    {currentUser.email}
+                  </div>
+                  <div className="font-nunito-400 text-primary text-xs">
+                    {currentUser.role}
+                  </div>
+                </div>
+
+                {/* Actions Section */}
+                <div className="py-2">
+                  <button
+                    onClick={handleViewProfile}
+                    className={HEADER_STYLES.dropdownItem}
+                  >
+                    <icons.User size={16} />
+                    <span>Xem hồ sơ</span>
+                  </button>
+
+                  <button
+                    onClick={handleSettings}
+                    className={HEADER_STYLES.dropdownItem}
+                  >
+                    <icons.Settings size={16} />
+                    <span>Cài đặt</span>
+                  </button>
+                </div>
+
+                {/* Logout Section */}
+                <div className={HEADER_STYLES.dropdownSeparator}></div>
+                <div className="py-2">
+                  <button
+                    onClick={handleLogout}
+                    className={`${HEADER_STYLES.dropdownItem} text-red-600 hover:bg-red-50`}
+                  >
+                    <icons.LogOut size={16} />
+                    <span>Đăng xuất</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </header>
   );

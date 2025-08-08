@@ -5,6 +5,8 @@ interface Params {
   pageNumber: number;
   pageSize: number;
   keyWord?: string;
+  gender?: string;
+  species?: string;
 }
 
 export function usePets(params: Params) {

@@ -3,11 +3,27 @@ import { RoleGuard } from "@/routes/guards.route";
 import { UserRole } from "@/shared/constants/roles.constants";
 import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
+import AdminLayout from "@/shared/layouts/AdminLayout";
+import VetLayout from "@/shared/layouts/VetLayout";
 
 const PetManagementPage = lazy(() => import("../pages/PetManagementPage"));
-const PetUpdatePage = lazy(() => import("../pages/PetUpdatePage"));
+// const PetUpdatePage = lazy(() => import("../pages/PetUpdatePage"));
 
 export const petRoutes: RouteObject[] = [
+  {
+    path: "/admin",
+    element: (
+      <RoleGuard allowedRole={[UserRole.ADMIN]}>
+        <AdminLayout />
+      </RoleGuard>
+    ),
+    children: [
+      {
+        path: "pet-profiles",
+        element: <PetManagementPage />,
+      },
+    ],
+  },
   {
     path: "/staff",
     element: (
@@ -18,16 +34,21 @@ export const petRoutes: RouteObject[] = [
     children: [
       {
         path: "pet-profiles",
-        children: [
-          {
-            index: true,
-            element: <PetManagementPage />,
-          },
-          {
-            path: "update",
-            element: <PetUpdatePage />,
-          },
-        ],
+        element: <PetManagementPage />,
+      },
+    ],
+  },
+  {
+    path: "/vet",
+    element: (
+      <RoleGuard allowedRole={[UserRole.VET]}>
+        <VetLayout />
+      </RoleGuard>
+    ),
+    children: [
+      {
+        path: "pet-profiles",
+        element: <PetManagementPage />,
       },
     ],
   },

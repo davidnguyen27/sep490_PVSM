@@ -2,9 +2,20 @@
 export { VetScheduleCalendar } from "./VetScheduleCalendar";
 export { VetScheduleWeekView } from "./VetScheduleWeekView";
 export { VetScheduleMonthView } from "./VetScheduleMonthView";
+export { WeeklyCalendar } from "./WeeklyCalendar";
+export { DayCard } from "./DayCard";
+export { TimeSlotCard } from "./TimeSlotCard";
 
 // Form & Interactive Components
 export { VetScheduleForm } from "./VetScheduleForm";
+export { SimpleVetScheduleForm } from "./SimpleVetScheduleForm";
+
+// UI Components
+export { WeeklyStatsCards } from "./WeeklyStatsCards";
+export { ScheduleHeader } from "./ScheduleHeader";
+export { StatusLegend } from "./StatusLegend";
+export { ScheduleLoadingSkeleton } from "./ScheduleLoadingSkeleton";
+export { ScheduleErrorState } from "./ScheduleErrorState";
 
 // Header & Navigation
 export { VetScheduleHeader } from "./VetScheduleHeader";
@@ -19,6 +30,7 @@ export * from "./VetScheduleCalendar";
 export * from "./VetScheduleWeekView";
 export * from "./VetScheduleMonthView";
 export * from "./VetScheduleForm";
+export * from "./SimpleVetScheduleForm";
 export * from "./VetScheduleHeader";
 export * from "./VetScheduleStats";
 export * from "./VetScheduleStatusLegend";
