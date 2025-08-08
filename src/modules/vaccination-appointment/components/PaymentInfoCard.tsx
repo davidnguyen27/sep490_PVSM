@@ -265,7 +265,7 @@ export function PaymentInfoCard({
           </p>
           {actualDiscountPercent > 0 && (
             <p>
-              Hạng thành viên: {actualMemberRank} (giảm {actualDiscountPercent}%):{" "}
+              Hạng thành viên: {displayMemberRank} (giảm {actualDiscountPercent}%):{" "}
               <span className="text-green-600">
                 {memberDiscountAmount.toLocaleString()} vnđ
               </span>
