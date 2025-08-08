@@ -1,8 +1,17 @@
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { icons } from "@/shared/constants/icons.constants";
 import { images } from "@/shared/constants/images.constants";
 import { useSidebar } from "@/shared/hooks/useSidebar";
-import { Menu, Plus, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Menu, Plus, ChevronDown, Scan, User } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 
 // Types for better type safety
@@ -25,7 +34,9 @@ const HEADER_STYLES = {
   notificationBadge:
     "absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white",
   searchInput:
-    "w-full border-gray-300 bg-gray-50 py-3 pr-4 pl-12 text-sm font-nunito-400 focus:border-transparent focus:ring-2 focus:ring-blue-500",
+    "w-full border-gray-300 bg-gray-50 py-3 pr-12 pl-12 text-sm font-nunito-400 focus:border-transparent focus:ring-2 focus:ring-blue-500",
+  scanButton:
+    "bg-green-600 hover:bg-green-700 items-center space-x-2 px-3 py-2.5 text-sm font-inter-500 text-white transition-colors duration-200 md:flex rounded-sm",
   brandTitle: "hidden text-2xl font-inter-700 text-[#2D3748] sm:block",
   userProfile: "relative flex items-center space-x-3",
   userButton:
@@ -42,7 +53,10 @@ const HEADER_STYLES = {
 
 export default function Header() {
   const { toggleCollapse } = useSidebar();
+  const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [scannedCode, setScannedCode] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Mock user data - replace with actual user state
@@ -79,6 +93,27 @@ export default function Header() {
   const handleCreateAppointment = useCallback(() => {
     console.log("Creating appointment...");
     // Add actual create appointment logic here
+  }, []);
+
+  const handleScanMicrochip = useCallback(() => {
+    console.log("Opening microchip scanner...");
+    setIsScanModalOpen(true);
+    setScannedCode("");
+  }, []);
+
+  const handleScanSubmit = useCallback(() => {
+    if (scannedCode.trim()) {
+      console.log("Navigating to scan page with microchip:", scannedCode);
+      // Close modal and navigate to scan page immediately
+      setIsScanModalOpen(false);
+      navigate(`/admin/scan-microchip/${scannedCode.trim()}`);
+      setScannedCode("");
+    }
+  }, [scannedCode, navigate]);
+
+  const handleScanModalClose = useCallback(() => {
+    setIsScanModalOpen(false);
+    setScannedCode("");
   }, []);
 
   // Optimized outside click handler - only add listener when dropdown is open
@@ -133,6 +168,16 @@ export default function Header() {
 
         {/* Right section - Actions */}
         <div className="flex items-center space-x-3 px-4">
+          {/* Scan Microchip Button */}
+          <button
+            onClick={handleScanMicrochip}
+            className={HEADER_STYLES.scanButton}
+            title="Quét microchip tìm lịch hẹn"
+          >
+            <Scan size={18} />
+            <span>Quét chip</span>
+          </button>
+
           {/* Create Appointment Button */}
           <button
             onClick={handleCreateAppointment}
@@ -233,6 +278,53 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      {/* Microchip Scanner Modal */}
+      <Dialog open={isScanModalOpen} onOpenChange={setIsScanModalOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Scan className="h-5 w-5 text-green-600" />
+              Tra cứu microchip
+            </DialogTitle>
+            <DialogDescription>
+              Nhập mã microchip để tìm kiếm thông tin thú cưng
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Manual Input Mode */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Mã microchip</label>
+                <div className="flex gap-2">
+                  <Input
+                    value={scannedCode}
+                    onChange={(e) => setScannedCode(e.target.value)}
+                    placeholder="Nhập mã microchip..."
+                    className="flex-1"
+                    autoFocus
+                  />
+                  <Button
+                    onClick={handleScanSubmit}
+                    disabled={!scannedCode.trim()}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Tìm kiếm
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex justify-end space-x-2 border-t pt-4">
+              <Button variant="outline" onClick={handleScanModalClose}>
+                Đóng
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

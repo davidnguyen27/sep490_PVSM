@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { vaccineExportService } from "../services/vaccine-export.service";
-import type { VaccineExportPayload } from "../types/payload.type";
+import type { CreateVaccineExportFormData } from "../schemas/vaccine-export.schema";
 
 interface UseVaccineExportAddOptions {
   onSuccess?: () => void;
@@ -12,8 +12,21 @@ export function useVaccineExportAdd(options?: UseVaccineExportAddOptions) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: VaccineExportPayload) =>
-      vaccineExportService.createVaccineExport(data),
+    mutationFn: (data: CreateVaccineExportFormData) => {
+      // Transform the form data to match API requirements
+      const apiPayload = {
+        exportDate: data.exportDate,
+        details: data.details.map((detail) => ({
+          ...detail,
+          coldChainLog: {
+            ...detail.coldChainLog,
+            logTime: detail.coldChainLog.logTime || new Date().toISOString(),
+          },
+        })),
+      };
+
+      return vaccineExportService.createVaccineExportWithDetails(apiPayload);
+    },
     onSuccess: () => {
       // Invalidate and refetch vaccine exports list
       queryClient.invalidateQueries({

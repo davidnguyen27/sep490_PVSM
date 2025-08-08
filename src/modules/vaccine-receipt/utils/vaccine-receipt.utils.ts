@@ -1,12 +1,8 @@
 import type {
   VaccineReceipt,
-  VaccineReceiptCreateRequest,
   VaccineReceiptUpdateRequest,
 } from "../types/vaccine-receipt.type";
-import type {
-  VaccineReceiptCreateFormData,
-  VaccineReceiptUpdateFormData,
-} from "../schemas/vaccine-receipt.schema";
+import type { VaccineReceiptUpdateFormData } from "../schemas/vaccine-receipt.schema";
 
 /**
  * Format receipt code for display
@@ -35,17 +31,6 @@ export const formatCreatedDate = (receipt: VaccineReceipt): string => {
     month: "2-digit",
     year: "numeric",
   });
-};
-
-/**
- * Transform form data to API request payload
- */
-export const transformVaccineReceiptFormData = (
-  formData: VaccineReceiptCreateFormData,
-): VaccineReceiptCreateRequest => {
-  return {
-    receiptDate: formData.receiptDate.toISOString(),
-  };
 };
 
 /**

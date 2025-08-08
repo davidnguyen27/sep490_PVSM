@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Package, Edit, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, Package, Edit, Trash2 } from "lucide-react";
 
 import { PageBreadcrumb } from "@/components/shared";
 import { Button } from "@/components/ui/button";
@@ -20,10 +20,7 @@ import { formatData } from "@/shared/utils/format.utils";
 
 import { useVaccineExportById, useVaccineExportDel } from "../hooks";
 import { useExportDetailByExport } from "@/modules/vaccine-export-detail/hooks";
-import {
-  VaccineExportDetailTable,
-  AddVaccineExportDetailModal,
-} from "@/modules/vaccine-export-detail/components";
+import { VaccineExportDetailTable } from "@/modules/vaccine-export-detail/components";
 
 export default function VaccineExportDetailPage() {
   const navigate = useNavigate();
@@ -204,15 +201,6 @@ export default function VaccineExportDetailPage() {
               <Package size={20} />
               Danh sách chi tiết xuất kho
             </CardTitle>
-            <AddVaccineExportDetailModal
-              vaccineExportId={Number(exportId)}
-              trigger={
-                <Button>
-                  <Plus size={16} />
-                  Thêm lô vaccine
-                </Button>
-              }
-            />
           </div>
         </CardHeader>
         <CardContent>

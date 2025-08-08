@@ -9,10 +9,6 @@ export interface VaccineReceipt {
   isDeleted: boolean;
 }
 
-export interface VaccineReceiptCreateRequest {
-  receiptDate: string;
-}
-
 export interface VaccineReceiptUpdateRequest {
   receiptDate: string;
 }

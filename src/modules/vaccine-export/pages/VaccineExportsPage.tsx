@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useVaccineExports, useVaccineExportDel } from "../hooks";
-import { VaccineExportTable } from "../components";
+import { VaccineExportTable, VaccineExportModalCreate } from "../components";
 import VaccineExportDetailPage from "./VaccineExportDetailPage";
 
 export default function VaccineExportsPage() {
@@ -27,6 +27,7 @@ export default function VaccineExportsPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedExportId, setSelectedExportId] = useState<number | null>(null);
   const pageSize = 10;
 
@@ -78,7 +79,7 @@ export default function VaccineExportsPage() {
   };
 
   const handleCreateNew = () => {
-    navigate("/admin/vaccine-exports/create");
+    setShowCreateModal(true);
   };
 
   const handleDelete = (exportId: number) => {
@@ -160,6 +161,11 @@ export default function VaccineExportsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <VaccineExportModalCreate
+        open={showCreateModal}
+        onOpenChange={setShowCreateModal}
+      />
     </div>
   );
 }

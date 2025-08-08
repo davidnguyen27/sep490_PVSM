@@ -5,10 +5,8 @@ import { toast } from "sonner";
 import { vaccineReceiptService } from "../services/vaccine-receipt.service";
 
 // types
-import type {
-  VaccineReceiptCreateRequest,
-  VaccineReceipt,
-} from "../types/vaccine-receipt.type";
+import type { VaccineReceipt } from "../types/vaccine-receipt.type";
+import type { VaccineReceiptCreateFormData } from "../schemas/vaccine-receipt.schema";
 
 // constants
 import { VACCINE_RECEIPT_QUERY_KEYS } from "../constants/vaccine-receipt.constants";
@@ -17,8 +15,21 @@ export function useVaccineReceiptAdd() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: VaccineReceiptCreateRequest) =>
-      vaccineReceiptService.createVaccineReceipt(payload),
+    mutationFn: (payload: VaccineReceiptCreateFormData) => {
+      // Transform the form data to match API requirements
+      const apiPayload = {
+        receiptDate: payload.receiptDate.toISOString(),
+        details: payload.details.map((detail) => ({
+          ...detail,
+          coldChainLog: {
+            ...detail.coldChainLog,
+            logTime: detail.coldChainLog.logTime || new Date().toISOString(),
+          },
+        })),
+      };
+
+      return vaccineReceiptService.createVaccineReceiptWithDetails(apiPayload);
+    },
     onSuccess: (data: VaccineReceipt) => {
       // Invalidate and refetch vaccine receipts list
       queryClient.invalidateQueries({

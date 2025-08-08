@@ -16,7 +16,6 @@ import {
   AlertCircle,
   ArrowLeft,
   Edit,
-  Plus,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -27,7 +26,6 @@ import { useVaccineReceiptDetailByReceipt } from "@/modules/vaccine-receipt-deta
 // components
 import { VaccineReceiptDetailTable } from "@/modules/vaccine-receipt-detail/components/VaccineReceiptDetailTable";
 import { VaccineReceiptEditModal } from "../components/VaccineReceiptEditModal";
-import { VaccineReceiptDetailModalCreate } from "@/modules/vaccine-receipt-detail/components/VaccineReceiptDetailModalCreate";
 import { VaccineReceiptDetailModalUpdate } from "@/modules/vaccine-receipt-detail/components/VaccineReceiptDetailModalUpdate";
 
 // types
@@ -48,7 +46,6 @@ export default function VaccineReceiptDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showAddDetailModal, setShowAddDetailModal] = useState(false);
   const [showUpdateDetailModal, setShowUpdateDetailModal] = useState(false);
   const [selectedDetailItem, setSelectedDetailItem] =
     useState<VaccineReceiptDetail | null>(null);
@@ -323,14 +320,6 @@ export default function VaccineReceiptDetailPage() {
             <h3 className="font-nunito-600 text-lg text-gray-900">
               Danh sách lô vắc-xin trong phiếu
             </h3>
-            <Button
-              onClick={() => setShowAddDetailModal(true)}
-              className="bg-primary font-nunito-600 text-white"
-              size="sm"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Thêm lô vaccine
-            </Button>
           </div>
 
           <div className="mt-6">
@@ -351,16 +340,6 @@ export default function VaccineReceiptDetailPage() {
           </div>
         </div>
       </div>
-
-      {/* Add Detail Modal */}
-      {vaccineReceipt && vaccineReceiptId && (
-        <VaccineReceiptDetailModalCreate
-          open={showAddDetailModal}
-          onOpenChange={setShowAddDetailModal}
-          vaccineReceiptId={vaccineReceiptId}
-          receiptCode={formatReceiptCode(vaccineReceipt)}
-        />
-      )}
 
       {/* Edit Modal */}
       <VaccineReceiptEditModal

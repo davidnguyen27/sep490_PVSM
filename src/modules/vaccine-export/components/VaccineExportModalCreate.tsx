@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -29,56 +28,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon, Plus, Trash2 } from "lucide-react";
-
-// utils
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { Plus, Trash2 } from "lucide-react";
 
 // hooks
-import { useVaccineReceiptAdd } from "../hooks/useVaccineReceiptAdd";
+import { useVaccineExportAdd } from "../hooks/useVaccineExportAdd";
 import { useAllVaccineBatches } from "@/modules/vaccine-batch/hooks";
 
 // schemas
-import { vaccineReceiptCreateSchema } from "../schemas/vaccine-receipt.schema";
+import { createVaccineExportSchema } from "../schemas/vaccine-export.schema";
 
 // types
-import type { VaccineReceiptCreateFormData } from "../schemas/vaccine-receipt.schema";
+import type { CreateVaccineExportFormData } from "../schemas/vaccine-export.schema";
 
-interface VaccineReceiptModalCreateProps {
+interface VaccineExportModalCreateProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function VaccineReceiptModalCreate({
+export function VaccineExportModalCreate({
   open,
   onOpenChange,
-}: VaccineReceiptModalCreateProps) {
-  const [calendarOpen, setCalendarOpen] = useState(false);
-
-  const form = useForm<VaccineReceiptCreateFormData>({
-    resolver: zodResolver(vaccineReceiptCreateSchema),
+}: VaccineExportModalCreateProps) {
+  const form = useForm<CreateVaccineExportFormData>({
+    resolver: zodResolver(createVaccineExportSchema),
     defaultValues: {
-      receiptDate: new Date(),
+      exportDate: new Date().toISOString().split("T")[0],
       details: [
         {
           vaccineBatchId: 0,
-          suppiler: "",
           quantity: 1,
-          vaccineStatus: "active",
+          purpose: "hủy" as const,
           notes: "",
           coldChainLog: {
             logTime: new Date().toISOString(),
             temperature: 2,
             humidity: 60,
-            event: "storage",
+            event: "xuất kho",
             notes: "",
           },
         },
@@ -91,12 +76,12 @@ export function VaccineReceiptModalCreate({
     name: "details",
   });
 
-  const { mutate: createVaccineReceipt, isPending } = useVaccineReceiptAdd();
+  const { mutate: createVaccineExport, isPending } = useVaccineExportAdd();
   const { data: vaccineBatchesResponse, isLoading: isLoadingBatches } =
     useAllVaccineBatches();
   const vaccineBatches = vaccineBatchesResponse?.data?.pageData || [];
 
-  const handleSubmit = (data: VaccineReceiptCreateFormData) => {
+  const handleSubmit = (data: CreateVaccineExportFormData) => {
     console.log("Form data:", data);
 
     // Validate that all details have valid vaccine batch
@@ -112,7 +97,7 @@ export function VaccineReceiptModalCreate({
       return;
     }
 
-    createVaccineReceipt(data, {
+    createVaccineExport(data, {
       onSuccess: () => {
         form.reset();
         onOpenChange(false);
@@ -128,15 +113,14 @@ export function VaccineReceiptModalCreate({
   const addDetail = () => {
     append({
       vaccineBatchId: 0,
-      suppiler: "",
       quantity: 1,
-      vaccineStatus: "active",
+      purpose: "hủy" as const,
       notes: "",
       coldChainLog: {
         logTime: new Date().toISOString(),
         temperature: 2,
         humidity: 60,
-        event: "storage",
+        event: "xuất kho",
         notes: "",
       },
     });
@@ -153,12 +137,12 @@ export function VaccineReceiptModalCreate({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle className="text-primary">
-            Tạo phiếu nhập vaccine mới
+            Tạo phiếu xuất kho mới
           </DialogTitle>
           <DialogDescription>
-            Nhập thông tin để tạo phiếu nhập vaccine mới cùng với chi tiết
-            vaccine vào hệ thống. Bạn có thể thêm nhiều lô vaccine khác nhau
-            trong cùng một phiếu nhập.
+            Nhập thông tin để tạo phiếu xuất kho mới cùng với chi tiết vaccine
+            vào hệ thống. Bạn có thể thêm nhiều lô vaccine khác nhau trong cùng
+            một phiếu xuất.
           </DialogDescription>
         </DialogHeader>
 
@@ -167,54 +151,27 @@ export function VaccineReceiptModalCreate({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
           >
-            {/* Receipt Date Section */}
+            {/* Export Date Section */}
             <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
               <h4 className="mb-3 font-semibold text-gray-900">
-                Thông tin phiếu nhập
+                Thông tin phiếu xuất
               </h4>
               <FormField
                 control={form.control}
-                name="receiptDate"
+                name="exportDate"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel className="text-sm font-medium">
-                      Ngày nhập <span className="text-red-500">*</span>
+                  <FormItem>
+                    <FormLabel>
+                      Ngày xuất kho <span className="text-red-500">*</span>
                     </FormLabel>
-                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "dd/MM/yyyy", { locale: vi })
-                            ) : (
-                              <span>Chọn ngày nhập</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(date) => {
-                            field.onChange(date);
-                            setCalendarOpen(false);
-                          }}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                          locale={vi}
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        disabled={isPending}
+                        className="w-full"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -326,30 +283,11 @@ export function VaccineReceiptModalCreate({
 
                     <FormField
                       control={form.control}
-                      name={`details.${index}.suppiler`}
+                      name={`details.${index}.purpose`}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Nhà cung cấp <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Nhập tên nhà cung cấp"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`details.${index}.vaccineStatus`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Trạng thái <span className="text-red-500">*</span>
+                            Mục đích <span className="text-red-500">*</span>
                           </FormLabel>
                           <Select
                             onValueChange={field.onChange}
@@ -357,15 +295,15 @@ export function VaccineReceiptModalCreate({
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Chọn trạng thái" />
+                                <SelectValue placeholder="Chọn mục đích" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="active">Hoạt động</SelectItem>
-                              <SelectItem value="inactive">
-                                Không hoạt động
+                              <SelectItem value="hủy">Hủy</SelectItem>
+                              <SelectItem value="bán">Bán</SelectItem>
+                              <SelectItem value="chuyển kho">
+                                Chuyển kho
                               </SelectItem>
-                              <SelectItem value="expired">Hết hạn</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -456,33 +394,16 @@ export function VaccineReceiptModalCreate({
                       <FormField
                         control={form.control}
                         name={`details.${index}.coldChainLog.event`}
-                        render={({ field }) => (
+                        render={() => (
                           <FormItem>
-                            <FormLabel>
-                              Sự kiện <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Chọn sự kiện" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="storage">Lưu trữ</SelectItem>
-                                <SelectItem value="transport">
-                                  Vận chuyển
-                                </SelectItem>
-                                <SelectItem value="delivery">
-                                  Giao hàng
-                                </SelectItem>
-                                <SelectItem value="inspection">
-                                  Kiểm tra
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <FormLabel>Sự kiện</FormLabel>
+                            <FormControl>
+                              <Input
+                                value="Xuất kho"
+                                disabled
+                                className="bg-gray-100"
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -522,7 +443,7 @@ export function VaccineReceiptModalCreate({
                 Hủy
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Đang tạo..." : "Tạo phiếu nhập"}
+                {isPending ? "Đang tạo..." : "Tạo phiếu xuất"}
               </Button>
             </DialogFooter>
           </form>

@@ -10,6 +10,7 @@ import { diseaseRoutes } from "@/modules/diseases/routes/disease.route";
 import { petRoutes } from "@/modules/pets/routes/pet.route";
 import { vetRoutes } from "@/modules/vets/routes/vet.route";
 import { microchipRoutes } from "@/modules/microchips/routes/microchip.route";
+import { microchipItemRoutes } from "@/modules/microchip-item";
 import { vetScheduleRoutes } from "@/modules/vet-schedules/routes/vet-schedule.route";
 import { vaccineRoutes } from "@/modules/vaccines/routes/vaccine.route";
 import { vaccineBatchRoutes } from "@/modules/vaccine-batch/routes/vaccine-batch.route";
@@ -37,6 +38,7 @@ export function AppRoutes() {
     ...petRoutes,
     ...vetRoutes,
     ...microchipRoutes,
+    ...microchipItemRoutes,
     ...vetScheduleRoutes,
     ...vaccineRoutes,
     ...vaccineBatchRoutes,
