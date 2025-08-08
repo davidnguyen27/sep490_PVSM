@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,10 @@ import {
   type PaymentPayload,
 } from "@/modules/payments";
 import type { VaccinationDetail } from "../types/detail.type";
+import type { CustomerVoucher } from "@/modules/customer-voucher/types/customer-voucher.type";
+import type { Membership } from "@/modules/membership/types/membership.type";
+import { membershipService } from "@/modules/membership/service/membership.service";
+import { VoucherSelection } from "./VoucherSelection";
 
 interface Props {
   ownerName: string;
@@ -57,9 +61,60 @@ export function PaymentInfoCard({
   const { setQrCode } = usePaymentStore.getState();
   const { mutate, isPending: isLoading } = useCreatePayment();
 
+  // State for voucher management
+  const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher | null>(null);
+
+  // State for membership management
+  const [membershipData, setMembershipData] = useState<Membership | null>(null);
+  const [loadingMembership, setLoadingMembership] = useState(false);
+
+  // Fetch membership data when customerId changes
+  useEffect(() => {
+    const fetchMembership = async () => {
+      if (!customerId) return;
+
+      setLoadingMembership(true);
+      try {
+        const membership = await membershipService.getMembershipByCustomerId(customerId);
+        setMembershipData(membership);
+      } catch (error) {
+        console.error("Error fetching membership:", error);
+        setMembershipData(null);
+      } finally {
+        setLoadingMembership(false);
+      }
+    };
+
+    fetchMembership();
+  }, [customerId]);
+
+  // Use membership data if available, otherwise fallback to props
+  const actualMemberRank = membershipData?.rank || memberRank;
+  const actualDiscountPercent = membershipData
+    ? membershipData.rank === "gold"
+      ? 20
+      : membershipData.rank === "silver"
+        ? 10
+        : membershipData.rank === "bronze"
+          ? 0
+          : 0
+    : discountPercent;
+
+  const displayMemberRank = membershipData
+    ? membershipData.rank === "gold"
+      ? "Vàng"
+      : membershipData.rank === "silver"
+        ? "Bạc"
+        : membershipData.rank === "bronze"
+          ? "Đồng"
+          : actualMemberRank
+    : actualMemberRank;
+  const benefits = membershipData?.benefits;
   const totalPrice = unitPrice * quantity;
-  const discountAmount = (totalPrice * discountPercent) / 100;
-  const finalAmount = totalPrice - discountAmount;
+  const memberDiscountAmount = (totalPrice * actualDiscountPercent) / 100;
+  const voucherDiscountAmount = selectedVoucher ? (totalPrice * selectedVoucher.voucher.discountAmount) / 100 : 0;
+  const totalDiscountAmount = memberDiscountAmount + voucherDiscountAmount;
+  const finalAmount = Math.max(0, totalPrice - totalDiscountAmount);
 
   // Lấy paymentId từ cả store và invoiceData, ưu tiên lấy từ invoiceData nếu có
   const storePaymentId = usePaymentStore((state) => state.paymentId);
@@ -70,9 +125,9 @@ export function PaymentInfoCard({
   const savedPaymentMethod = invoiceData?.payment?.paymentMethod;
   const displayPaymentMethod =
     savedPaymentMethod === "Cash" ||
-    savedPaymentMethod === "BankTransfer" ||
-    savedPaymentMethod === "CASH" ||
-    savedPaymentMethod === "BANK_TRANSFER"
+      savedPaymentMethod === "BankTransfer" ||
+      savedPaymentMethod === "CASH" ||
+      savedPaymentMethod === "BANK_TRANSFER"
       ? savedPaymentMethod === "CASH"
         ? "Cash"
         : savedPaymentMethod === "BANK_TRANSFER"
@@ -93,6 +148,7 @@ export function PaymentInfoCard({
       customerId,
       vaccineBatchId,
       paymentMethod: paymentMethod === "Cash" ? 1 : 2,
+      voucherCode: selectedVoucher ? selectedVoucher.voucher.voucherCode : null,
     };
 
     mutate(payload, {
@@ -127,6 +183,7 @@ export function PaymentInfoCard({
     customerId,
     vaccineBatchId,
     paymentMethod,
+    selectedVoucher,
     mutate,
     setPaymentId,
     setQrCode,
@@ -160,7 +217,12 @@ export function PaymentInfoCard({
           <div className="flex items-center gap-2">
             <BadgePercent size={16} />
             <span>
-              Hạng thành viên: {memberRank} (giảm {discountPercent}%)
+              Hạng thành viên: {loadingMembership ? "Đang tải..." : displayMemberRank} ({benefits})
+              {membershipData?.customer?.currentPoints && (
+                <span className="text-gray-500 text-xs ml-2">
+                  - {membershipData.customer.currentPoints} điểm
+                </span>
+              )}
             </span>
           </div>
         </div>
@@ -187,6 +249,13 @@ export function PaymentInfoCard({
           </div>
         </div>
 
+        {/* Voucher Selection */}
+        <VoucherSelection
+          customerId={customerId}
+          onVoucherSelect={setSelectedVoucher}
+          selectedVoucher={selectedVoucher}
+        />
+
         <div className="space-y-1 text-right text-sm">
           <p>
             Tổng tiền hàng:{" "}
@@ -194,10 +263,26 @@ export function PaymentInfoCard({
               {totalPrice.toLocaleString()} vnđ
             </span>
           </p>
+          {actualDiscountPercent > 0 && (
+            <p>
+              Hạng thành viên: {actualMemberRank} (giảm {actualDiscountPercent}%):{" "}
+              <span className="text-green-600">
+                {memberDiscountAmount.toLocaleString()} vnđ
+              </span>
+            </p>
+          )}
+          {selectedVoucher && (
+            <p>
+              Giảm giá voucher ({selectedVoucher.voucher.discountAmount}%):{" "}
+              <span className="text-green-600">
+                {voucherDiscountAmount.toLocaleString()} vnđ
+              </span>
+            </p>
+          )}
           <p>
             Tổng tiền giảm:{" "}
             <span className="text-green-600">
-              {discountAmount.toLocaleString()} vnđ
+              {totalDiscountAmount.toLocaleString()} vnđ
             </span>
           </p>
           <p className="text-base font-semibold">
@@ -216,8 +301,8 @@ export function PaymentInfoCard({
             // Đã thanh toán - chỉ hiển thị phương thức đã chọn
             <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
               {displayPaymentMethod === "Cash" ||
-              invoiceData?.payment?.paymentMethod === "Cash" ||
-              invoiceData?.payment?.paymentMethod === "CASH" ? (
+                invoiceData?.payment?.paymentMethod === "Cash" ||
+                invoiceData?.payment?.paymentMethod === "CASH" ? (
                 <>
                   <Banknote size={18} />
                   <span className="text-sm font-medium">Tiền mặt</span>
@@ -249,11 +334,10 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("Cash")}
                 disabled={disabled || isLoading}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                  paymentMethod === "Cash"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "Cash"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-gray-200 hover:border-gray-300"
+                  } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Banknote size={18} />
                 <span className="text-sm font-medium">Tiền mặt</span>
@@ -262,11 +346,10 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("BankTransfer")}
                 disabled={disabled}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                  paymentMethod === "BankTransfer"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "BankTransfer"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-gray-200 hover:border-gray-300"
+                  } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Building2 size={18} />
                 <span className="text-sm font-medium">Chuyển khoản</span>
@@ -276,38 +359,34 @@ export function PaymentInfoCard({
         </div>
 
         {/* Payment Action and Payment Status */}
-        <div className="flex items-center justify-between pt-4">
+        <div className="flex items-center justify-end gap-4 pt-4">
           {/* Payment Status */}
           {paymentId && (
-            <div className="flex items-center">
-              <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                Đã thanh toán
-              </span>
-            </div>
+            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+              Đã thanh toán
+            </span>
           )}
 
           {/* Action Button */}
-          <div>
-            {paymentId ? (
-              <Button
-                className="bg-secondary hover:bg-secondary/90 px-8 py-2 text-white"
-                onClick={onExportInvoice}
-              >
-                In hóa đơn
-              </Button>
-            ) : (
-              <Button
-                onClick={handlePaymentComplete}
-                disabled={disabled || isLoading}
-                className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
-              >
-                {isLoading && (
-                  <Loader2 className="mr-2 animate-spin" size={16} />
-                )}
-                Thanh toán
-              </Button>
-            )}
-          </div>
+          {paymentId ? (
+            <Button
+              className="bg-secondary hover:bg-secondary/90 px-8 py-2 text-white"
+              onClick={onExportInvoice}
+            >
+              In hóa đơn
+            </Button>
+          ) : (
+            <Button
+              onClick={handlePaymentComplete}
+              disabled={disabled || isLoading}
+              className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
+            >
+              {isLoading && (
+                <Loader2 className="mr-2 animate-spin" size={16} />
+              )}
+              Thanh toán
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

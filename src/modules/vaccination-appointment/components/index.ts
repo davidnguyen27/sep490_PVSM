@@ -8,5 +8,6 @@ export * from "./RejectModal";
 export * from "./ResultCard";
 export * from "./VaccineInjectionTable";
 export * from "./VetSelection";
+export * from "./VoucherSelection";
 export * from "./CompletedCard";
 export * from "./VaccineExportDetailCard";
