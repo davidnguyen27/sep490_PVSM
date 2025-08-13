@@ -111,25 +111,23 @@ export function useMicrochipHandlers({
         },
         {
           onSuccess: () => {
-            // Sau khi gắn microchip thành công, cập nhật status appointment
+            // Sau khi gắn microchip thành công, cập nhật status appointment (KHÔNG truyền vetId)
             handleStatusUpdate({
               appointmentId: data.microchip?.appointmentId,
               appointmentStatus: APPOINTMENT_STATUS.PROCESSED,
-              vetId: data.microchip?.vet?.vetId,
               microchipItemId: formData.microchipItemId,
               description: formData.result.description,
               note: formData.result.note,
             });
           },
           onError: () => {
-            // Nếu gắn microchip thất bại, vẫn có thể tiếp tục update status
+            // Nếu gắn microchip thất bại, vẫn có thể tiếp tục update status (KHÔNG truyền vetId)
             console.warn(
               "Failed to assign microchip, proceeding with status update",
             );
             handleStatusUpdate({
               appointmentId: data.microchip?.appointmentId,
               appointmentStatus: APPOINTMENT_STATUS.PROCESSED,
-              vetId: data.microchip?.vet?.vetId,
               microchipItemId: formData.microchipItemId,
               description: formData.result.description,
               note: formData.result.note,
@@ -138,11 +136,10 @@ export function useMicrochipHandlers({
         },
       );
     } else {
-      // Nếu không có petId hoặc microchipItemId, chỉ update status
+      // Nếu không có petId hoặc microchipItemId, chỉ update status (KHÔNG truyền vetId)
       handleStatusUpdate({
         appointmentId: data.microchip?.appointmentId,
         appointmentStatus: APPOINTMENT_STATUS.PROCESSED,
-        vetId: data.microchip?.vet?.vetId,
         microchipItemId: formData.microchipItemId,
         description: formData.result.description,
         note: formData.result.note,
@@ -180,7 +177,6 @@ export function useMicrochipHandlers({
     handleStatusUpdate({
       appointmentId: data.microchip?.appointmentId,
       appointmentStatus: APPOINTMENT_STATUS.COMPLETED,
-      vetId: data.microchip?.vet?.vetId,
       microchipItemId: data?.microchip?.microchipItemId,
       description: formData.result.description,
       note: formData.result.note,

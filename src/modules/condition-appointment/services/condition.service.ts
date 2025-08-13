@@ -35,28 +35,93 @@ export const conditionService = {
     data: UpdateStatusPayload,
   ): Promise<BaseResponse<ConditionAppointments>> {
     const formData = new FormData();
-
+    // Always send appointmentId
     formData.append("appointmentId", String(appointmentId));
-    formData.append("vetId", String(data.vetId ?? ""));
-    formData.append("note", data.note);
-    formData.append("appointmentDate", data.appointmentDate);
-    formData.append("appointmentStatus", String(data.appointmentStatus));
-    formData.append("healthConditionId", String(data.healthConditionId ?? ""));
-    formData.append("petId", String(data.petId ?? ""));
-    formData.append("microchipItemId", String(data.microchipItemId ?? ""));
-    formData.append("heartRate", data.heartRate);
-    formData.append("breathingRate", data.breathingRate);
-    formData.append("weight", data.weight);
-    formData.append("temperature", data.temperature);
-    formData.append("eHNM", data.eHNM);
-    formData.append("skinAFur", data.skinAFur);
-    formData.append("digestion", data.digestion);
-    formData.append("respiratory", data.respiratory);
-    formData.append("excrete", data.excrete);
-    formData.append("behavior", data.behavior);
-    formData.append("psycho", data.psycho);
-    formData.append("different", data.different);
-    formData.append("conclusion", data.conclusion);
+    // Only append fields that are not undefined/null/empty
+    if (data.vetId !== undefined && data.vetId !== null)
+      formData.append("vetId", String(data.vetId));
+    if (data.note !== undefined && data.note !== null && data.note !== "")
+      formData.append("note", data.note);
+    if (
+      data.appointmentDate !== undefined &&
+      data.appointmentDate !== null &&
+      data.appointmentDate !== ""
+    )
+      formData.append("appointmentDate", data.appointmentDate);
+    if (data.appointmentStatus !== undefined && data.appointmentStatus !== null)
+      formData.append("appointmentStatus", String(data.appointmentStatus));
+    if (data.healthConditionId !== undefined && data.healthConditionId !== null)
+      formData.append("healthConditionId", String(data.healthConditionId));
+    if (data.petId !== undefined && data.petId !== null)
+      formData.append("petId", String(data.petId));
+    if (data.microchipItemId !== undefined && data.microchipItemId !== null)
+      formData.append("microchipItemId", String(data.microchipItemId));
+    if (
+      data.heartRate !== undefined &&
+      data.heartRate !== null &&
+      data.heartRate !== ""
+    )
+      formData.append("heartRate", data.heartRate);
+    if (
+      data.breathingRate !== undefined &&
+      data.breathingRate !== null &&
+      data.breathingRate !== ""
+    )
+      formData.append("breathingRate", data.breathingRate);
+    if (data.weight !== undefined && data.weight !== null && data.weight !== "")
+      formData.append("weight", data.weight);
+    if (
+      data.temperature !== undefined &&
+      data.temperature !== null &&
+      data.temperature !== ""
+    )
+      formData.append("temperature", data.temperature);
+    if (data.eHNM !== undefined && data.eHNM !== null && data.eHNM !== "")
+      formData.append("eHNM", data.eHNM);
+    if (
+      data.skinAFur !== undefined &&
+      data.skinAFur !== null &&
+      data.skinAFur !== ""
+    )
+      formData.append("skinAFur", data.skinAFur);
+    if (
+      data.digestion !== undefined &&
+      data.digestion !== null &&
+      data.digestion !== ""
+    )
+      formData.append("digestion", data.digestion);
+    if (
+      data.respiratory !== undefined &&
+      data.respiratory !== null &&
+      data.respiratory !== ""
+    )
+      formData.append("respiratory", data.respiratory);
+    if (
+      data.excrete !== undefined &&
+      data.excrete !== null &&
+      data.excrete !== ""
+    )
+      formData.append("excrete", data.excrete);
+    if (
+      data.behavior !== undefined &&
+      data.behavior !== null &&
+      data.behavior !== ""
+    )
+      formData.append("behavior", data.behavior);
+    if (data.psycho !== undefined && data.psycho !== null && data.psycho !== "")
+      formData.append("psycho", data.psycho);
+    if (
+      data.different !== undefined &&
+      data.different !== null &&
+      data.different !== ""
+    )
+      formData.append("different", data.different);
+    if (
+      data.conclusion !== undefined &&
+      data.conclusion !== null &&
+      data.conclusion !== ""
+    )
+      formData.append("conclusion", data.conclusion);
 
     return await axiosInstance
       .put(

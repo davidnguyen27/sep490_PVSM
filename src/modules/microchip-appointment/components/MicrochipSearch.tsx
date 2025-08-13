@@ -1,19 +1,15 @@
 import { useState } from "react";
-import { Search, Scan, CheckCircle, AlertCircle, Link } from "lucide-react";
+import { Search, Scan, CheckCircle, AlertCircle } from "lucide-react";
 import { Button, Input, Label } from "@/components/ui";
-import {
-  useMicrochipByCode,
-  useAssignMicrochip,
-} from "@/modules/microchip-item";
-import { useDebounce } from "@/shared/hooks/useDebounce";
+import { useMicrochipByCode } from "@/modules/microchip-item";
 
 interface MicrochipSearchProps {
   onSelect: (microchipItemId: number | null) => void;
   selectedId?: number | null;
   disabled?: boolean;
   className?: string;
-  petId?: number | null;
-  showAssignButton?: boolean;
+  // petId?: number | null;
+  // showAssignButton?: boolean;
 }
 
 export function MicrochipSearch({
@@ -21,58 +17,39 @@ export function MicrochipSearch({
   selectedId,
   disabled = false,
   className,
-  petId,
-  showAssignButton = false,
+  // petId,
+  // showAssignButton = false,
 }: MicrochipSearchProps) {
   const [searchCode, setSearchCode] = useState("");
-
-  const debouncedSearch = useDebounce(searchCode, 500);
+  const [submittedCode, setSubmittedCode] = useState<string>("");
 
   const {
     data: microchipData,
     isLoading,
     error,
   } = useMicrochipByCode({
-    microchipCode: debouncedSearch,
+    microchipCode: submittedCode,
     status: 1, // Available status
-    enabled: !!debouncedSearch && debouncedSearch.length >= 3,
+    enabled: !!submittedCode && submittedCode.length >= 3,
   });
 
-  const { mutate: assignMicrochip, isPending: isAssigning } =
-    useAssignMicrochip({
-      onSuccess: () => {
-        if (microchipData?.data?.microchipItemId) {
-          onSelect(microchipData.data.microchipItemId);
-          setSearchCode("");
-        }
-      },
-    });
+  // microchipData is now always the object or null
+  const microchip = microchipData;
 
   const handleSearch = () => {
-    if (!searchCode.trim()) return;
-    // Manual search logic can be added here if needed
+    if (!searchCode.trim() || searchCode.length < 3) return;
+    setSubmittedCode(searchCode.trim());
   };
 
   const handleSelect = () => {
-    if (microchipData?.data?.microchipItemId) {
-      onSelect(microchipData.data.microchipItemId);
+    if (microchipData?.microchipId) {
+      onSelect(microchipData.microchipId);
       setSearchCode("");
     }
   };
 
-  const handleAssignToPet = () => {
-    if (!microchipData?.data?.microchipItemId || !petId) {
-      return;
-    }
-
-    assignMicrochip({
-      microchipItemId: microchipData.data.microchipItemId,
-      petId: petId,
-    });
-  };
-
   const renderSearchResult = () => {
-    if (!debouncedSearch || debouncedSearch.length < 3) return null;
+    if (!submittedCode || submittedCode.length < 3) return null;
 
     if (isLoading) {
       return (
@@ -94,18 +71,17 @@ export function MicrochipSearch({
       );
     }
 
-    if (!microchipData?.data) {
+    if (!microchip) {
       return (
         <div className="flex items-center gap-2 rounded-md border border-yellow-200 bg-yellow-50 p-3">
           <AlertCircle className="h-4 w-4 text-yellow-600" />
           <span className="text-sm text-yellow-700">
-            Không tìm thấy microchip với mã "{debouncedSearch}"
+            Không tìm thấy microchip với mã "{submittedCode}"
           </span>
         </div>
       );
     }
 
-    const microchip = microchipData.data;
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 p-3">
@@ -118,15 +94,11 @@ export function MicrochipSearch({
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <span className="text-muted-foreground">Mã microchip:</span>
-              <p className="font-nunito-500">
-                {microchip.microchipResponse?.microchipCode}
-              </p>
+              <p className="font-nunito-500">{microchip.microchipId ?? "-"}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Tên:</span>
-              <p className="font-nunito-500">
-                {microchip.microchipResponse?.name}
-              </p>
+              <p className="font-nunito-500">{microchip.name ?? "-"}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Mô tả:</span>
@@ -135,12 +107,51 @@ export function MicrochipSearch({
               </p>
             </div>
             <div>
-              <span className="text-muted-foreground">Giá:</span>
-              <p className="font-nunito-500 text-primary">
-                {microchip.microchipResponse?.price?.toLocaleString()} VND
+              <span className="text-muted-foreground">Ngày cài đặt:</span>
+              <p className="font-nunito-500">
+                {microchip.installationDate
+                  ? new Date(microchip.installationDate).toLocaleDateString()
+                  : "-"}
               </p>
             </div>
+            <div>
+              <span className="text-muted-foreground">Trạng thái:</span>
+              <p className="font-nunito-500">{microchip.status ?? "-"}</p>
+            </div>
           </div>
+
+          {/* Hiển thị thông tin thú cưng nếu có */}
+          {microchip.pet && (
+            <div className="mt-6">
+              <h4 className="font-nunito-600 mb-2 text-sm">
+                Thông tin thú cưng
+              </h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Tên thú cưng:</span>
+                  <p className="font-nunito-500">{microchip.pet.name ?? "-"}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Mã thú cưng:</span>
+                  <p className="font-nunito-500">
+                    {microchip.pet.petCode ?? "-"}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Giống loài:</span>
+                  <p className="font-nunito-500">
+                    {microchip.pet.species ?? "-"}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Chủ nuôi:</span>
+                  <p className="font-nunito-500">
+                    {microchip.pet.customer?.fullName ?? "-"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="mt-4 flex justify-end gap-2">
             <Button
@@ -151,18 +162,6 @@ export function MicrochipSearch({
               <CheckCircle className="h-4 w-4" />
               Chọn microchip này
             </Button>
-
-            {showAssignButton && petId && (
-              <Button
-                onClick={handleAssignToPet}
-                disabled={disabled || isAssigning}
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary hover:text-white"
-              >
-                <Link className="h-4 w-4" />
-                {isAssigning ? "Đang gắn..." : "Gắn vào thú cưng"}
-              </Button>
-            )}
           </div>
         </div>
       </div>
@@ -188,6 +187,7 @@ export function MicrochipSearch({
               className="pl-10"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
+                  e.preventDefault();
                   handleSearch();
                 }
               }}
@@ -196,7 +196,7 @@ export function MicrochipSearch({
           <Button
             variant="outline"
             onClick={handleSearch}
-            disabled={disabled || !searchCode.trim()}
+            disabled={disabled || !searchCode.trim() || searchCode.length < 3}
             className="shrink-0"
           >
             <Scan className="h-4 w-4" />

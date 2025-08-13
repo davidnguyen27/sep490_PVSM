@@ -9,7 +9,7 @@ import {
   Pagination,
 } from "@/components/shared";
 import { useVaccinationApps } from "../hooks/useVaccinations";
-import { Syringe } from "lucide-react";
+import { Syringe, RotateCcw } from "lucide-react";
 import VaccinationDetailPage from "./VaccinationDetailPage";
 
 export default function VaccinationAppListPage() {
@@ -39,7 +39,7 @@ export default function VaccinationAppListPage() {
 
   const debouncedSearch = useDebounce(search, 500, { leading: true });
 
-  const { data, isPending, isFetching } = useVaccinationApps({
+  const { data, isPending, isFetching, refetch } = useVaccinationApps({
     pageNumber: page,
     pageSize: 10,
     keyWord: debouncedSearch,
@@ -89,6 +89,15 @@ export default function VaccinationAppListPage() {
             setPage(1);
           }}
         />
+        <button
+          type="button"
+          className="bg-primary hover:bg-secondary ml-auto flex items-center gap-1 rounded px-3 py-2 text-white transition"
+          title="Làm mới dữ liệu"
+          onClick={() => refetch()}
+        >
+          <RotateCcw size={16} />
+          Làm mới
+        </button>
       </div>
 
       <AppointmentTable

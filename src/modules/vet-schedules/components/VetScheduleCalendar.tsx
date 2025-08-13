@@ -11,6 +11,8 @@ interface ScheduleFormValues {
   status: "available" | "unavailable";
 }
 
+type SlotStatus = "available" | "unavailable" | "booked"; // Adjust as needed
+
 interface VetScheduleCalendarProps {
   currentDate: Date;
   selectedDate: Date;

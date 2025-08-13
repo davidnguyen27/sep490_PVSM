@@ -33,7 +33,7 @@ const tableHeaders = [
   "Địa điểm",
   "Địa chỉ",
   "Trạng thái",
-  "Hành động",
+  "Thao tác",
 ];
 
 export function AppointmentTable({
@@ -103,14 +103,9 @@ export function AppointmentTable({
                   <Badge
                     variant={"outline"}
                     className={cn(
-                      "font-nunito cursor-pointer text-xs transition-transform hover:scale-110",
+                      "font-nunito cursor-pointer text-xs",
                       getBadgeColor(item.appointment.appointmentStatus),
                     )}
-                    onClick={() =>
-                      navigate(
-                        `${basePath}?appointmentId=${item.appointment.appointmentId}`,
-                      )
-                    }
                   >
                     {AppStatusMapped[item.appointment.appointmentStatus]}
                   </Badge>
@@ -120,6 +115,11 @@ export function AppointmentTable({
                     <BadgeInfo
                       size={16}
                       className="text-info cursor-pointer transition-transform hover:scale-110"
+                      onClick={() =>
+                        navigate(
+                          `${basePath}?appointmentId=${item.appointment.appointmentId}`,
+                        )
+                      }
                     />
                     <SquarePen
                       size={16}

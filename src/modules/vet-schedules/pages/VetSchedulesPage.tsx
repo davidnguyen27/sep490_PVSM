@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { format } from "date-fns";
 import { PageBreadcrumb } from "@/components/shared";
 import { useScheduleByVet } from "../hooks/useScheduleByVet";
 import { useDeleteSchedule } from "../hooks/useDeleteSchedule";
@@ -132,7 +133,8 @@ const VetSchedulesPage = () => {
     setSelectedSlot({ date, slotId });
 
     // Tìm schedule tương ứng
-    const dateString = date.toISOString().split("T")[0];
+    // Sử dụng format date-fns để lấy ngày local, tránh lệch timezone
+    const dateString = format(date, "yyyy-MM-dd");
     const schedule = validVetSchedules.find((schedule) => {
       const scheduleDateString = schedule.scheduleDate.split("T")[0];
       return (
@@ -155,7 +157,7 @@ const VetSchedulesPage = () => {
 
   const handleSlotDelete = (date: Date, slotId: number) => {
     // Tìm schedule tương ứng để lấy ID
-    const dateString = date.toISOString().split("T")[0];
+    const dateString = format(date, "yyyy-MM-dd");
     const schedule = validVetSchedules.find((schedule) => {
       const scheduleDateString = schedule.scheduleDate.split("T")[0];
       return (
@@ -173,7 +175,7 @@ const VetSchedulesPage = () => {
       return "unavailable";
     }
 
-    const dateString = date.toISOString().split("T")[0];
+    const dateString = format(date, "yyyy-MM-dd");
 
     const schedule = validVetSchedules.find((schedule) => {
       const scheduleDateString = schedule.scheduleDate.split("T")[0];

@@ -149,36 +149,46 @@ export function StepContent({
   const renderStepPayment = () => (
     <div className="space-y-6">
       {renderCommonInfo()}
-      <PaymentInfoCard
-        ownerName={data.appointment.customerResponseDTO.fullName}
-        petName={data.appointment.petResponseDTO.name}
-        memberRank=""
-        discountPercent={0}
-        healthConditionCode={data.healthCondition?.conditionCode}
-        unitPrice={data.healthCondition?.price}
-        quantity={1}
-        appointmentDetailId={data.appointmentDetailId}
-        customerId={data.appointment.customerResponseDTO.customerId}
-        healthConditionId={data.healthConditionId}
-        invoiceData={data}
-        onPaymentSuccess={(paymentId, method) => {
-          setPaymentId(paymentId);
-          setPaymentMethod(method);
-        }}
-        onExportInvoice={onExportInvoice}
-      />
-      {(isPaymentCompleted || data.payment?.paymentId) &&
-        paymentMethod !== "BankTransfer" && (
-          <div className="flex justify-end">
-            <Button
-              className="bg-primary text-white"
-              onClick={onCompleteCondition}
-              disabled={isPending}
-            >
-              Xác nhận thanh toán
-            </Button>
+      {!isVet ? (
+        <PaymentInfoCard
+          ownerName={data.appointment.customerResponseDTO.fullName}
+          petName={data.appointment.petResponseDTO.name}
+          memberRank=""
+          discountPercent={0}
+          healthConditionCode={data.healthCondition?.conditionCode}
+          unitPrice={data.healthCondition?.price}
+          quantity={1}
+          appointmentDetailId={data.appointmentDetailId}
+          customerId={data.appointment.customerResponseDTO.customerId}
+          healthConditionId={data.healthConditionId}
+          invoiceData={data}
+          onPaymentSuccess={(paymentId, method) => {
+            setPaymentId(paymentId);
+            setPaymentMethod(method);
+          }}
+          onExportInvoice={onExportInvoice}
+        />
+      ) : (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
+          <div className="text-center text-gray-600">
+            <p className="text-lg font-medium">Bước thanh toán</p>
+            <p className="mt-2 text-sm">
+              Bạn không có quyền thực hiện thanh toán.
+            </p>
           </div>
-        )}
+        </div>
+      )}
+      {!isVet && isPaymentCompleted && paymentMethod !== "BankTransfer" && (
+        <div className="flex justify-end">
+          <Button
+            className="bg-primary text-white"
+            onClick={onCompleteCondition}
+            disabled={isPending}
+          >
+            Xác nhận thanh toán
+          </Button>
+        </div>
+      )}
     </div>
   );
 

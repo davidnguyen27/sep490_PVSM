@@ -26,11 +26,6 @@ const staffSidebarItems = [
         icon: <icons.PawPrint size={20} />,
         path: "/staff/pet-profiles",
       },
-      {
-        label: "Tiêm chủng",
-        icon: <icons.Syringe size={20} />,
-        path: "/staff/vaccine-profiles",
-      },
     ],
   },
   {

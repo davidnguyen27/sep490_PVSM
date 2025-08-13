@@ -45,8 +45,17 @@ export function useConditionHandlers({
   });
 
   const buildPayloadFromForm = useCallback(
-    (status: number): UpdateStatusPayload | null => {
+    (status: number, assignVetMode = false): UpdateStatusPayload | null => {
       if (!data?.appointmentId) return null;
+
+      if (assignVetMode) {
+        // Only appointmentId as param, vetId and appointmentStatus in body
+        return {
+          appointmentId: data.appointmentId,
+          vetId: formData.vetSelection.vetId,
+          appointmentStatus: status,
+        } as UpdateStatusPayload;
+      }
 
       const basePayload: UpdateStatusPayload = {
         appointmentId: data.appointmentId,
@@ -59,13 +68,6 @@ export function useConditionHandlers({
         ...formData.vitalSigns,
         ...formData.healthCheck,
       };
-
-      if (status === APPOINTMENT_STATUS.CHECKED_IN) {
-        return {
-          ...basePayload,
-          vetId: formData.vetSelection.vetId,
-        };
-      }
 
       return basePayload;
     },
@@ -100,7 +102,8 @@ export function useConditionHandlers({
   }, [buildPayloadFromForm, handleStatusUpdate]);
 
   const handleAssignVet = useCallback(() => {
-    const payload = buildPayloadFromForm(APPOINTMENT_STATUS.CHECKED_IN);
+    // Only appointmentId as param, vetId and appointmentStatus in body
+    const payload = buildPayloadFromForm(APPOINTMENT_STATUS.CHECKED_IN, true);
     handleStatusUpdate(payload);
   }, [buildPayloadFromForm, handleStatusUpdate]);
 

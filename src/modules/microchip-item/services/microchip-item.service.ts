@@ -18,20 +18,12 @@ export const microchipItemService = {
   async getMicrochipItemByCode(params: {
     microchipCode: string;
     status?: number;
-  }): Promise<MicrochipItemByCode> {
+  }): Promise<MicrochipItemByCode | null> {
     return await axiosInstance
       .get("/api/MicrochipItems/get-information-of-pet-by-microchip-code", {
         params,
       })
-      .then((res) => {
-        // Check if response has data regardless of success flag
-        if (res.data && res.data.data && res.data.code === 200) {
-          return res.data.data;
-        }
-        throw new Error(
-          res.data?.message || "Không tìm thấy thông tin microchip",
-        );
-      });
+      .then((res) => (res.data && res.data.data ? res.data.data : null));
   },
 
   async assignChipToPet({

@@ -5,6 +5,7 @@ import { Input, Label } from "@/components/ui";
 import { X, Clock, Calendar as CalendarIcon } from "lucide-react";
 import { useCreateSchedule } from "../hooks/useCreateSchedule";
 import { useUpdateSchedule } from "../hooks/useUpdateSchedule";
+import { format } from "date-fns";
 import type { VetSchedulePayload } from "../types/vet-schedule.payload.type";
 import type { VetSchedule } from "../types/vet-schedule.type";
 
@@ -26,7 +27,7 @@ export function SimpleVetScheduleForm({
   mode = "add",
 }: SimpleVetScheduleFormProps) {
   const [formData, setFormData] = useState({
-    date: selectedDate?.toISOString().split("T")[0] || "",
+    date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
     selectedSlots: [] as number[],
     status: 1, // 1: Trống (available)
   });
@@ -41,7 +42,7 @@ export function SimpleVetScheduleForm({
     if (selectedDate) {
       setFormData((prev) => ({
         ...prev,
-        date: selectedDate.toISOString().split("T")[0],
+        date: format(selectedDate, "yyyy-MM-dd"),
       }));
     }
   }, [selectedDate]);
@@ -57,7 +58,7 @@ export function SimpleVetScheduleForm({
     } else if (mode === "add") {
       // Reset form khi switch về add mode
       setFormData({
-        date: selectedDate?.toISOString().split("T")[0] || "",
+        date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
         selectedSlots: selectedSlot ? [selectedSlot] : [],
         status: 1,
       });

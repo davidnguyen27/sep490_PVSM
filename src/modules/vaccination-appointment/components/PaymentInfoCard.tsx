@@ -62,7 +62,8 @@ export function PaymentInfoCard({
   const { mutate, isPending: isLoading } = useCreatePayment();
 
   // State for voucher management
-  const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher | null>(null);
+  const [selectedVoucher, setSelectedVoucher] =
+    useState<CustomerVoucher | null>(null);
 
   // State for membership management
   const [membershipData, setMembershipData] = useState<Membership | null>(null);
@@ -75,7 +76,8 @@ export function PaymentInfoCard({
 
       setLoadingMembership(true);
       try {
-        const membership = await membershipService.getMembershipByCustomerId(customerId);
+        const membership =
+          await membershipService.getMembershipByCustomerId(customerId);
         setMembershipData(membership);
       } catch (error) {
         console.error("Error fetching membership:", error);
@@ -112,7 +114,9 @@ export function PaymentInfoCard({
   const benefits = membershipData?.benefits;
   const totalPrice = unitPrice * quantity;
   const memberDiscountAmount = (totalPrice * actualDiscountPercent) / 100;
-  const voucherDiscountAmount = selectedVoucher ? (totalPrice * selectedVoucher.voucher.discountAmount) / 100 : 0;
+  const voucherDiscountAmount = selectedVoucher
+    ? (totalPrice * selectedVoucher.voucher.discountAmount) / 100
+    : 0;
   const totalDiscountAmount = memberDiscountAmount + voucherDiscountAmount;
   const finalAmount = Math.max(0, totalPrice - totalDiscountAmount);
 
@@ -125,9 +129,9 @@ export function PaymentInfoCard({
   const savedPaymentMethod = invoiceData?.payment?.paymentMethod;
   const displayPaymentMethod =
     savedPaymentMethod === "Cash" ||
-      savedPaymentMethod === "BankTransfer" ||
-      savedPaymentMethod === "CASH" ||
-      savedPaymentMethod === "BANK_TRANSFER"
+    savedPaymentMethod === "BankTransfer" ||
+    savedPaymentMethod === "CASH" ||
+    savedPaymentMethod === "BANK_TRANSFER"
       ? savedPaymentMethod === "CASH"
         ? "Cash"
         : savedPaymentMethod === "BANK_TRANSFER"
@@ -217,9 +221,11 @@ export function PaymentInfoCard({
           <div className="flex items-center gap-2">
             <BadgePercent size={16} />
             <span>
-              Hạng thành viên: {loadingMembership ? "Đang tải..." : displayMemberRank} ({benefits})
+              Hạng thành viên:{" "}
+              {loadingMembership ? "Đang tải..." : displayMemberRank} (
+              {benefits})
               {membershipData?.customer?.currentPoints && (
-                <span className="text-gray-500 text-xs ml-2">
+                <span className="ml-2 text-xs text-gray-500">
                   - {membershipData.customer.currentPoints} điểm
                 </span>
               )}
@@ -265,7 +271,8 @@ export function PaymentInfoCard({
           </p>
           {actualDiscountPercent > 0 && (
             <p>
-              Hạng thành viên: {displayMemberRank} (giảm {actualDiscountPercent}%):{" "}
+              Hạng thành viên: {displayMemberRank} (giảm {actualDiscountPercent}
+              %):{" "}
               <span className="text-green-600">
                 {memberDiscountAmount.toLocaleString()} vnđ
               </span>
@@ -301,8 +308,8 @@ export function PaymentInfoCard({
             // Đã thanh toán - chỉ hiển thị phương thức đã chọn
             <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
               {displayPaymentMethod === "Cash" ||
-                invoiceData?.payment?.paymentMethod === "Cash" ||
-                invoiceData?.payment?.paymentMethod === "CASH" ? (
+              invoiceData?.payment?.paymentMethod === "Cash" ||
+              invoiceData?.payment?.paymentMethod === "CASH" ? (
                 <>
                   <Banknote size={18} />
                   <span className="text-sm font-medium">Tiền mặt</span>
@@ -334,10 +341,11 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("Cash")}
                 disabled={disabled || isLoading}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "Cash"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-gray-200 hover:border-gray-300"
-                  } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
+                  paymentMethod === "Cash"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-gray-200 hover:border-gray-300"
+                } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Banknote size={18} />
                 <span className="text-sm font-medium">Tiền mặt</span>
@@ -346,10 +354,11 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("BankTransfer")}
                 disabled={disabled}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "BankTransfer"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-gray-200 hover:border-gray-300"
-                  } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
+                  paymentMethod === "BankTransfer"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-gray-200 hover:border-gray-300"
+                } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Building2 size={18} />
                 <span className="text-sm font-medium">Chuyển khoản</span>
@@ -381,9 +390,7 @@ export function PaymentInfoCard({
               disabled={disabled || isLoading}
               className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
             >
-              {isLoading && (
-                <Loader2 className="mr-2 animate-spin" size={16} />
-              )}
+              {isLoading && <Loader2 className="mr-2 animate-spin" size={16} />}
               Thanh toán
             </Button>
           )}
