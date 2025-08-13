@@ -6,5 +6,6 @@ export interface Vet {
   specialization: string;
   dateOfBirth: string;
   phoneNumber: string;
+  isDeleted: boolean;
   account: object;
 }

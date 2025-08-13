@@ -1,15 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  customerService,
-  type CustomerUpdatePayload,
-} from "../services/customer.service";
+import { customerService } from "../services/customer.service";
 import { toast } from "sonner";
 import { extractErrorMessage } from "@/shared/utils/error.utils";
 import type { AxiosError } from "axios";
+import type { CustomerPayload } from "../types/customer.payload.type";
 
 interface UpdateCustomerParams {
   customerId: number;
-  payload: CustomerUpdatePayload;
+  payload: CustomerPayload;
 }
 
 export function useCustomerUpdate() {

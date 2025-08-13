@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import type { DashboardAdminData } from "../types/dashboard.type";
+import type { IconName } from "@/shared/constants/icons.constants";
 
 export interface StatItem {
   title: string;
   value: number;
   change: string;
-  iconName: string;
+  iconName: IconName;
   color: string;
 }
 

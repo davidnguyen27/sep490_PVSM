@@ -4,14 +4,18 @@ import { StatItem } from "./StatItem";
 
 export function CustomerStatsCard() {
   return (
-    <Card className="bg-linen rounded-none shadow-sm">
-      <CardHeader className="border-b bg-gradient-to-r from-yellow-50 to-yellow-100">
-        <CardTitle className="font-inter flex items-center gap-2 text-yellow-700">
-          <Coins size={20} />
-          Điểm tích lũy & Chi tiêu
+    <Card className="rounded-none border-0 shadow-lg">
+      <CardHeader className="border-b-0 bg-gradient-to-r from-yellow-50 to-yellow-100 px-6 py-4">
+        <CardTitle className="font-inter flex items-center gap-3 text-yellow-700">
+          <div className="rounded-lg bg-yellow-100 p-2">
+            <Coins size={20} />
+          </div>
+          <span className="font-nunito text-xl font-semibold">
+            Điểm tích lũy & Chi tiêu
+          </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="px-8 py-6">
         <div className="space-y-4">
           <StatItem
             icon={<Star size={16} className="text-yellow-500" />}

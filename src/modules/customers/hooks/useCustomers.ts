@@ -9,10 +9,10 @@ interface Params {
 
 export function useCustomers(params: Params) {
   return useQuery({
-    queryKey: ["customers"],
+    queryKey: ["customers", params], // Dynamic query key for better caching
     queryFn: () => customerService.getAllCustomers(params),
-    staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
     placeholderData: (prev) => prev,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }

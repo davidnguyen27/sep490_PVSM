@@ -1,5 +1,15 @@
 import type { Pet } from "../types/pet.type";
-import { BadgeInfo, SquarePen, Trash2 } from "lucide-react";
+import {
+  BadgeInfo,
+  SquarePen,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  ArrowDownUp,
+} from "lucide-react";
+
+// Extended type for Pet with STT
+type PetWithSTT = Pet & { sttNumber?: number };
 
 // components
 import {
@@ -26,6 +36,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePetDetail, usePetDelete } from "../hooks";
 import { useAuth } from "@/modules/auth";
+import { useTableSorting } from "@/shared/hooks/useTableSorting";
 
 // utils
 import { getPetRoutePaths } from "../utils/pet-route.utils";
@@ -56,6 +67,19 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Use shared table sorting hook
+  const {
+    sortOrder,
+    sortedData: sortedPets,
+    handleSortClick,
+    getSortIconName,
+  } = useTableSorting<Pet>({
+    data: pets,
+    idField: "petId",
+    currentPage,
+    pageSize,
+  });
+
   const { data, isLoading: isPetDetailLoading } = usePetDetail(selectedPetId);
   const petId = searchParams.get("petId");
   const action = searchParams.get("action");
@@ -64,6 +88,18 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
 
   // Get role-based paths
   const paths = getPetRoutePaths(user?.role || 2); // Default to staff role
+
+  // Get sort icon component
+  const getSortIcon = () => {
+    const iconName = getSortIconName();
+    if (iconName === "ArrowUp") {
+      return <ArrowUp size={16} className="text-white" />;
+    } else if (iconName === "ArrowDown") {
+      return <ArrowDown size={16} className="text-white" />;
+    } else {
+      return <ArrowDownUp size={16} className="text-white/70" />;
+    }
+  };
 
   useEffect(() => {
     if (petId && action !== "update") {
@@ -77,12 +113,28 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
       <Table>
         <TableHeader className="bg-primary">
           <TableRow className="hover:bg-transparent">
-            {tableHeaders.map((header) => (
+            {tableHeaders.map((header, index) => (
               <TableHead
                 key={header}
-                className="font-nunito px-4 py-2 text-center text-sm text-white"
+                className={`font-nunito px-4 py-2 text-center text-sm text-white ${
+                  index === 0
+                    ? `cursor-pointer transition-colors ${
+                        sortOrder !== null
+                          ? "bg-green/20 hover:bg-green/30"
+                          : "hover:bg-primary/80"
+                      }`
+                    : ""
+                }`}
+                onClick={index === 0 ? handleSortClick : undefined}
               >
-                {header}
+                {index === 0 ? (
+                  <div className="flex items-center justify-center gap-1">
+                    <span>{header}</span>
+                    {getSortIcon()}
+                  </div>
+                ) : (
+                  header
+                )}
               </TableHead>
             ))}
           </TableRow>
@@ -92,103 +144,108 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
           <TableSkeleton columnCount={9} rowCount={pageSize} />
         ) : pets.length > 0 ? (
           <TableBody>
-            {pets.map((item, idx) => (
-              <TableRow
-                key={item.petId}
-                className="hover:bg-accent/10 transition-colors duration-150"
-              >
-                <TableCell className="text-dark font-nunito text-center text-sm">
-                  {(currentPage - 1) * pageSize + idx + 1}
-                </TableCell>
-                <TableCell className="text-dark font-nunito max-w-[140px] truncate text-center text-sm">
-                  {item.petCode}
-                </TableCell>
-                <TableCell className="text-dark font-nunito max-w-[140px] truncate text-center text-sm">
-                  {item.name}
-                </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.species === "Dog" ? "Chó" : "Mèo"}
-                </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.breed}
-                </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.gender === "Male" ? "Đực" : "Cái"}
-                </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.color}
-                </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.weight} kg
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-center gap-3">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <BadgeInfo
-                            size={16}
-                            className="text-info cursor-pointer transition-transform hover:scale-110"
-                            onClick={() => {
-                              setSelectedPetId(item.petId);
-                              setOpenDetail(true);
-                              navigate(`?petId=${item.petId}`, {
-                                replace: false,
-                              });
-                            }}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Xem chi tiết</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+            {sortedPets.map((item) => {
+              // Use STT number from hook (continuous across pages)
+              const sttValue = (item as PetWithSTT).sttNumber || 1;
 
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SquarePen
-                            size={16}
-                            className="text-purple cursor-pointer transition-transform hover:scale-110"
-                            onClick={() =>
-                              navigate(
-                                `${paths.base}?petId=${item.petId}&action=update`,
-                                {
-                                  replace: false,
-                                },
-                              )
-                            }
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Chỉnh sửa</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-
-                    <ConfirmDelete onConfirm={() => deletePet(item.petId)}>
+              return (
+                <TableRow
+                  key={item.petId}
+                  className="hover:bg-accent/10 transition-colors duration-150"
+                >
+                  <TableCell className="text-dark font-nunito-500 text-center text-sm">
+                    {sttValue}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito-400 max-w-[140px] truncate text-center text-sm">
+                    {item.petCode}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito-500 max-w-[140px] truncate text-center text-sm">
+                    {item.name}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito-400 text-center text-sm">
+                    {item.species === "Dog" ? "Chó" : "Mèo"}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito-400 text-center text-sm">
+                    {item.breed}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito-400 text-center text-sm">
+                    {item.gender === "Male" ? "Đực" : "Cái"}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito-400 text-center text-sm">
+                    {item.color}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito-400 text-center text-sm">
+                    {item.weight} kg
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-center gap-3">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Trash2
+                            <BadgeInfo
                               size={16}
-                              className={`cursor-pointer transition-transform hover:scale-110 ${
-                                isDeleting
-                                  ? "pointer-events-none opacity-50"
-                                  : "text-danger"
-                              }`}
+                              className="text-info cursor-pointer transition-transform hover:scale-110"
+                              onClick={() => {
+                                setSelectedPetId(item.petId);
+                                setOpenDetail(true);
+                                navigate(`?petId=${item.petId}`, {
+                                  replace: false,
+                                });
+                              }}
                             />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Xóa</p>
+                            <p className="font-nunito">Chi tiết</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                    </ConfirmDelete>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <SquarePen
+                              size={16}
+                              className="text-purple cursor-pointer transition-transform hover:scale-110"
+                              onClick={() =>
+                                navigate(
+                                  `${paths.base}?petId=${item.petId}&action=update`,
+                                  {
+                                    replace: false,
+                                  },
+                                )
+                              }
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="font-nunito">Chỉnh sửa</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      <ConfirmDelete onConfirm={() => deletePet(item.petId)}>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Trash2
+                                size={16}
+                                className={`cursor-pointer transition-transform hover:scale-110 ${
+                                  isDeleting
+                                    ? "pointer-events-none opacity-50"
+                                    : "text-danger"
+                                }`}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="font-nunito">Xóa</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </ConfirmDelete>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         ) : null}
       </Table>

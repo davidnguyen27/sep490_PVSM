@@ -1,5 +1,9 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import type { VaccineBatch } from "../types/vaccine-batch.type";
+import { ArrowUp, ArrowDown, ArrowDownUp } from "lucide-react";
+
+// Extended type for VaccineBatch with STT
+type VaccineBatchWithSTT = VaccineBatch & { sttNumber?: number };
 
 // components
 import {
@@ -16,6 +20,7 @@ import { VaccineBatchActionMenu } from "./VaccineBatchActionMenu";
 
 // hooks
 import { useVaccineBatchDelete } from "../hooks/useVaccineBatchDelete";
+import { useTableSorting } from "@/shared/hooks/useTableSorting";
 
 // utils
 import { formatData } from "@/shared/utils/format.utils";
@@ -50,10 +55,35 @@ export function VaccineBatchTable({
   const { mutate: deleteVaccineBatch, isPending: isDeleting } =
     useVaccineBatchDelete();
 
+  // Use shared table sorting hook
+  const {
+    sortOrder,
+    sortedData: sortedVaccineBatches,
+    handleSortClick,
+    getSortIconName,
+  } = useTableSorting<VaccineBatch>({
+    data: vaccineBatches,
+    idField: "vaccineBatchId",
+    currentPage,
+    pageSize,
+  });
+
   // Determine current route prefix (admin or staff)
   const routePrefix = location.pathname.includes("/admin")
     ? "/admin"
     : "/staff";
+
+  // Get sort icon component
+  const getSortIcon = () => {
+    const iconName = getSortIconName();
+    if (iconName === "ArrowUp") {
+      return <ArrowUp size={16} className="text-white" />;
+    } else if (iconName === "ArrowDown") {
+      return <ArrowDown size={16} className="text-white" />;
+    } else {
+      return <ArrowDownUp size={16} className="text-white/70" />;
+    }
+  };
 
   const handleDelete = (vaccineBatchId: number) => {
     deleteVaccineBatch(vaccineBatchId);
@@ -61,16 +91,7 @@ export function VaccineBatchTable({
 
   const handleViewHistory = (vaccineBatchId: number, batchNumber: string) => {
     navigate(
-      `${routePrefix}/vaccine-export-history?vaccineBatchId=${vaccineBatchId}&batchNumber=${encodeURIComponent(batchNumber)}`,
-    );
-  };
-
-  const handleViewImportHistory = (
-    vaccineBatchId: number,
-    batchNumber: string,
-  ) => {
-    navigate(
-      `${routePrefix}/vaccine-import-history?vaccineBatchId=${vaccineBatchId}&batchNumber=${encodeURIComponent(batchNumber)}`,
+      `${routePrefix}/vaccine-batches?vaccineBatchId=${vaccineBatchId}&batchNumber=${encodeURIComponent(batchNumber)}`,
     );
   };
 
@@ -109,12 +130,28 @@ export function VaccineBatchTable({
       <Table>
         <TableHeader className="bg-primary">
           <TableRow className="hover:bg-transparent">
-            {tableHeaders.map((header) => (
+            {tableHeaders.map((header, index) => (
               <TableHead
                 key={header}
-                className="font-nunito px-4 py-2 text-center text-sm text-white"
+                className={`font-nunito px-4 py-2 text-center text-sm text-white ${
+                  index === 0
+                    ? `cursor-pointer transition-colors ${
+                        sortOrder !== null
+                          ? "bg-green/20 hover:bg-green/30"
+                          : "hover:bg-primary/80"
+                      }`
+                    : ""
+                }`}
+                onClick={index === 0 ? handleSortClick : undefined}
               >
-                {header}
+                {index === 0 ? (
+                  <div className="flex items-center justify-center gap-1">
+                    <span>{header}</span>
+                    {getSortIcon()}
+                  </div>
+                ) : (
+                  header
+                )}
               </TableHead>
             ))}
           </TableRow>
@@ -125,84 +162,86 @@ export function VaccineBatchTable({
             columnCount={tableHeaders.length}
             rowCount={pageSize}
           />
-        ) : vaccineBatches.length > 0 ? (
+        ) : sortedVaccineBatches.length > 0 ? (
           <TableBody>
-            {vaccineBatches.map((item, idx) => (
-              <TableRow
-                key={item.vaccineBatchId}
-                className="hover:bg-accent/10 transition-colors duration-150"
-              >
-                <TableCell className="text-dark font-nunito text-center text-sm">
-                  {(currentPage - 1) * pageSize + idx + 1}
-                </TableCell>
-                <TableCell className="text-dark font-nunito max-w-[140px] truncate text-center text-sm">
-                  {item.batchNumber}
-                </TableCell>
-                <TableCell className="text-dark font-nunito max-w-[200px] truncate text-center text-sm">
-                  {item.vaccineResponseDTO.name}
-                </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
-                  {formatData.formatDate(item.manufactureDate)}
-                </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
-                  {formatData.formatDate(item.expiryDate)}
-                </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.quantity}
-                </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.vaccineResponseDTO.price.toLocaleString()}
-                </TableCell>
-                <TableCell className="text-center">
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeColor(item.expiryDate)}`}
-                  >
-                    {getStatusText(item.expiryDate)}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-center">
-                    <VaccineBatchActionMenu
-                      batchNumber={item.batchNumber}
-                      isDeleting={isDeleting}
-                      onQuickView={() =>
-                        navigate(`?vaccineBatchId=${item.vaccineBatchId}`, {
-                          replace: false,
-                        })
-                      }
-                      onDetailView={() =>
-                        navigate(
-                          `${routePrefix}/vaccine-batches?vaccineBatchId=${item.vaccineBatchId}&action=view`,
-                        )
-                      }
-                      onEdit={() =>
-                        navigate(
-                          `?vaccineBatchId=${item.vaccineBatchId}&action=edit`,
-                          {
+            {sortedVaccineBatches.map((item) => {
+              // Use STT number from hook (continuous across pages)
+              const sttValue = (item as VaccineBatchWithSTT).sttNumber || 1;
+
+              return (
+                <TableRow
+                  key={item.vaccineBatchId}
+                  className="hover:bg-accent/10 transition-colors duration-150"
+                >
+                  <TableCell className="text-dark font-nunito text-center text-sm">
+                    {sttValue}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito max-w-[140px] truncate text-center text-sm">
+                    {item.batchNumber}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito max-w-[200px] truncate text-center text-sm">
+                    {item.vaccineResponseDTO.name}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito text-center text-sm">
+                    {formatData.formatDate(item.manufactureDate)}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito text-center text-sm">
+                    {formatData.formatDate(item.expiryDate)}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito text-center text-sm">
+                    {item.quantity}
+                  </TableCell>
+                  <TableCell className="text-dark font-nunito text-center text-sm">
+                    {item.vaccineResponseDTO.price.toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeColor(item.expiryDate)}`}
+                    >
+                      {getStatusText(item.expiryDate)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-center">
+                      <VaccineBatchActionMenu
+                        batchNumber={item.batchNumber}
+                        isDeleting={isDeleting}
+                        onQuickView={() =>
+                          navigate(`?vaccineBatchId=${item.vaccineBatchId}`, {
                             replace: false,
-                          },
-                        )
-                      }
-                      onViewHistory={() =>
-                        handleViewHistory(item.vaccineBatchId, item.batchNumber)
-                      }
-                      onViewImportHistory={() =>
-                        handleViewImportHistory(
-                          item.vaccineBatchId,
-                          item.batchNumber,
-                        )
-                      }
-                      onDelete={() => handleDelete(item.vaccineBatchId)}
-                    />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                          })
+                        }
+                        onDetailView={() =>
+                          navigate(
+                            `${routePrefix}/vaccine-batches?vaccineBatchId=${item.vaccineBatchId}&action=view`,
+                          )
+                        }
+                        onEdit={() =>
+                          navigate(
+                            `?vaccineBatchId=${item.vaccineBatchId}&action=edit`,
+                            {
+                              replace: false,
+                            },
+                          )
+                        }
+                        onViewHistory={() =>
+                          handleViewHistory(
+                            item.vaccineBatchId,
+                            item.batchNumber,
+                          )
+                        }
+                        onDelete={() => handleDelete(item.vaccineBatchId)}
+                      />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         ) : null}
       </Table>
 
-      {!isPending && vaccineBatches.length === 0 && <EmptyTable />}
+      {!isPending && sortedVaccineBatches.length === 0 && <EmptyTable />}
     </div>
   );
 }

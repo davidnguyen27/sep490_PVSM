@@ -8,9 +8,16 @@ interface CustomerInfoSectionProps {
 
 export function CustomerInfoSection({ customer }: CustomerInfoSectionProps) {
   return (
-    <div className="space-y-6 lg:col-span-2">
-      <CustomerBasicInfo customer={customer} />
-      <CustomerAccountInfo customer={customer} />
+    <div className="space-y-8">
+      {/* Basic Information Card */}
+      <div className="rounded-lg bg-white shadow-lg">
+        <CustomerBasicInfo customer={customer} />
+      </div>
+
+      {/* Account Information Card */}
+      <div className="rounded-lg bg-white shadow-lg">
+        <CustomerAccountInfo customer={customer} />
+      </div>
     </div>
   );
 }

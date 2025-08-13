@@ -11,7 +11,7 @@ export function CustomerFilter() {
   return (
     <>
       <div className="flex flex-col gap-1">
-        <Label htmlFor="status" className="font-nunito-600 text-xs">
+        <Label htmlFor="status" className="font-inter text-xs font-semibold">
           Trạng thái
         </Label>
         <Select value={status?.toString()}>

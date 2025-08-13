@@ -1,11 +1,18 @@
 // components
-import { PageBreadcrumb } from "@/components/shared";
 import {
-  FilterSection,
-  ResultsSection,
+  PageBreadcrumb,
+  PageLoader,
+  SearchLabel,
+  Pagination,
+  ButtonSpinner,
+  InlineLoading,
+} from "@/components/shared";
+import {
+  VaccineReceiptTable,
   VaccineReceiptModalCreate,
   VaccineReceiptEditModal,
 } from "../components";
+import { Button } from "@/components/ui/button";
 import VaccineReceiptDetailPage from "./VaccineReceiptDetailPage";
 
 // hooks
@@ -14,6 +21,9 @@ import { useSearchParams } from "react-router-dom";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useVaccineReceipts, useVaccineReceiptDelete } from "../hooks";
 import type { VaccineReceipt } from "../types/vaccine-receipt.type";
+
+// icons
+import { FileText, Plus } from "lucide-react";
 
 // constants
 import { VACCINE_RECEIPT_PAGE_SIZES } from "../constants";
@@ -26,6 +36,16 @@ export default function VaccineReceiptListPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedReceiptForEdit, setSelectedReceiptForEdit] =
     useState<VaccineReceipt | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Set document title
+  useEffect(() => {
+    document.title = "PVMS | Quản lý phiếu nhập vaccine";
+
+    return () => {
+      document.title = "PVMS";
+    };
+  }, []);
 
   // Get vaccineReceiptId from URL params for view detail
   const viewReceiptIdParam = searchParams.get("vaccineReceipt");
@@ -72,49 +92,84 @@ export default function VaccineReceiptListPage() {
     setSelectedReceiptForEdit(null);
   };
 
+  const handleCreateVaccineReceipt = async () => {
+    setIsCreating(true);
+    try {
+      setShowCreateModal(true);
+    } finally {
+      setTimeout(() => setIsCreating(false), 100);
+    }
+  };
+
   // If vaccineReceipt query param exists, show detail page instead of list
   if (showDetailPage) {
     return <VaccineReceiptDetailPage />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      <div className="space-y-2 bg-white p-6">
-        <h1 className="text-primary font-inter-700 text-3xl">
-          Quản lý phiếu nhập vaccine
-        </h1>
-        <PageBreadcrumb items={["Trang chủ", "Phiếu nhập vaccine"]} />
+    <PageLoader
+      loading={isPending && !isFetching}
+      loadingText="Đang tải danh sách phiếu nhập vaccine..."
+    >
+      <div className="space-y-6">
+        <div className="flex items-center space-x-2">
+          <FileText color="#00B8A9" />
+          <h1 className="text-primary font-inter-700 text-2xl">
+            Quản lý phiếu nhập vaccine
+          </h1>
+        </div>
+        <PageBreadcrumb items={["Phiếu nhập vaccine"]} />
+
+        <div className="bg-linen flex items-end justify-between p-4 shadow-md">
+          <div className="flex items-end justify-between gap-4">
+            <SearchLabel value={search} onChange={setSearch} />
+            {/* TODO: Add VaccineReceiptFilter component when ready */}
+            {/* <VaccineReceiptFilter /> */}
+          </div>
+
+          {/* Search loading indicator */}
+          {debouncedSearch && isFetching && (
+            <InlineLoading text="Đang tìm kiếm..." variant="muted" size="sm" />
+          )}
+
+          <Button
+            onClick={handleCreateVaccineReceipt}
+            disabled={isCreating}
+            className="font-nunito-600 bg-primary hover:bg-secondary text-white"
+          >
+            {isCreating && <ButtonSpinner variant="white" size="sm" />}
+            <Plus className="mr-2 h-4 w-4" />
+            {isCreating ? "Đang tạo..." : "Thêm phiếu nhập"}
+          </Button>
+        </div>
+
+        <VaccineReceiptTable
+          data={pageData}
+          isPending={isPending || isFetching}
+          currentPage={page}
+          pageSize={VACCINE_RECEIPT_PAGE_SIZES.DEFAULT}
+          onViewDetail={handleViewDetail}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
+
+        <VaccineReceiptModalCreate
+          open={showCreateModal}
+          onOpenChange={setShowCreateModal}
+        />
+
+        <VaccineReceiptEditModal
+          open={showEditModal}
+          onOpenChange={handleCloseEditModal}
+          vaccineReceipt={selectedReceiptForEdit}
+        />
       </div>
-
-      <FilterSection
-        search={search}
-        onSearchChange={setSearch}
-        onCreateClick={() => setShowCreateModal(true)}
-      />
-
-      <ResultsSection
-        vaccineReceipts={pageData}
-        isPending={isPending || isFetching}
-        currentPage={page}
-        pageSize={VACCINE_RECEIPT_PAGE_SIZES.DEFAULT}
-        searchKeyword={search}
-        totalPages={totalPages}
-        onPageChange={(newPage) => setPage(newPage)}
-        onViewDetail={handleViewDetail}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-
-      <VaccineReceiptModalCreate
-        open={showCreateModal}
-        onOpenChange={setShowCreateModal}
-      />
-
-      <VaccineReceiptEditModal
-        open={showEditModal}
-        onOpenChange={handleCloseEditModal}
-        vaccineReceipt={selectedReceiptForEdit}
-      />
-    </div>
+    </PageLoader>
   );
 }

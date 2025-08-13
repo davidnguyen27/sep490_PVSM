@@ -5,7 +5,6 @@ import {
   SquarePen,
   Trash2,
   History,
-  Package,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -25,7 +24,6 @@ interface Props {
   onEdit: () => void;
   onDelete: () => void;
   onViewHistory: () => void;
-  onViewImportHistory: () => void;
 }
 
 export function VaccineBatchActionMenu({
@@ -36,7 +34,6 @@ export function VaccineBatchActionMenu({
   onEdit,
   onDelete,
   onViewHistory,
-  onViewImportHistory,
 }: Props) {
   return (
     <DropdownMenu>
@@ -63,15 +60,7 @@ export function VaccineBatchActionMenu({
 
         <DropdownMenuItem onClick={onViewHistory} className="cursor-pointer">
           <History className="mr-2 h-4 w-4 text-green-600" />
-          Xem lịch sử xuất kho
-        </DropdownMenuItem>
-
-        <DropdownMenuItem
-          onClick={onViewImportHistory}
-          className="cursor-pointer"
-        >
-          <Package className="mr-2 h-4 w-4 text-blue-600" />
-          Xem lịch sử nhập kho
+          Xem lịch sử
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={onEdit} className="cursor-pointer">

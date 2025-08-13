@@ -7,18 +7,17 @@ import { extractErrorMessage } from "@/shared/utils/error.utils";
 
 interface Params {
   payload: VetPayload;
-  vetId: number;
 }
 
 export function useVetUpdate() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ payload, vetId }: Params) =>
-      vetService.updateVet(vetId, payload),
+    mutationFn: ({ payload }: Params) => vetService.updateVet(payload),
     onSuccess: ({ message }) => {
       toast.success(message);
       queryClient.invalidateQueries({ queryKey: ["vet", "detail"] });
+      queryClient.invalidateQueries({ queryKey: ["vets"] });
     },
     onError: (error: AxiosError) => {
       toast.error(extractErrorMessage(error));

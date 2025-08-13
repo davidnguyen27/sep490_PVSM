@@ -5,7 +5,5 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  return (
-    <div className="min-h-full space-y-6 bg-[#F8FFFE] p-6">{children}</div>
-  );
+  return <div className="min-h-full space-y-6">{children}</div>;
 }

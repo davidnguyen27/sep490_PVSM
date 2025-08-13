@@ -45,7 +45,21 @@ export function PetModalUpdate({
   );
   const form = useForm<PetSchema>({
     resolver: zodResolver(petSchema),
-    ...defaultValues,
+    defaultValues: {
+      customerId: defaultValues?.customerId?.toString() || "",
+      name: defaultValues?.name || "",
+      species: defaultValues?.species || "",
+      breed: defaultValues?.breed || "",
+      gender: defaultValues?.gender || "",
+      dateOfBirth: defaultValues?.dateOfBirth || "",
+      placeOfBirth: defaultValues?.placeOfBirth || "",
+      placeToLive: defaultValues?.placeToLive || "",
+      weight: defaultValues?.weight || "",
+      color: defaultValues?.color || "",
+      nationality: defaultValues?.nationality || "",
+      isSterilized: defaultValues?.isSterilized || false,
+      image: defaultValues?.image || undefined,
+    },
   });
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {

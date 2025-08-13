@@ -1,11 +1,12 @@
 import type { DashboardAdminData } from "../types/dashboard.type";
+import type { IconName } from "@/shared/constants/icons.constants";
 
 export interface ActivityData {
   id: number;
   title: string;
   description: string;
   time: string;
-  iconName: string;
+  iconName: IconName;
   color: string;
 }
 

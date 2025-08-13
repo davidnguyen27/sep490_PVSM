@@ -9,10 +9,10 @@ export function CustomerNotFound({ onGoBack }: CustomerNotFoundProps) {
   return (
     <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4">
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="font-nunito text-lg font-semibold text-gray-900">
           Không tìm thấy khách hàng
         </h3>
-        <p className="text-gray-600">
+        <p className="font-inter text-gray-600">
           Khách hàng không tồn tại hoặc đã bị xóa.
         </p>
       </div>

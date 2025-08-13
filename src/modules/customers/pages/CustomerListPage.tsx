@@ -1,28 +1,42 @@
-import { useDebounce } from "@/shared/hooks";
-import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { useCustomers, useCustomerById, useCustomerUpdate } from "../hooks";
-import { PageBreadcrumb, Pagination, SearchLabel } from "@/components/shared";
-import { CustomerTable } from "../components/CustomerTable";
-import { CustomerFilter } from "../components/CustomerFilter";
-import { CustomerEditModal } from "../components/CustomerEditModal";
+// components
+import {
+  PageBreadcrumb,
+  SearchLabel,
+  Pagination,
+  PageLoader,
+  InlineLoading,
+} from "@/components/shared";
+import {
+  CustomerTable,
+  CustomerFilter,
+  CustomerEditModal,
+} from "../components";
 import { CustomerDetailPage } from "../index";
+
+// hooks
+import { useState } from "react";
+import { useDebounce } from "@/shared/hooks/useDebounce";
+import { useCustomers, useCustomerById, useCustomerUpdate } from "../hooks";
+import { useSearchParams, useNavigate } from "react-router-dom";
+
+// icons
 import { User } from "lucide-react";
 
 export default function CustomerManagementPage() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const customerId = searchParams.get("customerId");
   const action = searchParams.get("action");
 
-  const searchDebounced = useDebounce(search, 400);
+  // Customer data for list view - frontend sorting handles newest first
+  const debouncedSearch = useDebounce(search, 500, { leading: true });
   const { data, isPending, isFetching } = useCustomers({
     pageNumber: page,
     pageSize: 10,
-    keyWord: searchDebounced,
+    keyWord: debouncedSearch,
   });
 
   // Get customer data for edit modal
@@ -33,17 +47,13 @@ export default function CustomerManagementPage() {
   // Update customer hook
   const { mutate: updateCustomer, isPending: isUpdating } = useCustomerUpdate();
 
-  const pageData = data?.data.pageData ?? [];
-  const totalPages = data?.data.pageInfo.totalPage ?? 1;
-
-  useEffect(() => {
-    setPage(1);
-  }, [searchDebounced]);
-
-  // Show detail page if customerId is present and not in edit mode
+  // Check if we should show detail page
   if (customerId && action !== "edit") {
     return <CustomerDetailPage />;
   }
+
+  const pageData = data?.data.pageData ?? [];
+  const totalPages = data?.data.pageInfo.totalPage ?? 1;
 
   const handleCloseModal = () => {
     navigate("/admin/customers", { replace: true });
@@ -74,53 +84,53 @@ export default function CustomerManagementPage() {
   };
 
   return (
-    <>
-      <div className="space-y-1">
-        <h1 className="text-primary font-inter-700 flex items-center gap-2 text-xl">
-          <User /> Quản lý khách hàng
-        </h1>
-        <PageBreadcrumb items={["Trang chủ", "Khách hàng"]} />
+    <PageLoader
+      loading={isPending && !isFetching}
+      loadingText="Đang tải danh sách khách hàng..."
+    >
+      <div className="space-y-6">
+        <div className="flex items-center space-x-2">
+          <User color="#00B8A9" />
+          <h1 className="text-primary font-nunito text-2xl font-bold">
+            Quản lý khách hàng
+          </h1>
+        </div>
+        <PageBreadcrumb items={["Khách hàng"]} />
+
+        <div className="bg-linen flex items-end justify-between p-4 shadow-md">
+          <div className="flex items-end justify-between gap-4">
+            <SearchLabel value={search} onChange={setSearch} />
+            <CustomerFilter />
+          </div>
+
+          {/* Search loading indicator */}
+          {debouncedSearch && isFetching && (
+            <InlineLoading text="Đang tìm kiếm..." variant="muted" size="sm" />
+          )}
+        </div>
+
+        <CustomerTable
+          customers={pageData}
+          isPending={isPending || isFetching}
+          currentPage={page}
+          pageSize={10}
+        />
+
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
+
+        {/* Customer Edit Modal */}
+        <CustomerEditModal
+          open={Boolean(customerId && action === "edit")}
+          onClose={handleCloseModal}
+          customer={customerData || null}
+          onSubmit={handleUpdateCustomer}
+          isLoading={isCustomerPending || isUpdating}
+        />
       </div>
-
-      <div className="bg-linen flex flex-wrap items-end gap-4 p-4 shadow-md">
-        <SearchLabel value={search} onChange={setSearch} />
-        <CustomerFilter />
-        {/* <Button
-            className="font-nunito-500"
-            onClick={() => setOpenCreate(true)}
-          >
-            <PlusCircle /> Thêm microchip
-          </Button> */}
-      </div>
-
-      <CustomerTable
-        customers={pageData}
-        isPending={isPending || isFetching}
-        currentPage={page}
-        pageSize={10}
-      />
-
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        onPageChange={(newPage) => setPage(newPage)}
-      />
-
-      {/* <MicrochipModalCreate
-          open={openCreate}
-          onClose={() => setOpenCreate(false)}
-          submit={handleCreate}
-          isSubmitting={isCreating}
-        /> */}
-
-      {/* Customer Edit Modal */}
-      <CustomerEditModal
-        open={Boolean(customerId && action === "edit")}
-        onClose={handleCloseModal}
-        customer={customerData || null}
-        onSubmit={handleUpdateCustomer}
-        isLoading={isCustomerPending || isUpdating}
-      />
-    </>
+    </PageLoader>
   );
 }

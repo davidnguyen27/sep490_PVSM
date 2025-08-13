@@ -6,7 +6,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Input, Button } from "@/components/ui";
+import { Input } from "@/components/ui";
 import {
   Select,
   SelectContent,
@@ -17,7 +17,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { PetSchema } from "../schemas/pet.schema";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
   Dog,
@@ -31,312 +31,373 @@ import {
   Globe,
   CheckCircle,
   Camera,
-  Save,
   ImageIcon,
 } from "lucide-react";
+import { CustomerSelectField } from "./form/CustomerSelectField";
 
 interface Props {
   form: UseFormReturn<PetSchema>;
   onSubmit: (data: PetSchema) => void;
 }
 
+// Constants
+const FORM_CONFIG = {
+  IMAGE_SIZE: { width: 192, height: 192 }, // 48 * 4 = 192px (h-48 w-48)
+  ICON_SIZE: { small: 16, medium: 20 },
+  FILE_CONSTRAINTS: {
+    maxSize: 5 * 1024 * 1024, // 5MB
+    acceptedTypes: "image/jpeg,image/png,image/webp",
+    acceptedTypesArray: ["image/jpeg", "image/png", "image/webp"] as const,
+  },
+} as const;
+
+const SPECIES_OPTIONS = [
+  { value: "Dog", label: "🐕 Chó" },
+  { value: "Cat", label: "🐱 Mèo" },
+] as const;
+
+const GENDER_OPTIONS = [
+  { value: "Male", label: "♂️ Đực" },
+  { value: "Female", label: "♀️ Cái" },
+] as const;
+
+// Type definitions
+type StringFieldName = Extract<
+  keyof PetSchema,
+  | "name"
+  | "breed"
+  | "dateOfBirth"
+  | "weight"
+  | "color"
+  | "placeOfBirth"
+  | "placeToLive"
+  | "nationality"
+>;
+type SelectFieldName = Extract<keyof PetSchema, "species" | "gender">;
+
+// Utility functions
+const isValidImageFile = (file: File): boolean => {
+  const validTypes = ["image/jpeg", "image/png", "image/webp"];
+  return (
+    file.size <= FORM_CONFIG.FILE_CONSTRAINTS.maxSize &&
+    validTypes.includes(file.type)
+  );
+};
+
+const createImagePreview = (file: File): string => URL.createObjectURL(file);
+
+// Helper Components
+interface IconLabelProps {
+  icon: React.ComponentType<{ size: number; className?: string }>;
+  children: React.ReactNode;
+}
+
+const IconLabel: React.FC<IconLabelProps> = ({ icon: Icon, children }) => (
+  <FormLabel className="flex items-center gap-2 text-sm font-medium">
+    <Icon size={FORM_CONFIG.ICON_SIZE.small} className="text-primary" />
+    {children}
+  </FormLabel>
+);
+
+interface SelectFieldProps {
+  form: UseFormReturn<PetSchema>;
+  name: SelectFieldName;
+  label: string;
+  icon: React.ComponentType<{ size: number; className?: string }>;
+  placeholder: string;
+  options: readonly { value: string; label: string }[];
+}
+
+const SelectField: React.FC<SelectFieldProps> = ({
+  form,
+  name,
+  label,
+  icon,
+  placeholder,
+  options,
+}) => (
+  <FormField
+    control={form.control}
+    name={name}
+    render={({ field }) => (
+      <FormItem>
+        <IconLabel icon={icon}>{label}</IconLabel>
+        <FormControl>
+          <Select value={field.value || ""} onValueChange={field.onChange}>
+            <SelectTrigger>
+              <SelectValue placeholder={placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map(({ value, label }) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
+interface InputFieldProps {
+  form: UseFormReturn<PetSchema>;
+  name: StringFieldName;
+  label: string;
+  icon: React.ComponentType<{ size: number; className?: string }>;
+  placeholder?: string;
+  type?: "text" | "number" | "date";
+  step?: string;
+  className?: string;
+}
+
+const InputField: React.FC<InputFieldProps> = ({
+  form,
+  name,
+  label,
+  icon,
+  placeholder,
+  type = "text",
+  step,
+  className,
+}) => (
+  <FormField
+    control={form.control}
+    name={name}
+    render={({ field }) => (
+      <FormItem className={className}>
+        <IconLabel icon={icon}>{label}</IconLabel>
+        <FormControl>
+          <Input
+            {...field}
+            value={field.value || ""}
+            type={type}
+            step={step}
+            placeholder={placeholder}
+            className="border-border focus:border-primary focus:ring-primary/20"
+          />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
+interface FormSectionProps {
+  title: string;
+  icon: React.ComponentType<{ size: number; className?: string }>;
+  children: React.ReactNode;
+}
+
+const FormSection: React.FC<FormSectionProps> = ({
+  title,
+  icon: Icon,
+  children,
+}) => (
+  <Card className="rounded-none shadow-sm">
+    <CardHeader>
+      <CardTitle className="text-primary flex items-center space-x-2 text-lg">
+        <Icon size={FORM_CONFIG.ICON_SIZE.medium} />
+        <span>{title}</span>
+      </CardTitle>
+    </CardHeader>
+    <CardContent>{children}</CardContent>
+  </Card>
+);
+
+interface ImagePreviewProps {
+  preview: string;
+  alt: string;
+}
+
+const ImagePreview: React.FC<ImagePreviewProps> = ({ preview, alt }) => (
+  <div className="flex justify-center">
+    <div className="relative">
+      <img
+        src={preview}
+        alt={alt}
+        className="border-primary/30 h-48 w-48 rounded-lg border-2 border-dashed object-cover shadow-lg"
+        style={{
+          width: FORM_CONFIG.IMAGE_SIZE.width,
+          height: FORM_CONFIG.IMAGE_SIZE.height,
+        }}
+      />
+      <div className="absolute inset-0 rounded-lg bg-black/10" />
+    </div>
+  </div>
+);
+
+const EmptyImagePlaceholder: React.FC = () => (
+  <div className="flex h-48 w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
+    <div className="text-center">
+      <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+      <p className="mt-2 text-sm text-gray-500">Chưa có ảnh</p>
+    </div>
+  </div>
+);
+
 export function PetFormUpdate({ form, onSubmit }: Props) {
   const [preview, setPreview] = useState("");
 
+  // ✅ Enhanced effect to handle both File objects and URL strings
   useEffect(() => {
     const img = form.getValues("image");
-    if (typeof img === "string") {
-      setPreview(img);
+
+    if (img) {
+      if (typeof img === "string") {
+        // Image from database (URL string)
+        setPreview(img);
+      } else if (img instanceof File) {
+        // New uploaded file
+        setPreview(createImagePreview(img));
+      }
+    } else {
+      // No image
+      setPreview("");
     }
   }, [form]);
 
+  // ✅ Watch for form changes to update preview
+  const watchedImage = form.watch("image");
+
+  useEffect(() => {
+    if (watchedImage) {
+      if (typeof watchedImage === "string") {
+        setPreview(watchedImage);
+      } else if (watchedImage instanceof File) {
+        setPreview(createImagePreview(watchedImage));
+      }
+    } else {
+      setPreview("");
+    }
+  }, [watchedImage]);
+
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      form.setValue("image", file);
-      setPreview(URL.createObjectURL(file));
+    if (!file) return;
+
+    // Validate file
+    if (!isValidImageFile(file)) {
+      console.error("Invalid file type or size");
+      return;
     }
+
+    // Set new file and update preview
+    form.setValue("image", file);
+    setPreview(createImagePreview(file));
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Thông tin cơ bản */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-primary flex items-center space-x-2 text-lg">
-              <PawPrint size={20} />
-              <span>Thông tin cơ bản</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {/* Tên thú cưng */}
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                      <PawPrint size={16} className="text-primary" />
-                      Tên thú cưng
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nhập tên thú cưng"
-                        className="border-border focus:border-primary focus:ring-primary/20"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Loài */}
-              <FormField
-                control={form.control}
-                name="species"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                      <Dog size={16} className="text-primary" />
-                      Loài
-                    </FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn loài" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Dog">🐕 Chó</SelectItem>
-                          <SelectItem value="Cat">🐱 Mèo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Giống */}
-              <FormField
-                control={form.control}
-                name="breed"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                      <BadgeInfo size={16} className="text-primary" />
-                      Giống
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nhập giống"
-                        className="border-border focus:border-primary focus:ring-primary/20"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Giới tính */}
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                      <Heart size={16} className="text-primary" />
-                      Giới tính
-                    </FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn giới tính" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Male">♂️ Đực</SelectItem>
-                          <SelectItem value="Female">♀️ Cái</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Ngày sinh */}
-              <FormField
-                control={form.control}
-                name="dateOfBirth"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                      <Calendar size={16} className="text-primary" />
-                      Ngày sinh
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        className="border-border focus:border-primary focus:ring-primary/20"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Cân nặng */}
-              <FormField
-                control={form.control}
-                name="weight"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                      <Weight size={16} className="text-primary" />
-                      Cân nặng (kg)
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nhập cân nặng"
-                        type="number"
-                        step="0.1"
-                        className="border-border focus:border-primary focus:ring-primary/20"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Màu sắc */}
-              <FormField
-                control={form.control}
-                name="color"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-1">
-                    <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                      <Palette size={16} className="text-primary" />
-                      Màu sắc
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nhập màu sắc"
-                        className="border-border focus:border-primary focus:ring-primary/20"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+      <form
+        id="pet-update-form"
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-8"
+      >
+        {/* Basic Information */}
+        <FormSection title="Thông tin cơ bản" icon={PawPrint}>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <CustomerSelectField
+                form={form}
+                showSearch={false}
+                maxDisplayItems={100}
               />
             </div>
-          </CardContent>
-        </Card>
+            <InputField
+              form={form}
+              name="name"
+              label="Tên thú cưng"
+              icon={PawPrint}
+              placeholder="Nhập tên thú cưng"
+            />
+            <SelectField
+              form={form}
+              name="species"
+              label="Loài"
+              icon={Dog}
+              placeholder="Chọn loài"
+              options={SPECIES_OPTIONS}
+            />
+            <InputField
+              form={form}
+              name="breed"
+              label="Giống"
+              icon={BadgeInfo}
+              placeholder="Nhập giống"
+            />
+            <SelectField
+              form={form}
+              name="gender"
+              label="Giới tính"
+              icon={Heart}
+              placeholder="Chọn giới tính"
+              options={GENDER_OPTIONS}
+            />
+            <InputField
+              form={form}
+              name="dateOfBirth"
+              label="Ngày sinh"
+              icon={Calendar}
+              type="date"
+            />
+            <InputField
+              form={form}
+              name="weight"
+              label="Cân nặng (kg)"
+              icon={Weight}
+              placeholder="Nhập cân nặng"
+              type="number"
+              step="0.1"
+            />
+            <InputField
+              form={form}
+              name="color"
+              label="Màu sắc"
+              icon={Palette}
+              placeholder="Nhập màu sắc"
+            />
+          </div>
+        </FormSection>
 
         <Separator />
 
-        {/* Thông tin địa chỉ */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-primary flex items-center space-x-2 text-lg">
-              <MapPin size={20} />
-              <span>Thông tin địa chỉ</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {/* Nơi sinh */}
-              <FormField
-                control={form.control}
-                name="placeOfBirth"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                      <MapPin size={16} className="text-primary" />
-                      Nơi sinh
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nhập nơi sinh"
-                        className="border-border focus:border-primary focus:ring-primary/20"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Nơi ở hiện tại */}
-              <FormField
-                control={form.control}
-                name="placeToLive"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                      <MapPin size={16} className="text-primary" />
-                      Nơi ở hiện tại
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nhập nơi ở hiện tại"
-                        className="border-border focus:border-primary focus:ring-primary/20"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Quốc tịch */}
-              <FormField
-                control={form.control}
-                name="nationality"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                      <Globe size={16} className="text-primary" />
-                      Quốc tịch
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nhập quốc tịch"
-                        className="border-border focus:border-primary focus:ring-primary/20"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        {/* Address Information */}
+        <FormSection title="Thông tin địa chỉ" icon={MapPin}>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <InputField
+              form={form}
+              name="placeOfBirth"
+              label="Nơi sinh"
+              icon={MapPin}
+              placeholder="Nhập nơi sinh"
+            />
+            <InputField
+              form={form}
+              name="placeToLive"
+              label="Nơi ở hiện tại"
+              icon={MapPin}
+              placeholder="Nhập nơi ở hiện tại"
+            />
+            <InputField
+              form={form}
+              name="nationality"
+              label="Quốc tịch"
+              icon={Globe}
+              placeholder="Nhập quốc tịch"
+              className="md:col-span-2"
+            />
+          </div>
+        </FormSection>
 
         <Separator />
 
-        {/* Hình ảnh và tình trạng */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-primary flex items-center space-x-2 text-lg">
-              <Camera size={20} />
-              <span>Hình ảnh & Tình trạng</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Checkbox Triệt sản */}
+        {/* Image & Status */}
+        <FormSection title="Hình ảnh & Tình trạng" icon={Camera}>
+          <div className="space-y-6">
+            {/* Sterilization Status */}
             <FormField
               control={form.control}
               name="isSterilized"
@@ -345,17 +406,18 @@ export function PetFormUpdate({ form, onSubmit }: Props) {
                   <FormControl>
                     <input
                       type="checkbox"
-                      checked={field.value}
+                      checked={Boolean(field.value)}
                       onChange={(e) => field.onChange(e.target.checked)}
                       className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
+                      aria-describedby="sterilization-description"
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                      <CheckCircle size={16} className="text-primary" />
-                      Đã triệt sản
-                    </FormLabel>
-                    <p className="text-muted-foreground text-sm">
+                    <IconLabel icon={CheckCircle}>Đã triệt sản</IconLabel>
+                    <p
+                      id="sterilization-description"
+                      className="text-muted-foreground text-sm"
+                    >
                       Đánh dấu nếu thú cưng đã được triệt sản
                     </p>
                   </div>
@@ -363,69 +425,46 @@ export function PetFormUpdate({ form, onSubmit }: Props) {
               )}
             />
 
-            {/* Ảnh hiện tại */}
+            {/* Current Image Preview */}
             <div className="space-y-4">
-              <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                <ImageIcon size={16} className="text-primary" />
-                Ảnh thú cưng hiện tại
-              </FormLabel>
+              <IconLabel icon={ImageIcon}>Ảnh thú cưng hiện tại</IconLabel>
               {preview ? (
-                <div className="flex justify-center">
-                  <div className="relative">
-                    <img
-                      src={preview}
-                      alt="Ảnh thú cưng"
-                      className="border-primary/30 h-48 w-48 rounded-lg border-2 border-dashed object-cover shadow-lg"
-                    />
-                    <div className="absolute inset-0 rounded-lg bg-black/10"></div>
-                  </div>
-                </div>
+                <ImagePreview preview={preview} alt="Ảnh thú cưng" />
               ) : (
-                <div className="flex h-48 w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-                  <div className="text-center">
-                    <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-500">Chưa có ảnh</p>
-                  </div>
-                </div>
+                <EmptyImagePlaceholder />
               )}
             </div>
 
-            {/* Upload ảnh mới */}
+            {/* Image Upload */}
             <FormField
               control={form.control}
               name="image"
               render={() => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2 text-sm font-medium">
-                    <Camera size={16} className="text-primary" />
-                    Chọn ảnh mới
-                  </FormLabel>
+                  <IconLabel icon={Camera}>Chọn ảnh mới</IconLabel>
                   <FormControl>
                     <Input
                       type="file"
-                      accept="image/*"
+                      accept={FORM_CONFIG.FILE_CONSTRAINTS.acceptedTypes}
                       onChange={handleUpload}
                       className="border-border file:bg-primary hover:file:bg-primary/90 file:mr-4 file:rounded-full file:border-0 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+                      aria-describedby="file-constraints"
                     />
                   </FormControl>
+                  <p
+                    id="file-constraints"
+                    className="text-muted-foreground text-xs"
+                  >
+                    Tối đa{" "}
+                    {FORM_CONFIG.FILE_CONSTRAINTS.maxSize / (1024 * 1024)}MB.
+                    Định dạng: JPEG, PNG, WebP
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          </CardContent>
-        </Card>
-
-        {/* Nút Lưu */}
-        <div className="flex justify-end pt-6">
-          <Button
-            type="submit"
-            size="lg"
-            className="bg-primary hover:bg-primary/90 px-8 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl"
-          >
-            <Save size={18} className="mr-2" />
-            Lưu thay đổi
-          </Button>
-        </div>
+          </div>
+        </FormSection>
       </form>
     </Form>
   );

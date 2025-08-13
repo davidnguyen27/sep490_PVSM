@@ -43,7 +43,7 @@ export interface MicrochipItemByCode {
       address: string;
       currentPoints: number;
       redeemablePoints: number;
-      totalSpent: 31000;
+      totalSpent: number;
       createdAt: string;
       createdBy: string;
       modifiedAt: string;

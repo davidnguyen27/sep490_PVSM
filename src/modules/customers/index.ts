@@ -2,13 +2,11 @@
 export { useCustomers, useCustomerById, useCustomerUpdate } from "./hooks";
 
 // Services
-export {
-  customerService,
-  type CustomerUpdatePayload,
-} from "./services/customer.service";
+export { customerService } from "./services/customer.service";
 
 // Types
 export type { Customer } from "./types/customer.type";
+export type { CustomerPayload } from "./types/customer.payload.type";
 
 // Components
 export { CustomerTable } from "./components/CustomerTable";

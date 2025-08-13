@@ -6,7 +6,7 @@ interface DashboardLoadingProps {
 
 export default function DashboardLoading({ apiUrl }: DashboardLoadingProps) {
   return (
-    <div className="flex min-h-full items-center justify-center bg-[#F8FFFE] p-6">
+    <div className="flex min-h-full items-center justify-center">
       <div className="text-center">
         <Spinner size="lg" />
         <p className="font-nunito-400 mt-4 text-gray-600">

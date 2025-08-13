@@ -60,7 +60,7 @@ export default function AdminDashboardPage() {
             title={stat.title}
             value={stat.value}
             change={stat.change}
-            iconName={stat.iconName as any}
+            iconName={stat.iconName}
             color={stat.color}
           />
         ))}
@@ -68,7 +68,7 @@ export default function AdminDashboardPage() {
 
       {/* Activities Section */}
       <ActivitiesGrid>
-        <RecentActivities activities={recentActivitiesData as any} />
+        <RecentActivities activities={recentActivitiesData} />
         <QuickStatsActions
           appointmentStats={appointmentStats}
           totalVets={dashboardData?.totalVets || 0}

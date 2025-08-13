@@ -1,3 +1,12 @@
 export { VetTable } from "./VetTable";
 export { VetFilter } from "./VetFilter";
 export { VetModal } from "./VetModal";
+export { VetModalUpdate } from "./VetModalUpdate";
+export { VetModalCreate } from "./VetModalCreate";
+export { VetBasicInfoForm } from "./VetBasicInfoForm";
+export { VetProfessionalInfoForm } from "./VetProfessionalInfoForm";
+export { VetUpdateFormHeader } from "./VetUpdateFormHeader";
+export { VetCreateFormHeader } from "./VetCreateFormHeader";
+export { VetAvatarSection } from "./VetAvatarSection";
+export { VetUpdateFormActions } from "./VetUpdateFormActions";
+export { VetCreateFormActions } from "./VetCreateFormActions";

@@ -33,7 +33,7 @@ const adminSidebarItems = [
     icon: <icons.ShieldCheck size={20} />,
     children: [
       {
-        label: "Bác sĩ",
+        label: "Bác sỹ",
         icon: <icons.Stethoscope size={18} />,
         path: "/admin/vets",
       },
@@ -90,9 +90,9 @@ export default function AdminLayout() {
       <div className="flex min-h-0 flex-1">
         <Sidebar items={adminSidebarItems} />
 
-        <main className="flex min-h-0 flex-1 flex-col bg-gray-50">
+        <main className="flex min-h-0 flex-1 flex-col bg-gray-100">
           <div className="flex-1 overflow-y-auto">
-            <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <div className="mx-auto px-4 py-4 sm:px-6 lg:px-8">
               <Suspense fallback={<Spinner />}>
                 <Outlet />
               </Suspense>

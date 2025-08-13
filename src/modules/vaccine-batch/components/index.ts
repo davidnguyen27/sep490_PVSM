@@ -8,3 +8,7 @@ export { VaccineBatchAddForm } from "./VaccineBatchAddForm";
 export { VaccineBatchAddModal } from "./VaccineBatchAddModal";
 export { VaccineBatchUpdateForm } from "./VaccineBatchUpdateForm";
 export { VaccineBatchUpdateModal } from "./VaccineBatchUpdateModal";
+export { VaccineBatchHeader } from "./VaccineBatchHeader";
+export { VaccineBatchStatistics } from "./VaccineBatchStatistics";
+export { VaccineBatchHistoryTable } from "./VaccineBatchHistoryTable";
+export { VaccineBatchLoadingState } from "./VaccineBatchLoadingState";

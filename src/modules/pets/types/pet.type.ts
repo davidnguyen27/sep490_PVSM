@@ -9,10 +9,12 @@ export interface Pet {
   dateOfBirth: string;
   placeToLive: string;
   placeOfBirth: string;
-  image: File | null;
+  image: File | string | null; // ✅ Support both File objects and URL strings
   weight: string;
   color: string;
   nationality: string;
-  isSterilized: true;
+  isSterilized: boolean; // ✅ Changed from `true` to `boolean`
   customerResponseDTO: object;
+  // Index signature to make it compatible with SortableItem
+  [key: string]: unknown;
 }

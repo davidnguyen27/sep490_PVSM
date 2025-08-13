@@ -10,14 +10,18 @@ interface CustomerAccountInfoProps {
 
 export function CustomerAccountInfo({ customer }: CustomerAccountInfoProps) {
   return (
-    <Card className="bg-linen rounded-none p-0 shadow-sm">
-      <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-blue-100 p-2.5">
-        <CardTitle className="font-inter flex items-center gap-2 text-blue-700">
-          <CreditCard size={20} />
-          Thông tin tài khoản
+    <Card className="rounded-none border-0 shadow-lg">
+      <CardHeader className="border-b-0 bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-4">
+        <CardTitle className="font-inter flex items-center gap-3 text-blue-700">
+          <div className="rounded-lg bg-blue-100 p-2">
+            <CreditCard size={20} />
+          </div>
+          <span className="font-nunito text-xl font-semibold">
+            Thông tin tài khoản
+          </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="px-8 py-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <InfoItem
             icon={<Receipt size={16} className="text-primary" />}

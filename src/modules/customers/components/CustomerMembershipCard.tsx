@@ -14,14 +14,18 @@ export function CustomerMembershipCard({
   if (!membership) return null;
 
   return (
-    <Card className="bg-linen rounded-none shadow-sm">
-      <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-purple-100">
-        <CardTitle className="font-inter flex items-center gap-2 text-purple-700">
-          <Star size={20} />
-          Thông tin hội viên
+    <Card className="rounded-none border-0 shadow-lg">
+      <CardHeader className="border-b-0 bg-gradient-to-r from-purple-50 to-purple-100 px-6 py-4">
+        <CardTitle className="font-inter flex items-center gap-3 text-purple-700">
+          <div className="rounded-lg bg-purple-100 p-2">
+            <Star size={20} />
+          </div>
+          <span className="font-nunito text-xl font-semibold">
+            Thông tin hội viên
+          </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="px-8 py-6">
         <div className="space-y-4">
           <div className="text-center">
             <Badge

@@ -44,6 +44,8 @@ export function ResultsSection({
       <VaccineReceiptTable
         data={vaccineReceipts}
         isPending={isPending}
+        currentPage={currentPage}
+        pageSize={pageSize}
         onViewDetail={onViewDetail}
         onEdit={onEdit}
         onDelete={onDelete}

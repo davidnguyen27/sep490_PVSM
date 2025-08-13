@@ -10,9 +10,20 @@ interface CustomerSidebarProps {
 export function CustomerSidebar({ customer }: CustomerSidebarProps) {
   return (
     <div className="space-y-6">
-      <CustomerAvatarCard customer={customer} />
-      <CustomerStatsCard />
-      <CustomerMembershipCard membership={customer.membershipResponseDTO} />
+      {/* Avatar Card */}
+      <div className="rounded-lg bg-white shadow-lg">
+        <CustomerAvatarCard customer={customer} />
+      </div>
+
+      {/* Stats Card */}
+      <div className="rounded-lg bg-white shadow-lg">
+        <CustomerStatsCard />
+      </div>
+
+      {/* Membership Card */}
+      <div className="rounded-lg bg-white shadow-lg">
+        <CustomerMembershipCard membership={customer.membershipResponseDTO} />
+      </div>
     </div>
   );
 }

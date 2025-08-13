@@ -27,12 +27,25 @@ export default function CustomerDetailPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <CustomerDetailHeader onGoBack={handleGoBack} onEdit={handleEdit} />
+    <div className="min-h-screen">
+      <div className="mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <div className="mb-8">
+          <CustomerDetailHeader onGoBack={handleGoBack} onEdit={handleEdit} />
+        </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <CustomerInfoSection customer={customer} />
-        <CustomerSidebar customer={customer} />
+        {/* Main Content */}
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+          {/* Customer Info - Takes 3 columns */}
+          <div className="lg:col-span-3">
+            <CustomerInfoSection customer={customer} />
+          </div>
+
+          {/* Sidebar - Takes 1 column */}
+          <div className="lg:col-span-1">
+            <CustomerSidebar customer={customer} />
+          </div>
+        </div>
       </div>
     </div>
   );

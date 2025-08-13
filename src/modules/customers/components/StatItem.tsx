@@ -20,12 +20,12 @@ export function StatItem({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {icon}
-          <span className={`font-nunito text-sm font-medium ${textColor}`}>
+          <span className={`font-inter text-sm font-medium ${textColor}`}>
             {label}
           </span>
         </div>
       </div>
-      <div className={`font-inter mt-1 text-lg font-bold ${textColor}`}>
+      <div className={`font-nunito mt-1 text-lg font-bold ${textColor}`}>
         {value}
         {suffix && (
           <span className="font-nunito ml-1 text-sm font-normal">{suffix}</span>

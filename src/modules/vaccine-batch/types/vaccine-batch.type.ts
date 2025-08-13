@@ -25,4 +25,6 @@ export interface VaccineBatch {
     modifiedBy: string;
     isDeleted: boolean;
   };
+  // Index signature to make it compatible with SortableItem
+  [key: string]: unknown;
 }

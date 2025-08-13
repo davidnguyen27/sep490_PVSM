@@ -1,4 +1,5 @@
 export interface VetPayload {
+  vetId: number | null;
   name: string;
   specialization: string;
   image: string;

@@ -58,7 +58,7 @@ export default function DiseaseListPage() {
   return (
     <div className="min-h-screen bg-gray-50/50">
       <div className="space-y-2 bg-white p-6">
-        <h1 className="text-primary font-inter-700 text-3xl">
+        <h1 className="text-primary font-inter-700 text-2xl">
           Quản lý bệnh tật
         </h1>
         <PageBreadcrumb items={["Bệnh tật"]} />
