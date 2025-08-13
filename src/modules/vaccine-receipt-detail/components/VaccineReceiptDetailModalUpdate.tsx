@@ -304,25 +304,10 @@ export function VaccineReceiptDetailModalUpdate({
                 control={form.control}
                 name="vaccineStatus"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Trạng thái <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn trạng thái" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Hoạt động</SelectItem>
-                        <SelectItem value="inactive">
-                          Không hoạt động
-                        </SelectItem>
-                        <SelectItem value="expired">Hết hạn</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
+                  <FormItem style={{ display: 'none' }}>
+                    <FormControl>
+                      <Input type="hidden" {...field} value="active" />
+                    </FormControl>
                   </FormItem>
                 )}
               />
@@ -414,10 +399,8 @@ export function VaccineReceiptDetailModalUpdate({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="storage">Lưu trữ</SelectItem>
-                        <SelectItem value="transport">Vận chuyển</SelectItem>
-                        <SelectItem value="received">Nhận hàng</SelectItem>
-                        <SelectItem value="dispensed">Phân phối</SelectItem>
+                        <SelectItem value="storage">Nhập tồn kho</SelectItem>
+                        <SelectItem value="transport">Nhập kho lô mới</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

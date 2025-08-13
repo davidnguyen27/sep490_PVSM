@@ -10,6 +10,8 @@ import {
 import { icons } from "@/shared/constants/icons.constants";
 import { images } from "@/shared/constants/images.constants";
 import { useSidebar } from "@/shared/hooks/useSidebar";
+import { useAuth } from "@/modules/auth/hooks/use-auth-context";
+import LogoutButton from "@/components/shared/LogoutButton";
 import { useNavigate } from "react-router-dom";
 import { Menu, Plus, ChevronDown, Scan, User } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -53,6 +55,7 @@ const HEADER_STYLES = {
 
 export default function Header() {
   const { toggleCollapse } = useSidebar();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
@@ -61,21 +64,15 @@ export default function Header() {
 
   // Mock user data - replace with actual user state
   const currentUser: User = {
-    name: "Trần Anh",
-    email: "trananh@vaxpet.vn",
-    initials: "TA",
-    role: "Admin",
+    name: user?.email?.split('@')[0] || "User",
+    email: user?.email || "user@vaxpet.vn",
+    initials: user?.email?.charAt(0).toUpperCase() || "U",
+    role: user?.role === 1 ? "Admin" : user?.role === 2 ? "Staff" : "Vet",
   };
 
   // Optimized event handlers with useCallback to prevent unnecessary re-renders
   const handleDropdownToggle = useCallback(() => {
     setIsDropdownOpen((prev) => !prev);
-  }, []);
-
-  const handleLogout = useCallback(() => {
-    console.log("Logging out...");
-    setIsDropdownOpen(false);
-    // Add actual logout logic here
   }, []);
 
   const handleViewProfile = useCallback(() => {
@@ -221,9 +218,8 @@ export default function Header() {
 
               <ChevronDown
                 size={16}
-                className={`text-gray-500 transition-transform duration-200 ${
-                  isDropdownOpen ? "rotate-180" : ""
-                }`}
+                className={`text-gray-500 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""
+                  }`}
               />
             </div>
 
@@ -265,13 +261,12 @@ export default function Header() {
                 {/* Logout Section */}
                 <div className={HEADER_STYLES.dropdownSeparator}></div>
                 <div className="py-2">
-                  <button
-                    onClick={handleLogout}
-                    className={`${HEADER_STYLES.dropdownItem} text-red-600 hover:bg-red-50`}
-                  >
-                    <icons.LogOut size={16} />
-                    <span>Đăng xuất</span>
-                  </button>
+                  <LogoutButton
+                    variant="ghost"
+                    className={`${HEADER_STYLES.dropdownItem} text-red-600 hover:bg-red-50 w-full justify-start`}
+                    showIcon={true}
+                    showText={true}
+                  />
                 </div>
               </div>
             )}

@@ -4,7 +4,7 @@ import { z } from "zod";
 const vaccineReceiptDetailSchema = z.object({
   vaccineBatchId: z.number({
     required_error: "Lô vaccine là bắt buộc",
-  }),
+  }).min(1, "Vui lòng chọn lô vaccine"),
   suppiler: z.string().min(1, "Nhà cung cấp là bắt buộc"),
   quantity: z
     .number({

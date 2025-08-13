@@ -1,8 +1,11 @@
 export { default as Header } from "./Header";
 export { default as Footer } from "./Footer";
 export { default as Sidebar } from "./Sidebar";
+export { default as SidebarLogout } from "./SidebarLogout";
 export { default as SearchLabel } from "./SearchLabel";
 export { default as Pagination } from "./Pagination";
+export { default as LogoutButton } from "./LogoutButton";
+export { default as LogoutConfirmModal } from "./LogoutConfirmModal";
 
 // Loading Components
 export { default as Spinner } from "./Spinner";

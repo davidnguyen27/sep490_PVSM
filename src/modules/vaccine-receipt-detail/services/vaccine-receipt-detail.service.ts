@@ -30,10 +30,10 @@ export const vaccineReceiptDetailService = {
 
   async getHistoryReceiptByVaccineBatch(
     vaccineBatchId: number | null,
-  ): Promise<VaccineReceiptDetail> {
+  ): Promise<VaccineReceiptDetail[]> {
     return await axiosInstance
       .get(
-        `api/VaccineReceiptDetail/get-receipt-details-by-vaccine-batch-id/${vaccineBatchId}`,
+        `/api/VaccineReceiptDetail/get-list-receipt-detail-by-vaccine-batch-id/${vaccineBatchId}`,
       )
       .then((res) => res.data.data);
   },

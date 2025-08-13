@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { formatData } from "@/shared/utils/format.utils";
 
 interface VaccineReceipt {
   receiptDate?: string;
@@ -48,18 +47,16 @@ interface HistoryEntry {
 interface CombinedHistoryEntry {
   id: string;
   date: string;
-  importCode?: string;
+  time: string;
+  type: "import" | "export";
+  receiptCode?: string;
   exportCode?: string;
-  importDate?: string;
-  exportDate?: string;
-  importQuantity?: number;
-  exportQuantity?: number;
+  quantity: number;
   currentStock: number;
-  importNotes?: string;
-  exportNotes?: string;
-  exportPurpose?: string;
+  notes?: string;
+  purpose?: string;
   supplier?: string;
-  importStatus?: string;
+  status?: string;
   createdBy?: string;
 }
 
@@ -106,57 +103,82 @@ export function useVaccineBatchHistory({
       createdBy: item.createdBy,
     }));
 
-    // Create combined history grouped by date
+    // Create individual transaction history (separated imports and exports)
     const createCombinedHistory = (): CombinedHistoryEntry[] => {
-      const dateMap = new Map<string, CombinedHistoryEntry>();
+      const allTransactions: CombinedHistoryEntry[] = [];
       let runningStock = 0;
 
-      // Sort all entries by date (oldest first for stock calculation)
-      const sortedEntries = [...importHistory, ...exportHistory].sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-      );
+      // Helper function to extract time from datetime
+      const extractTime = (dateString: string): string => {
+        return new Date(dateString).toLocaleTimeString("vi-VN", {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+      };
 
-      // Group entries by date
-      sortedEntries.forEach((entry) => {
-        const dateKey = formatData.formatDateYMD(entry.date);
+      // Helper function to extract date from datetime
+      const extractDate = (dateString: string): string => {
+        return new Date(dateString).toLocaleDateString("vi-VN", {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      };
 
-        if (!dateMap.has(dateKey)) {
-          dateMap.set(dateKey, {
-            id: `combined-${dateKey}`,
-            date: entry.date,
-            currentStock: 0,
+      // Combine and sort all entries by date (oldest first for stock calculation)
+      const allEntries = [
+        ...importHistory.map(entry => ({ ...entry, originalType: 'import' as const })),
+        ...exportHistory.map(entry => ({ ...entry, originalType: 'export' as const }))
+      ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      // Process each transaction individually
+      allEntries.forEach((entry) => {
+        if (entry.originalType === "import") {
+          runningStock += entry.quantity;
+          allTransactions.push({
+            id: entry.id,
+            date: extractDate(entry.date),
+            time: extractTime(entry.date),
+            type: "import",
+            receiptCode: entry.code,
+            quantity: entry.quantity,
+            currentStock: runningStock,
+            notes: entry.notes,
+            supplier: entry.supplier,
+            status: entry.status,
+            createdBy: entry.createdBy,
+          });
+        } else {
+          runningStock -= entry.quantity;
+          allTransactions.push({
+            id: entry.id,
+            date: extractDate(entry.date),
+            time: extractTime(entry.date),
+            type: "export",
+            exportCode: entry.code,
+            quantity: entry.quantity,
+            currentStock: runningStock,
+            notes: entry.notes,
+            purpose: entry.purpose,
+            createdBy: entry.createdBy,
           });
         }
-
-        const combined = dateMap.get(dateKey)!;
-
-        if (entry.type === "import") {
-          combined.importCode = entry.code;
-          combined.importDate = entry.date;
-          combined.importQuantity =
-            (combined.importQuantity || 0) + entry.quantity;
-          combined.importNotes = entry.notes;
-          combined.supplier = entry.supplier;
-          combined.importStatus = entry.status;
-          combined.createdBy = entry.createdBy;
-          runningStock += entry.quantity;
-        } else {
-          combined.exportCode = entry.code;
-          combined.exportDate = entry.date;
-          combined.exportQuantity =
-            (combined.exportQuantity || 0) + entry.quantity;
-          combined.exportNotes = entry.notes;
-          combined.exportPurpose = entry.purpose;
-          combined.createdBy = combined.createdBy || entry.createdBy;
-          runningStock -= entry.quantity;
-        }
-
-        combined.currentStock = runningStock;
       });
 
-      // Convert map to array and sort by date (newest first)
-      return Array.from(dateMap.values()).sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      // Return sorted by datetime (newest first for display)
+      return allTransactions.sort(
+        (a, b) => {
+          // Parse the original datetime strings for accurate sorting
+          const getOriginalDateTime = (transaction: CombinedHistoryEntry) => {
+            const originalEntry = allEntries.find(entry => entry.id === transaction.id);
+            return originalEntry ? new Date(originalEntry.date).getTime() : 0;
+          };
+
+          const dateTimeA = getOriginalDateTime(a);
+          const dateTimeB = getOriginalDateTime(b);
+          return dateTimeB - dateTimeA; // Newest first
+        }
       );
     };
 
