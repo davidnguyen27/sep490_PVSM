@@ -1,42 +1,40 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Package, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { PageBreadcrumb, SearchLabel, Pagination } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 import { useVaccineExports, useVaccineExportDel } from "../hooks";
-import { VaccineExportTable, VaccineExportModalCreate } from "../components";
+import { VaccineExportTable } from "../components";
 import VaccineExportDetailPage from "./VaccineExportDetailPage";
+import VaccineExportCreatePage from "./VaccineExportCreatePage";
 
 export default function VaccineExportsPage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedExportId, setSelectedExportId] = useState<number | null>(null);
   const pageSize = 10;
 
-  // Check if we're viewing details
+  // Set document title
+  useEffect(() => {
+    document.title = "PVMS | Quản lý phiếu xuất vắc-xin";
+
+    return () => {
+      document.title = "PVMS | Phiếu xuất vắc-xin";
+    };
+  }, []);
+
+  // Check if we're viewing details or creating new
   const vaccineExportId = searchParams.get("vaccineExportId");
+  const action = searchParams.get("action");
   const isViewingDetail = !!vaccineExportId;
+  const isCreating = action === "create";
 
   const debouncedSearch = useDebounce(search, 500, { leading: true });
-  const deleteVaccineExport = useVaccineExportDel();
+  const { mutate: deleteVaccineExport } = useVaccineExportDel();
 
   const { data, isPending, isFetching, refetch } = useVaccineExports({
     pageNumber: page,
@@ -46,8 +44,8 @@ export default function VaccineExportsPage() {
 
   // Check if we should show success message after creating/updating
   useEffect(() => {
-    // Don't show success messages when viewing detail
-    if (isViewingDetail) return;
+    // Don't show success messages when viewing detail or creating new
+    if (isViewingDetail || isCreating) return;
 
     const created = searchParams.get("created");
     const updated = searchParams.get("updated");
@@ -65,7 +63,7 @@ export default function VaccineExportsPage() {
       // Refresh data
       refetch();
     }
-  }, [searchParams, setSearchParams, refetch, isViewingDetail]);
+  }, [searchParams, setSearchParams, refetch, isViewingDetail, isCreating]);
 
   const vaccineExports = data?.data.pageData ?? [];
   const totalPages = data?.data.pageInfo.totalPage ?? 1;
@@ -75,29 +73,15 @@ export default function VaccineExportsPage() {
   };
 
   const handleEdit = (exportId: number) => {
-    navigate(`/admin/vaccine-exports/edit?exportId=${exportId}`);
+    setSearchParams({ exportId: exportId.toString(), action: "edit" });
   };
 
   const handleCreateNew = () => {
-    setShowCreateModal(true);
+    setSearchParams({ action: "create" });
   };
 
   const handleDelete = (exportId: number) => {
-    setSelectedExportId(exportId);
-    setDeleteConfirmOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (selectedExportId) {
-      await deleteVaccineExport.mutateAsync(selectedExportId);
-      setDeleteConfirmOpen(false);
-      setSelectedExportId(null);
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setDeleteConfirmOpen(false);
-    setSelectedExportId(null);
+    deleteVaccineExport(exportId);
   };
 
   // If viewing detail, render the detail page
@@ -105,20 +89,32 @@ export default function VaccineExportsPage() {
     return <VaccineExportDetailPage />;
   }
 
+  // If creating new, render the create page
+  if (isCreating) {
+    return <VaccineExportCreatePage />;
+  }
+
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-primary font-inter-600 flex items-center gap-2 text-xl">
-          <Package /> Danh sách xuất kho vaccine
+      <div className="flex items-center space-x-2">
+        <Package color="#00B8A9" />
+        <h1 className="text-primary font-nunito-700 text-2xl">
+          Quản lý xuất kho vaccine
         </h1>
-        <PageBreadcrumb items={["Xuất kho vaccine"]} />
       </div>
+      <PageBreadcrumb items={["Xuất kho vaccine"]} />
 
-      <div className="bg-linen flex flex-wrap items-end justify-between gap-4 p-4 shadow-md">
-        <SearchLabel value={search} onChange={setSearch} />
-        <Button onClick={handleCreateNew} className="flex items-center gap-2">
-          <Plus size={16} />
-          Tạo phiếu xuất kho
+      <div className="bg-linen flex items-end justify-between p-4 shadow-md">
+        <div className="flex items-end justify-between gap-4">
+          <SearchLabel value={search} onChange={setSearch} />
+        </div>
+
+        <Button
+          onClick={handleCreateNew}
+          className="font-nunito-600 bg-primary hover:bg-secondary text-white"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Thêm phiếu xuất kho
         </Button>
       </div>
 
@@ -136,35 +132,6 @@ export default function VaccineExportsPage() {
         currentPage={page}
         totalPages={totalPages}
         onPageChange={(newPage) => setPage(newPage)}
-      />
-
-      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận xóa phiếu xuất kho</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa phiếu xuất kho này? Hành động này không
-              thể hoàn tác.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelDelete}>
-              Hủy
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              disabled={deleteVaccineExport.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteVaccineExport.isPending ? "Đang xóa..." : "Xóa"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <VaccineExportModalCreate
-        open={showCreateModal}
-        onOpenChange={setShowCreateModal}
       />
     </div>
   );

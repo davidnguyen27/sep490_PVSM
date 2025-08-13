@@ -65,6 +65,9 @@ export const vaccineReceiptUpdateSchema = z.object({
         message: "Ngày nhập không được vượt quá ngày hiện tại",
       },
     ),
+  details: z
+    .array(vaccineReceiptDetailSchema)
+    .min(1, "Phải có ít nhất một vaccine detail"),
 });
 
 export type VaccineReceiptCreateFormData = z.infer<

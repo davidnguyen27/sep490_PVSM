@@ -5,75 +5,75 @@ import { useSearchParams } from "react-router-dom";
 import { PageBreadcrumb, ButtonSpinner, PageLoader } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  VaccineExportDateSection,
-  VaccineExportDetailsList,
-} from "../components";
+import { VaccineReceiptDateSection, VaccineDetailsList } from "../components";
 
 // hooks
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useVaccineExportEdit, useVaccineExportById } from "../hooks";
-import { useExportDetailByExport } from "@/modules/vaccine-export-detail/hooks";
-import { useAllVaccineBatches } from "@/modules/vaccine-batch/hooks";
+import { useVaccineReceiptEdit, useVaccineReceiptDetail } from "../hooks";
+import { useVaccineReceiptDetailByReceipt } from "@/modules/vaccine-receipt-detail/hooks";
+import { useVaccineBatches } from "@/modules/vaccine-batch/hooks";
 
 // schemas
 import {
-  createVaccineExportSchema,
-  type CreateVaccineExportFormData,
-} from "../schemas/vaccine-export.schema";
-
-// types
-import type { VaccineExportDetail } from "@/modules/vaccine-export-detail/types/vaccine-export-detail.type";
+  vaccineReceiptUpdateSchema,
+  type VaccineReceiptUpdateFormData,
+} from "../schemas/vaccine-receipt.schema";
 
 // icons
-import { ArrowLeft, Package, Save } from "lucide-react";
+import { ArrowLeft, FileText, Save } from "lucide-react";
 
 // form
 import { Form } from "@/components/ui/form";
 
-export default function EditVaccineExportPage() {
+export default function VaccineReceiptEditPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get vaccine export ID from URL params
-  const exportIdParam = searchParams.get("exportId");
-  const exportId = exportIdParam ? parseInt(exportIdParam) : null;
+  // Get vaccine receipt ID from URL params
+  const vaccineReceiptIdParam = searchParams.get("vaccineReceiptId");
+  const vaccineReceiptId = vaccineReceiptIdParam
+    ? parseInt(vaccineReceiptIdParam)
+    : null;
 
-  // Fetch vaccine export detail
-  const { data: vaccineExportData, isPending: isLoadingDetail } =
-    useVaccineExportById(exportId!);
-  const vaccineExport = vaccineExportData;
+  // Fetch vaccine receipt detail
+  const { data: vaccineReceiptData, isPending: isLoadingDetail } =
+    useVaccineReceiptDetail(vaccineReceiptId);
+  const vaccineReceipt = vaccineReceiptData;
 
-  // Fetch vaccine export details
-  const { data: vaccineExportDetailsData, isPending: isLoadingDetails } =
-    useExportDetailByExport(exportId!);
+  // Fetch vaccine receipt details
+  const { data: vaccineReceiptDetailsData, isPending: isLoadingDetails } =
+    useVaccineReceiptDetailByReceipt(vaccineReceiptId);
 
-  const vaccineExportDetails = useMemo(
-    () => vaccineExportDetailsData || [],
-    [vaccineExportDetailsData],
+  const vaccineReceiptDetails = useMemo(
+    () => vaccineReceiptDetailsData || [],
+    [vaccineReceiptDetailsData],
   );
 
   // Fetch vaccine batches
-  const { data: vaccineBatchesResponse, isLoading: isLoadingBatches } =
-    useAllVaccineBatches();
-  const vaccineBatches = vaccineBatchesResponse?.data?.pageData || [];
+  const { data: vaccineBatchData, isPending: isLoadingBatches } =
+    useVaccineBatches({
+      pageNumber: 1,
+      pageSize: 100,
+    });
+  const vaccineBatches = vaccineBatchData?.data.pageData ?? [];
 
-  const form = useForm<CreateVaccineExportFormData>({
-    resolver: zodResolver(createVaccineExportSchema),
+  const form = useForm<VaccineReceiptUpdateFormData>({
+    resolver: zodResolver(vaccineReceiptUpdateSchema),
     defaultValues: {
-      exportDate: new Date().toISOString().split("T")[0],
+      receiptDate: new Date(),
       details: [
         {
           vaccineBatchId: 0,
-          quantity: 1,
-          purpose: "hủy" as const,
+          suppiler: "",
+          quantity: 0,
+          vaccineStatus: "",
           notes: "",
           coldChainLog: {
-            logTime: new Date().toISOString(),
-            temperature: 2,
-            humidity: 60,
-            event: "xuất kho",
+            logTime: "",
+            temperature: 0,
+            humidity: 0,
+            event: "",
             notes: "",
           },
         },
@@ -88,47 +88,46 @@ export default function EditVaccineExportPage() {
 
   // Update form when data is loaded
   useEffect(() => {
-    if (vaccineExport) {
-      // Set export date as string format for date input
-      const dateString = new Date(vaccineExport.exportDate)
-        .toISOString()
-        .split("T")[0];
-      form.setValue("exportDate", dateString);
+    if (vaccineReceipt) {
+      // Set receipt date
+      form.setValue("receiptDate", new Date(vaccineReceipt.receiptDate));
 
-      // Set details from existing data
-      if (vaccineExportDetails.length > 0) {
-        const formDetails = vaccineExportDetails.map(
-          (detail: VaccineExportDetail) => ({
-            vaccineBatchId: detail.vaccineBatch?.vaccineBatchId || 0,
-            quantity: detail.quantity || 1,
-            purpose: (detail.purpose || "hủy") as "hủy" | "bán" | "chuyển kho",
-            notes: detail.notes || "",
-            coldChainLog: {
-              logTime: new Date().toISOString(),
-              temperature: 2,
-              humidity: 60,
-              event: "xuất kho",
-              notes: "",
-            },
-          }),
-        );
+      if (vaccineReceiptDetails.length > 0) {
+        // Set details from existing data
+        const formDetails = vaccineReceiptDetails.map((detail) => ({
+          vaccineBatchId: detail.vaccineBatch?.vaccineBatchId || 0,
+          suppiler: detail.suppiler || "",
+          quantity: detail.quantity || 0,
+          vaccineStatus: detail.vaccineStatus || "",
+          notes: detail.notes || "",
+          coldChainLog: {
+            logTime: "",
+            temperature: 0,
+            humidity: 0,
+            event: "",
+            notes: "",
+          },
+        }));
+
         form.setValue("details", formDetails);
       }
     }
-  }, [vaccineExport, vaccineExportDetails, form]);
+  }, [vaccineReceipt, vaccineReceiptDetails, form]);
 
-  const { mutate: updateVaccineExport } = useVaccineExportEdit();
+  const { mutate: updateVaccineReceipt } = useVaccineReceiptEdit();
 
-  const onSubmit = async (data: CreateVaccineExportFormData) => {
-    if (!exportId) return;
+  const onSubmit = async (data: VaccineReceiptUpdateFormData) => {
+    if (!vaccineReceiptId) return;
 
     setIsSubmitting(true);
     try {
       await new Promise((resolve) => {
-        updateVaccineExport(
+        updateVaccineReceipt(
           {
-            exportId,
-            data,
+            vaccineReceiptId,
+            data: {
+              receiptDate: data.receiptDate.toISOString(),
+            },
           },
           {
             onSuccess: () => {
@@ -136,7 +135,7 @@ export default function EditVaccineExportPage() {
               // Remove edit params to go back to list
               const currentParams = new URLSearchParams(searchParams);
               currentParams.delete("action");
-              currentParams.delete("exportId");
+              currentParams.delete("vaccineReceiptId");
               setSearchParams(currentParams);
             },
             onError: () => {
@@ -154,21 +153,22 @@ export default function EditVaccineExportPage() {
     // Remove edit params to go back to list
     const currentParams = new URLSearchParams(searchParams);
     currentParams.delete("action");
-    currentParams.delete("exportId");
+    currentParams.delete("vaccineReceiptId");
     setSearchParams(currentParams);
   };
 
   const handleAddDetail = () => {
     append({
       vaccineBatchId: 0,
-      quantity: 1,
-      purpose: "hủy" as const,
+      suppiler: "",
+      quantity: 0,
+      vaccineStatus: "",
       notes: "",
       coldChainLog: {
-        logTime: new Date().toISOString(),
-        temperature: 2,
-        humidity: 60,
-        event: "xuất kho",
+        logTime: "",
+        temperature: 0,
+        humidity: 0,
+        event: "",
         notes: "",
       },
     });
@@ -184,27 +184,27 @@ export default function EditVaccineExportPage() {
     return (
       <PageLoader
         loading={true}
-        loadingText="Đang tải thông tin phiếu xuất vaccine..."
+        loadingText="Đang tải thông tin phiếu nhập vaccine..."
       >
         <div />
       </PageLoader>
     );
   }
 
-  if (!vaccineExport) {
+  if (!vaccineReceipt) {
     return (
       <div className="space-y-6">
         <div className="flex items-center space-x-2">
-          <Package color="#00B8A9" />
+          <FileText color="#00B8A9" />
           <h1 className="text-primary font-nunito-700 text-2xl">
-            Phiếu xuất vaccine không tồn tại
+            Phiếu nhập vaccine không tồn tại
           </h1>
         </div>
-        <PageBreadcrumb items={["Danh sách phiếu xuất", "Chỉnh sửa"]} />
+        <PageBreadcrumb items={["Danh sách phiếu nhập", "Chỉnh sửa"]} />
         <Card className="rounded-none shadow-sm">
           <CardContent className="p-6 text-center">
             <p className="text-gray-600">
-              Không tìm thấy phiếu xuất vaccine với ID này.
+              Không tìm thấy phiếu nhập vaccine với ID này.
             </p>
             <Button
               type="button"
@@ -225,19 +225,19 @@ export default function EditVaccineExportPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center space-x-2">
-        <Package color="#00B8A9" />
+        <FileText color="#00B8A9" />
         <h1 className="text-primary font-nunito-700 text-2xl">
-          Cập nhật phiếu xuất kho vắc-xin
+          Chỉnh sửa phiếu nhập vắc-xin
         </h1>
       </div>
 
-      <PageBreadcrumb items={["Danh sách xuất kho", "Cập nhật"]} />
+      <PageBreadcrumb items={["Danh sách phiếu nhập", "Chỉnh sửa"]} />
 
       {/* Main Content */}
       <Card className="rounded-none shadow-sm">
         <CardHeader className="border-b border-gray-100 bg-gray-50/50 py-4">
           <CardTitle className="font-nunito-700 text-dark text-lg">
-            Cập nhật phiếu xuất kho vắc-xin - Mã: {vaccineExport.exportCode}
+            Thông tin phiếu nhập vắc-xin - Mã: {vaccineReceipt.receiptCode}
           </CardTitle>
         </CardHeader>
 
@@ -245,18 +245,26 @@ export default function EditVaccineExportPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               {/* Date Section */}
-              <VaccineExportDateSection control={form.control} />
+              <VaccineReceiptDateSection control={form.control} />
 
               {/* Vaccine Details */}
-              <VaccineExportDetailsList
+              <VaccineDetailsList
                 control={form.control}
                 fields={fields}
                 onAddDetail={handleAddDetail}
                 onRemoveDetail={handleRemoveDetail}
                 vaccineBatches={vaccineBatches}
                 isLoadingBatches={isLoadingBatches}
-                isEditMode={true}
               />
+
+              {/* Warning Message */}
+              <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+                <p className="font-nunito-500 text-sm text-yellow-800">
+                  <strong>Lưu ý:</strong> Hiện tại form này chỉ cập nhật ngày
+                  nhập. Các thay đổi ở phần chi tiết vaccine sẽ không được lưu.
+                  Để chỉnh sửa chi tiết vaccine, vui lòng liên hệ quản trị viên.
+                </p>
+              </div>
 
               {/* Action Buttons */}
               <div className="flex items-center justify-between border-t border-gray-100 pt-6">
@@ -278,7 +286,7 @@ export default function EditVaccineExportPage() {
                 >
                   {isSubmitting && <ButtonSpinner variant="white" size="sm" />}
                   <Save className="mr-2 h-4 w-4" />
-                  {isSubmitting ? "Đang cập nhật..." : "Cập nhật phiếu xuất"}
+                  {isSubmitting ? "Đang cập nhật..." : "Cập nhật phiếu"}
                 </Button>
               </div>
             </form>

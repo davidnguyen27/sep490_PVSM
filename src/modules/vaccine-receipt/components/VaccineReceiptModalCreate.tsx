@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -11,36 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon, Plus, Trash2 } from "lucide-react";
-
-// utils
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
+import { VaccineReceiptDateSection } from "./VaccineReceiptDateSection";
+import { VaccineDetailsList } from "./VaccineDetailsList";
+import ButtonSpinner from "@/components/shared/ButtonSpinner";
 
 // hooks
 import { useVaccineReceiptAdd } from "../hooks/useVaccineReceiptAdd";
@@ -61,8 +35,6 @@ export function VaccineReceiptModalCreate({
   open,
   onOpenChange,
 }: VaccineReceiptModalCreateProps) {
-  const [calendarOpen, setCalendarOpen] = useState(false);
-
   const form = useForm<VaccineReceiptCreateFormData>({
     resolver: zodResolver(vaccineReceiptCreateSchema),
     defaultValues: {
@@ -150,12 +122,12 @@ export function VaccineReceiptModalCreate({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[800px]">
-        <DialogHeader>
-          <DialogTitle className="text-primary">
+      <DialogContent className="max-h-[90vh] w-full max-w-4xl overflow-y-auto">
+        <DialogHeader className="space-y-3 border-b border-gray-100 pb-4">
+          <DialogTitle className="text-primary font-nunito-700 text-2xl">
             Tạo phiếu nhập vaccine mới
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="font-nunito-400 text-base text-gray-600">
             Nhập thông tin để tạo phiếu nhập vaccine mới cùng với chi tiết
             vaccine vào hệ thống. Bạn có thể thêm nhiều lô vaccine khác nhau
             trong cùng một phiếu nhập.
@@ -165,365 +137,41 @@ export function VaccineReceiptModalCreate({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
+            className="space-y-8 py-4"
           >
             {/* Receipt Date Section */}
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-              <h4 className="mb-3 font-semibold text-gray-900">
-                Thông tin phiếu nhập
-              </h4>
-              <FormField
-                control={form.control}
-                name="receiptDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel className="text-sm font-medium">
-                      Ngày nhập <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground",
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "dd/MM/yyyy", { locale: vi })
-                            ) : (
-                              <span>Chọn ngày nhập</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(date) => {
-                            field.onChange(date);
-                            setCalendarOpen(false);
-                          }}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                          locale={vi}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <VaccineReceiptDateSection control={form.control} />
 
             {/* Vaccine Details Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold text-gray-900">
-                  Chi tiết vaccine
-                </h4>
+            <VaccineDetailsList
+              control={form.control}
+              fields={fields}
+              onAddDetail={addDetail}
+              onRemoveDetail={removeDetail}
+              vaccineBatches={vaccineBatches}
+              isLoadingBatches={isLoadingBatches}
+            />
+
+            <DialogFooter className="border-t border-gray-100 pt-6">
+              <div className="flex w-full justify-end gap-3">
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  onClick={addDetail}
-                  className="flex items-center gap-2"
+                  onClick={handleCancel}
+                  disabled={isPending}
+                  className="font-nunito-600 min-w-24 border-gray-300 hover:bg-gray-50"
                 >
-                  <Plus className="h-4 w-4" />
-                  Thêm vaccine
+                  Hủy
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="font-nunito-600 bg-primary hover:bg-secondary min-w-32 text-white"
+                >
+                  {isPending && <ButtonSpinner variant="white" size="sm" />}
+                  {isPending ? "Đang tạo..." : "Tạo phiếu nhập"}
                 </Button>
               </div>
-
-              {fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="rounded-lg border border-gray-200 bg-white p-4"
-                >
-                  <div className="mb-3 flex items-center justify-between">
-                    <h5 className="font-medium text-gray-800">
-                      Vaccine #{index + 1}
-                    </h5>
-                    {fields.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeDetail(index)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name={`details.${index}.vaccineBatchId`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Lô vaccine <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <Select
-                            onValueChange={(value) =>
-                              field.onChange(parseInt(value) || 0)
-                            }
-                            value={
-                              field.value > 0 ? field.value.toString() : ""
-                            }
-                            disabled={isLoadingBatches}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Chọn lô vaccine" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {vaccineBatches.map((batch) => (
-                                <SelectItem
-                                  key={batch.vaccineBatchId}
-                                  value={batch.vaccineBatchId.toString()}
-                                >
-                                  {batch.batchNumber} -{" "}
-                                  {batch.vaccineResponseDTO.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`details.${index}.quantity`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Số lượng <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min="1"
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(parseInt(e.target.value) || 1)
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`details.${index}.suppiler`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Nhà cung cấp <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Nhập tên nhà cung cấp"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name={`details.${index}.vaccineStatus`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Trạng thái <span className="text-red-500">*</span>
-                          </FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Chọn trạng thái" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="active">Hoạt động</SelectItem>
-                              <SelectItem value="inactive">
-                                Không hoạt động
-                              </SelectItem>
-                              <SelectItem value="expired">Hết hạn</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="mt-4">
-                    <FormField
-                      control={form.control}
-                      name={`details.${index}.notes`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Ghi chú</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Nhập ghi chú (tùy chọn)"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {/* Cold Chain Log Section */}
-                  <div className="mt-4 border-t pt-4">
-                    <h6 className="mb-3 text-sm font-medium text-gray-700">
-                      Thông tin chuỗi lạnh
-                    </h6>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <FormField
-                        control={form.control}
-                        name={`details.${index}.coldChainLog.temperature`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Nhiệt độ (°C){" "}
-                              <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                step="0.1"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    parseFloat(e.target.value) || 0,
-                                  )
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name={`details.${index}.coldChainLog.humidity`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Độ ẩm (%) <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="0"
-                                max="100"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    parseFloat(e.target.value) || 0,
-                                  )
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <FormField
-                        control={form.control}
-                        name={`details.${index}.coldChainLog.event`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              Sự kiện <span className="text-red-500">*</span>
-                            </FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Chọn sự kiện" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="storage">Lưu trữ</SelectItem>
-                                <SelectItem value="transport">
-                                  Vận chuyển
-                                </SelectItem>
-                                <SelectItem value="delivery">
-                                  Giao hàng
-                                </SelectItem>
-                                <SelectItem value="inspection">
-                                  Kiểm tra
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="mt-4">
-                      <FormField
-                        control={form.control}
-                        name={`details.${index}.coldChainLog.notes`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Ghi chú chuỗi lạnh</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Nhập ghi chú về chuỗi lạnh (tùy chọn)"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <DialogFooter className="gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isPending}
-              >
-                Hủy
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Đang tạo..." : "Tạo phiếu nhập"}
-              </Button>
             </DialogFooter>
           </form>
         </Form>

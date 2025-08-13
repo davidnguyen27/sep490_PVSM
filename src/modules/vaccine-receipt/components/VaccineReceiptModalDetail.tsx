@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/shared";
+import { useState } from "react";
 import {
   Calendar,
   User,
@@ -22,6 +23,8 @@ import { useVaccineReceiptDetailByReceipt } from "@/modules/vaccine-receipt-deta
 
 // components
 import { VaccineReceiptDetailTable } from "@/modules/vaccine-receipt-detail/components/VaccineReceiptDetailTable";
+import { VaccineBatchDetailModal } from "@/modules/vaccine-receipt-detail/components/VaccineBatchDetailModal";
+import type { VaccineReceiptDetail } from "@/modules/vaccine-receipt-detail/types/vaccine-receipt-detal.type";
 
 // utils
 import {
@@ -43,6 +46,9 @@ export function VaccineReceiptModalDetail({
   onOpenChange,
   vaccineReceiptId,
 }: VaccineReceiptModalDetailProps) {
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedDetailId, setSelectedDetailId] = useState<number | null>(null);
+
   const {
     data: vaccineReceipt,
     isPending,
@@ -54,6 +60,13 @@ export function VaccineReceiptModalDetail({
     isPending: isDetailsLoading,
     error: detailsError,
   } = useVaccineReceiptDetailByReceipt(vaccineReceiptId);
+
+  const handleViewDetail = (item: VaccineReceiptDetail) => {
+    if (item.vaccineReceiptDetailId) {
+      setSelectedDetailId(item.vaccineReceiptDetailId);
+      setShowDetailModal(true);
+    }
+  };
 
   const DetailItem = ({
     icon: Icon,
@@ -232,12 +245,20 @@ export function VaccineReceiptModalDetail({
                 <VaccineReceiptDetailTable
                   data={receiptDetails || []}
                   isPending={isDetailsLoading}
+                  onViewDetail={handleViewDetail}
                 />
               )}
             </div>
           </div>
         )}
       </DialogContent>
+
+      {/* Modal chi tiết lô vaccine */}
+      <VaccineBatchDetailModal
+        open={showDetailModal}
+        onOpenChange={setShowDetailModal}
+        vaccineReceiptDetailId={selectedDetailId}
+      />
     </Dialog>
   );
 }

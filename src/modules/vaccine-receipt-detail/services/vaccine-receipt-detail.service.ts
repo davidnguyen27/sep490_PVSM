@@ -14,6 +14,12 @@ export const vaccineReceiptDetailService = {
       .then((res) => res.data.data);
   },
 
+  async getVaccineReceiptDetailById(id: number): Promise<VaccineReceiptDetail> {
+    return await axiosInstance
+      .get(`api/VaccineReceiptDetail/get-receipt-detail-by-id/${id}`)
+      .then((res) => res.data.data);
+  },
+
   async createVaccineReceiptDetail(
     payload: VaccineReceiptDetailData,
   ): Promise<BaseResponse<VaccineReceiptDetail>> {

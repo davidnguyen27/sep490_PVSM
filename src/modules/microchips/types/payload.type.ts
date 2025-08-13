@@ -4,4 +4,11 @@ export interface MicrochipPayload {
   description: string;
   price: number;
   notes: string;
+  createMicrochipItemRequest: {
+    petId: number | null;
+    name: string;
+    description: string;
+    location: string;
+    installationDate: string;
+  };
 }

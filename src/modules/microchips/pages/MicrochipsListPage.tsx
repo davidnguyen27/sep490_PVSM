@@ -1,11 +1,16 @@
-import { PlusCircle } from "lucide-react";
-import type { MicrochipPayload } from "../types/payload.type";
+import { Cpu, PlusCircle } from "lucide-react";
+import type { MicrochipSchema } from "../schemas/microchip.schema";
 
 // components
 import { Button } from "@/components/ui";
-import PageBreadcumb from "@/components/shared/PageBreadcrumb";
-import SearchLabel from "@/components/shared/SearchLabel";
-import Pagination from "@/components/shared/Pagination";
+import {
+  PageBreadcrumb,
+  SearchLabel,
+  Pagination,
+  PageLoader,
+  ButtonSpinner,
+  InlineLoading,
+} from "@/components/shared";
 import {
   MicrochipFilter,
   MicrochipModalCreate,
@@ -21,14 +26,24 @@ export default function MicrochipsListPage() {
   const [search, setSearch] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
   const [page, setPage] = useState(1);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const debouncedSearch = useDebounce(search, 400);
+  const debouncedSearch = useDebounce(search, 500, { leading: true });
 
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
 
-  const { mutate: createMicrochip, isPending: isCreating } =
+  // Set document title for Microchip Management page
+  useEffect(() => {
+    document.title = "PVMS | Quản lý microchip";
+
+    return () => {
+      document.title = "PVMS | Dashboard";
+    };
+  }, []);
+
+  const { mutate: createMicrochip, isPending: isCreatingMicrochip } =
     useMicrochipCreation();
   const { data, isPending, isFetching } = useMicrochips({
     pageNumber: page,
@@ -39,7 +54,7 @@ export default function MicrochipsListPage() {
   const pageData = data?.data.pageData ?? [];
   const totalPages = data?.data.pageInfo.totalPage ?? 1;
 
-  const handleCreate = (payload: MicrochipPayload) => {
+  const handleCreate = (payload: MicrochipSchema) => {
     createMicrochip(payload, {
       onSuccess: () => {
         setOpenCreate(false);
@@ -47,42 +62,71 @@ export default function MicrochipsListPage() {
     });
   };
 
+  const handleCreateMicrochip = async () => {
+    setIsCreating(true);
+    try {
+      setOpenCreate(true);
+    } finally {
+      setTimeout(() => setIsCreating(false), 100);
+    }
+  };
+
   return (
-    <div className="space-y-6 p-6">
-      <div className="space-y-1">
-        <h1 className="text-primary font-inter-700 text-2xl">
-          Quản lý microchip
-        </h1>
-        <PageBreadcumb items={["Bảng điều khiển", "Microchips"]} />
+    <PageLoader
+      loading={isPending && !isFetching}
+      loadingText="Đang tải danh sách microchip..."
+    >
+      <div className="space-y-6">
+        <div className="flex items-center space-x-2">
+          <Cpu color="#00B8A9" />
+          <h1 className="text-primary font-inter-700 text-2xl">
+            Quản lý microchip
+          </h1>
+        </div>
+        <PageBreadcrumb items={["Microchips"]} />
+
+        <div className="bg-linen flex items-end justify-between p-4 shadow-md">
+          <div className="flex items-end justify-between gap-4">
+            <SearchLabel value={search} onChange={setSearch} />
+            <MicrochipFilter />
+          </div>
+
+          {/* Search loading indicator */}
+          {debouncedSearch && isFetching && (
+            <InlineLoading text="Đang tìm kiếm..." variant="muted" size="sm" />
+          )}
+
+          <Button
+            onClick={handleCreateMicrochip}
+            disabled={isCreating}
+            className="font-nunito-600 bg-primary hover:bg-secondary text-white"
+          >
+            {isCreating && <ButtonSpinner variant="white" size="sm" />}
+            <PlusCircle className="mr-2 h-4 w-4" />
+            {isCreating ? "Đang tạo..." : "Thêm microchip"}
+          </Button>
+        </div>
+
+        <MicrochipTable
+          microchips={pageData}
+          isPending={isPending || isFetching}
+          currentPage={page}
+          pageSize={10}
+        />
+
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
+
+        <MicrochipModalCreate
+          open={openCreate}
+          onClose={() => setOpenCreate(false)}
+          submit={handleCreate}
+          isSubmitting={isCreatingMicrochip}
+        />
       </div>
-
-      <div className="bg-linen flex flex-wrap items-end gap-4 p-4 shadow-md">
-        <SearchLabel value={search} onChange={setSearch} />
-        <MicrochipFilter />
-        <Button className="font-nunito-500" onClick={() => setOpenCreate(true)}>
-          <PlusCircle /> Thêm microchip
-        </Button>
-      </div>
-
-      <MicrochipTable
-        microchips={pageData}
-        isPending={isPending || isFetching}
-        currentPage={page}
-        pageSize={10}
-      />
-
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        onPageChange={(newPage) => setPage(newPage)}
-      />
-
-      <MicrochipModalCreate
-        open={openCreate}
-        onClose={() => setOpenCreate(false)}
-        submit={handleCreate}
-        isSubmitting={isCreating}
-      />
-    </div>
+    </PageLoader>
   );
 }

@@ -8,35 +8,21 @@ import {
 } from "@/components/ui";
 import { Badge } from "@/components/ui";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { EmptyTable, TableSkeleton, ConfirmDelete } from "@/components/shared";
-import { MoreHorizontal, Trash2, Edit } from "lucide-react";
+import { EmptyTable, TableSkeleton } from "@/components/shared";
+import { Eye } from "lucide-react";
 import type { VaccineReceiptDetail } from "../types/vaccine-receipt-detal.type";
-import { useDeleteVaccineReceiptDetail } from "../hooks/useDelete";
 
 interface VaccineReceiptDetailTableProps {
   data: VaccineReceiptDetail[];
   isPending: boolean;
-  onEdit?: (item: VaccineReceiptDetail) => void;
+  onViewDetail?: (item: VaccineReceiptDetail) => void;
 }
 
 export function VaccineReceiptDetailTable({
   data,
   isPending,
-  onEdit,
+  onViewDetail,
 }: VaccineReceiptDetailTableProps) {
-  const { mutate: deleteDetail } = useDeleteVaccineReceiptDetail();
-
-  const handleConfirmDelete = (item: VaccineReceiptDetail) => {
-    if (item.vaccineReceiptDetailId) {
-      deleteDetail(item.vaccineReceiptDetailId);
-    }
-  };
   if (isPending) {
     return (
       <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
@@ -80,27 +66,27 @@ export function VaccineReceiptDetailTable({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
+    <div className="bg-linen overflow-hidden rounded-none border border-gray-100">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50/80">
-            <TableHead className="font-nunito-700 text-gray-900">STT</TableHead>
-            <TableHead className="font-nunito-700 text-gray-900">
+          <TableRow className="bg-primary">
+            <TableHead className="font-nunito-500 text-white">STT</TableHead>
+            <TableHead className="font-nunito-500 text-white">
               Lô vaccine
             </TableHead>
-            <TableHead className="font-nunito-700 text-gray-900">
+            <TableHead className="font-nunito-500 text-white">
               Nhà cung cấp
             </TableHead>
-            <TableHead className="font-nunito-700 text-gray-900">
+            <TableHead className="font-nunito-500 text-white">
               Số lượng
             </TableHead>
-            <TableHead className="font-nunito-700 text-gray-900">
+            <TableHead className="font-nunito-500 text-white">
               Trạng thái
             </TableHead>
-            <TableHead className="font-nunito-700 text-gray-900">
+            <TableHead className="font-nunito-500 text-white">
               Ghi chú
             </TableHead>
-            <TableHead className="font-nunito-700 text-gray-900">
+            <TableHead className="font-nunito-500 text-white">
               Thao tác
             </TableHead>
           </TableRow>
@@ -139,34 +125,15 @@ export function VaccineReceiptDetailTable({
                 {item.notes || "Không có ghi chú"}
               </TableCell>
               <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">Mở menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {onEdit && (
-                      <DropdownMenuItem
-                        onClick={() => onEdit(item)}
-                        className="text-blue-600 focus:text-blue-600"
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Sửa
-                      </DropdownMenuItem>
-                    )}
-                    <ConfirmDelete onConfirm={() => handleConfirmDelete(item)}>
-                      <DropdownMenuItem
-                        onSelect={(e) => e.preventDefault()}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Xóa
-                      </DropdownMenuItem>
-                    </ConfirmDelete>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onViewDetail?.(item)}
+                  className="h-8 px-3 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Xem chi tiết
+                </Button>
               </TableCell>
             </TableRow>
           ))}

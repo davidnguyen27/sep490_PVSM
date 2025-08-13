@@ -15,13 +15,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { EmptyTable, TableSkeleton, ConfirmDelete } from "@/components/shared";
 import {
-  Eye,
   MoreHorizontal,
   Edit,
   Trash2,
   ArrowUp,
   ArrowDown,
   ArrowDownUp,
+  Info,
 } from "lucide-react";
 import type { VaccineReceipt } from "../types/vaccine-receipt.type";
 import { useTableSorting } from "@/shared/hooks/useTableSorting";
@@ -146,23 +146,23 @@ export function VaccineReceiptTable({
                 <TableCell className="text-dark font-nunito-500 text-center text-sm">
                   {sttValue}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <div className="space-y-1">
                     <p className="font-nunito-700 text-primary text-lg">
                       {formatReceiptCode(receiptItem)}
                     </p>
                   </div>
                 </TableCell>
-                <TableCell className="font-nunito-600 text-gray-900">
+                <TableCell className="font-nunito-600 text-center text-gray-900">
                   {formatReceiptDate(receiptItem)}
                 </TableCell>
-                <TableCell className="font-nunito-400 text-gray-600">
+                <TableCell className="font-nunito-400 text-center text-gray-600">
                   {formatCreatedDate(receiptItem)}
                 </TableCell>
-                <TableCell className="font-nunito-600 text-gray-900">
+                <TableCell className="font-nunito-600 text-center text-gray-900">
                   {receiptItem.createdBy || "N/A"}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <Badge
                     variant={getStatusVariant(receiptItem.isDeleted)}
                     className="font-nunito-500"
@@ -180,15 +180,19 @@ export function VaccineReceiptTable({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem
+                        className="text-info focus:text-info"
                         onClick={() =>
                           onViewDetail(receiptItem.vaccineReceiptId!)
                         }
                       >
-                        <Eye className="mr-2 h-4 w-4" />
+                        <Info className="text-info mr-2 h-4 w-4" />
                         Xem chi tiết
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(receiptItem)}>
-                        <Edit className="mr-2 h-4 w-4" />
+                      <DropdownMenuItem
+                        className="text-purple focus:text-purple"
+                        onClick={() => onEdit(receiptItem)}
+                      >
+                        <Edit className="text-purple mr-2 h-4 w-4" />
                         Chỉnh sửa
                       </DropdownMenuItem>
                       <ConfirmDelete
@@ -197,10 +201,10 @@ export function VaccineReceiptTable({
                         }
                       >
                         <DropdownMenuItem
-                          className="text-red-600 focus:text-red-600"
+                          className="text-danger focus:text-danger"
                           onSelect={(e) => e.preventDefault()}
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
+                          <Trash2 className="mr-2 h-4 w-4" color="#e63946" />
                           Xóa
                         </DropdownMenuItem>
                       </ConfirmDelete>

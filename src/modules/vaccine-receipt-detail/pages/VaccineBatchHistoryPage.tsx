@@ -14,7 +14,7 @@ import { PageBreadcrumb, TableSkeleton } from "@/components/shared";
 import { useHistoryByVaccineBatch } from "../hooks";
 import { formatData } from "@/shared/utils/format.utils";
 
-export function VaccineBatchHistoryPage() {
+export default function VaccineBatchHistoryPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const vaccineBatchId = searchParams.get("vaccineBatchId");
@@ -201,5 +201,3 @@ export function VaccineBatchHistoryPage() {
     </div>
   );
 }
-
-export default VaccineBatchHistoryPage;

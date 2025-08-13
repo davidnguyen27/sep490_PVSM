@@ -14,10 +14,25 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EmptyTable, TableSkeleton } from "@/components/shared";
+import { EmptyTable, TableSkeleton, ConfirmDelete } from "@/components/shared";
 import { formatData } from "@/shared/utils/format.utils";
-import { Eye, Edit, Trash2, MoreHorizontal } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  MoreHorizontal,
+  ArrowUp,
+  ArrowDown,
+  ArrowDownUp,
+  Info,
+} from "lucide-react";
+import { useTableSorting } from "@/shared/hooks/useTableSorting";
 import type { VaccineExport } from "../types/vaccine-export.type";
+
+// Extended type for VaccineExport with STT
+interface VaccineExportWithSTT extends VaccineExport {
+  sttNumber: number;
+  [key: string]: unknown; // Index signature for SortableItem compatibility
+}
 
 interface VaccineExportTableProps {
   data: VaccineExport[];
@@ -38,81 +53,164 @@ export function VaccineExportTable({
   onEdit,
   onDelete,
 }: VaccineExportTableProps) {
+  // Use shared table sorting hook
+  const { sortOrder, sortedData, handleSortClick, getSortIconName } =
+    useTableSorting<VaccineExportWithSTT>({
+      data: data as VaccineExportWithSTT[],
+      idField: "vaccineExportId",
+      currentPage,
+      pageSize,
+    });
+
+  // Get sort icon component
+  const getSortIcon = () => {
+    const iconName = getSortIconName();
+    if (iconName === "ArrowUp") {
+      return <ArrowUp size={16} className="text-white" />;
+    } else if (iconName === "ArrowDown") {
+      return <ArrowDown size={16} className="text-white" />;
+    } else {
+      return <ArrowDownUp size={16} className="text-white/70" />;
+    }
+  };
+
   if (isPending) {
-    return <TableSkeleton columnCount={7} />;
+    return (
+      <div className="bg-linen shadow-md">
+        <TableSkeleton columnCount={7} rowCount={pageSize} />
+      </div>
+    );
   }
 
   if (!data || data.length === 0) {
-    return <EmptyTable />;
+    return (
+      <div className="bg-linen shadow-md">
+        <EmptyTable />
+      </div>
+    );
   }
 
   return (
-    <div className="rounded-md border bg-white">
+    <div className="bg-linen shadow-md">
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-16">STT</TableHead>
-            <TableHead>Mã xuất kho</TableHead>
-            <TableHead>Ngày xuất kho</TableHead>
-            <TableHead>Người tạo</TableHead>
-            <TableHead>Ngày tạo</TableHead>
-            <TableHead>Trạng thái</TableHead>
-            <TableHead className="text-center">Thao tác</TableHead>
+        <TableHeader className="bg-primary">
+          <TableRow className="hover:bg-transparent">
+            <TableHead
+              className={`font-nunito cursor-pointer px-4 py-2 text-center text-sm text-white transition-colors ${
+                sortOrder !== null
+                  ? "bg-green/20 hover:bg-green/30"
+                  : "hover:bg-primary/80"
+              }`}
+              onClick={handleSortClick}
+            >
+              <div className="flex items-center justify-center gap-1">
+                <span>STT</span>
+                {getSortIcon()}
+              </div>
+            </TableHead>
+            <TableHead className="font-nunito px-4 py-2 text-center text-sm text-white">
+              Mã xuất kho
+            </TableHead>
+            <TableHead className="font-nunito px-4 py-2 text-center text-sm text-white">
+              Ngày xuất kho
+            </TableHead>
+            <TableHead className="font-nunito px-4 py-2 text-center text-sm text-white">
+              Ngày tạo
+            </TableHead>
+            <TableHead className="font-nunito px-4 py-2 text-center text-sm text-white">
+              Người tạo
+            </TableHead>
+            <TableHead className="font-nunito px-4 py-2 text-center text-sm text-white">
+              Trạng thái
+            </TableHead>
+            <TableHead className="font-nunito px-4 py-2 text-center text-sm text-white">
+              Thao tác
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((item, index) => (
-            <TableRow key={item.vaccineExportId}>
-              <TableCell className="font-medium">
-                {(currentPage - 1) * pageSize + index + 1}
-              </TableCell>
-              <TableCell className="text-primary font-medium">
-                {item.exportCode}
-              </TableCell>
-              <TableCell>{formatData.formatDate(item.exportDate)}</TableCell>
-              <TableCell>{item.createdBy}</TableCell>
-              <TableCell>{formatData.formatDateTime(item.createdAt)}</TableCell>
-              <TableCell>
-                <Badge variant={item.isDeleted ? "destructive" : "default"}>
-                  {item.isDeleted ? "Đã xóa" : "Hoạt động"}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-center">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => onViewDetail?.(item.vaccineExportId!)}
-                      className="flex cursor-pointer items-center gap-2"
-                    >
-                      <Eye className="h-4 w-4" />
-                      Chi tiết
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onEdit?.(item.vaccineExportId!)}
-                      disabled={item.isDeleted}
-                      className="flex cursor-pointer items-center gap-2"
-                    >
-                      <Edit className="h-4 w-4" />
-                      Sửa
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onDelete?.(item.vaccineExportId!)}
-                      disabled={item.isDeleted}
-                      className="flex cursor-pointer items-center gap-2 text-red-600 focus:text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Xóa
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
+          {sortedData.map((item, index) => {
+            const exportItem = item as VaccineExportWithSTT;
+            const sttValue = exportItem.sttNumber || index + 1;
+
+            return (
+              <TableRow
+                key={exportItem.vaccineExportId}
+                className="hover:bg-accent/10 transition-colors duration-150"
+              >
+                <TableCell className="text-dark font-nunito-500 text-center text-sm">
+                  {sttValue}
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="space-y-1">
+                    <p className="font-nunito-700 text-primary text-lg">
+                      {exportItem.exportCode}
+                    </p>
+                  </div>
+                </TableCell>
+                <TableCell className="font-nunito-600 text-center text-gray-900">
+                  {formatData.formatDate(exportItem.exportDate)}
+                </TableCell>
+                <TableCell className="font-nunito-400 text-center text-gray-600">
+                  {formatData.formatDateTime(exportItem.createdAt)}
+                </TableCell>
+                <TableCell className="font-nunito-600 text-center text-gray-900">
+                  {exportItem.createdBy || "N/A"}
+                </TableCell>
+                <TableCell className="text-center">
+                  <Badge
+                    variant={exportItem.isDeleted ? "destructive" : "default"}
+                    className="font-nunito-500"
+                  >
+                    {exportItem.isDeleted ? "Đã xóa" : "Hoạt động"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Mở menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        className="text-info focus:text-info"
+                        onClick={() =>
+                          onViewDetail?.(exportItem.vaccineExportId!)
+                        }
+                      >
+                        <Info className="text-info mr-2 h-4 w-4" />
+                        Xem chi tiết
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-purple focus:text-purple"
+                        onClick={() => onEdit?.(exportItem.vaccineExportId!)}
+                        disabled={exportItem.isDeleted}
+                      >
+                        <Edit className="text-purple mr-2 h-4 w-4" />
+                        Chỉnh sửa
+                      </DropdownMenuItem>
+                      <ConfirmDelete
+                        onConfirm={() =>
+                          onDelete?.(exportItem.vaccineExportId!)
+                        }
+                      >
+                        <DropdownMenuItem
+                          className="text-danger focus:text-danger"
+                          disabled={exportItem.isDeleted}
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" color="#e63946" />
+                          Xóa
+                        </DropdownMenuItem>
+                      </ConfirmDelete>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

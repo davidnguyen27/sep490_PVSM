@@ -7,13 +7,11 @@ import {
   ButtonSpinner,
   InlineLoading,
 } from "@/components/shared";
-import {
-  VaccineReceiptTable,
-  VaccineReceiptModalCreate,
-  VaccineReceiptEditModal,
-} from "../components";
+import { VaccineReceiptTable } from "../components";
 import { Button } from "@/components/ui/button";
 import VaccineReceiptDetailPage from "./VaccineReceiptDetailPage";
+import VaccineReceiptCreatePage from "./VaccineReceiptCreatePage";
+import VaccineReceiptEditPage from "./VaccineReceiptEditPage";
 
 // hooks
 import { useEffect, useState } from "react";
@@ -32,10 +30,6 @@ export default function VaccineReceiptListPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedReceiptForEdit, setSelectedReceiptForEdit] =
-    useState<VaccineReceipt | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   // Set document title
@@ -53,6 +47,12 @@ export default function VaccineReceiptListPage() {
     ? parseInt(viewReceiptIdParam)
     : null;
   const showDetailPage = !!selectedReceiptIdForView;
+
+  // Get action from URL params for create/edit mode
+  const actionParam = searchParams.get("action");
+  const editReceiptIdParam = searchParams.get("vaccineReceiptId");
+  const showCreatePage = actionParam === "create";
+  const showEditPage = actionParam === "edit" && !!editReceiptIdParam;
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -79,23 +79,27 @@ export default function VaccineReceiptListPage() {
   };
 
   const handleEdit = (vaccineReceipt: VaccineReceipt) => {
-    setSelectedReceiptForEdit(vaccineReceipt);
-    setShowEditModal(true);
+    // Add action=edit and vaccineReceiptId query parameters to current URL
+    const currentParams = new URLSearchParams(searchParams);
+    currentParams.set("action", "edit");
+    currentParams.set(
+      "vaccineReceiptId",
+      vaccineReceipt.vaccineReceiptId!.toString(),
+    );
+    setSearchParams(currentParams);
   };
 
   const handleDelete = (vaccineReceiptId: number) => {
     deleteVaccineReceipt(vaccineReceiptId);
   };
 
-  const handleCloseEditModal = () => {
-    setShowEditModal(false);
-    setSelectedReceiptForEdit(null);
-  };
-
   const handleCreateVaccineReceipt = async () => {
     setIsCreating(true);
     try {
-      setShowCreateModal(true);
+      // Add action=create query parameter to current URL
+      const currentParams = new URLSearchParams(searchParams);
+      currentParams.set("action", "create");
+      setSearchParams(currentParams);
     } finally {
       setTimeout(() => setIsCreating(false), 100);
     }
@@ -104,6 +108,16 @@ export default function VaccineReceiptListPage() {
   // If vaccineReceipt query param exists, show detail page instead of list
   if (showDetailPage) {
     return <VaccineReceiptDetailPage />;
+  }
+
+  // If action=create query param exists, show create page instead of list
+  if (showCreatePage) {
+    return <VaccineReceiptCreatePage />;
+  }
+
+  // If action=edit query param exists, show edit page instead of list
+  if (showEditPage) {
+    return <VaccineReceiptEditPage />;
   }
 
   return (
@@ -123,8 +137,6 @@ export default function VaccineReceiptListPage() {
         <div className="bg-linen flex items-end justify-between p-4 shadow-md">
           <div className="flex items-end justify-between gap-4">
             <SearchLabel value={search} onChange={setSearch} />
-            {/* TODO: Add VaccineReceiptFilter component when ready */}
-            {/* <VaccineReceiptFilter /> */}
           </div>
 
           {/* Search loading indicator */}
@@ -157,17 +169,6 @@ export default function VaccineReceiptListPage() {
           currentPage={page}
           totalPages={totalPages}
           onPageChange={(newPage) => setPage(newPage)}
-        />
-
-        <VaccineReceiptModalCreate
-          open={showCreateModal}
-          onOpenChange={setShowCreateModal}
-        />
-
-        <VaccineReceiptEditModal
-          open={showEditModal}
-          onOpenChange={handleCloseEditModal}
-          vaccineReceipt={selectedReceiptForEdit}
         />
       </div>
     </PageLoader>

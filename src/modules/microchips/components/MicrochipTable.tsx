@@ -38,7 +38,7 @@ const tableHeaders = [
   "Mô tả ngắn",
   "Giá (VNĐ)",
   "Trạng thái",
-  "Hành động",
+  "Thao tác",
 ];
 
 export function MicrochipTable({
@@ -169,7 +169,20 @@ export function MicrochipTable({
           submit={(payload) =>
             updateMicrochip({
               microchipId: Number(microchipId),
-              payload,
+              payload: {
+                microchipCode: payload.microchipCode,
+                name: payload.name,
+                description: payload.description,
+                price: payload.price,
+                notes: payload.notes,
+                createMicrochipItemRequest: {
+                  petId: payload.petId,
+                  name: payload.itemName,
+                  description: payload.itemDescription,
+                  location: payload.location,
+                  installationDate: payload.installationDate,
+                },
+              },
             })
           }
           isSubmitting={isUpdating}

@@ -42,6 +42,11 @@ export function MicrochipModalCreate({
       description: "",
       price: 0,
       notes: "",
+      petId: 0, // Mặc định petId = 0
+      itemName: "",
+      itemDescription: "",
+      location: "",
+      installationDate: new Date().toISOString().split("T")[0], // Ngày hiện tại
     },
   });
 
@@ -60,7 +65,7 @@ export function MicrochipModalCreate({
         }
       }}
     >
-      <DialogContent className="max-w-2xl space-y-4 px-6 py-4">
+      <DialogContent className="max-h-[90vh] max-w-4xl space-y-4 overflow-y-auto px-6 py-4">
         <DialogHeader>
           <DialogTitle className="text-primary font-nunito-700 text-2xl">
             Thêm mới microchip
@@ -72,6 +77,7 @@ export function MicrochipModalCreate({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="grid grid-cols-1 gap-4 md:grid-cols-2"
           >
+            {/* Microchip Basic Info */}
             <FormField
               control={form.control}
               name="microchipCode"
@@ -129,6 +135,67 @@ export function MicrochipModalCreate({
                   <FormLabel>Mô tả ngắn</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="Mô tả ngắn" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Microchip Item Info */}
+            <FormField
+              control={form.control}
+              name="itemName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tên item</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Nhập tên item" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vị trí</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Nhập vị trí cài đặt" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="installationDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ngày cài đặt</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      {...field}
+                      placeholder="Chọn ngày cài đặt"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="itemDescription"
+              render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Mô tả item</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} rows={2} placeholder="Mô tả item" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
