@@ -33,12 +33,8 @@ export function VaccineBatchHistoryModal({
   const { data: historyData, isPending } =
     useHistoryByVaccineBatch(vaccineBatchId);
 
-  // Handle both single object and array responses
-  const historyItems = Array.isArray(historyData)
-    ? historyData
-    : historyData
-      ? [historyData]
-      : [];
+  // API now returns array directly
+  const historyItems = historyData || [];
 
   const getStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {

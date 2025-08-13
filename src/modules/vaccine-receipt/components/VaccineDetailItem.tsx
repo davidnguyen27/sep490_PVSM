@@ -149,34 +149,12 @@ export function VaccineDetailItem({
           )}
         />
 
+        {/* Hidden field for vaccineStatus with default value "active" */}
         <FormField
           control={control}
           name={`details.${index}.vaccineStatus`}
           render={({ field }) => (
-            <FormItem>
-              <FormLabel className="font-nunito-600 text-sm text-gray-700">
-                Trạng thái <span className="text-red-500">*</span>
-              </FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger className="font-nunito-500 focus:ring-primary/20 focus:ring-2">
-                    <SelectValue placeholder="Chọn trạng thái" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="active" className="font-nunito-500">
-                    Hoạt động
-                  </SelectItem>
-                  <SelectItem value="inactive" className="font-nunito-500">
-                    Không hoạt động
-                  </SelectItem>
-                  <SelectItem value="expired" className="font-nunito-500">
-                    Hết hạn
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage className="font-nunito-400" />
-            </FormItem>
+            <input type="hidden" {...field} value="active" />
           )}
         />
       </div>
