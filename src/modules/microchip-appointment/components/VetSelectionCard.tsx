@@ -174,12 +174,15 @@ export function VetSelectionCard({
                 <div
                   key={schedule.vetScheduleId}
                   className={cn(
-                    "bg-muted hover:border-primary cursor-pointer rounded-lg border p-4 shadow-sm transition-all",
+                    "bg-muted rounded-lg border p-4 shadow-sm transition-all",
+                    schedule.status === 3
+                      ? "cursor-not-allowed opacity-50"
+                      : "hover:border-primary cursor-pointer",
                     value.vetId === vet.vetId &&
                       "border-primary ring-primary ring-1",
                   )}
                   onClick={() => {
-                    if (!canEdit) return;
+                    if (!canEdit || schedule.status === 3) return;
                     onChange({ vetId: vet.vetId });
                   }}
                 >

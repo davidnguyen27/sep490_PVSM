@@ -35,11 +35,14 @@ export default function AppointmentFilter({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="default">Tất cả</SelectItem>
-            <SelectItem value="1">Đang xử lý</SelectItem>
+            <SelectItem value="1">Chờ xử lý</SelectItem>
             <SelectItem value="2">Đã xác nhận</SelectItem>
-            <SelectItem value="3">Đã đến</SelectItem>
+            <SelectItem value="3">Đã check-in</SelectItem>
             <SelectItem value="4">Đã xử lý</SelectItem>
-            <SelectItem value="9">Hoàn tất</SelectItem>
+            <SelectItem value="5">Đã thanh toán</SelectItem>
+            <SelectItem value="9">Đã hoàn thành</SelectItem>
+            <SelectItem value="10">Đã hủy</SelectItem>
+            <SelectItem value="11">Hệ thống hủy</SelectItem>
           </SelectContent>
         </Select>
       </div>

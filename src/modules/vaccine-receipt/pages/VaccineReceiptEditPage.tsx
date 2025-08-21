@@ -209,7 +209,12 @@ export default function VaccineReceiptEditPage() {
             Phiếu nhập vaccine không tồn tại
           </h1>
         </div>
-        <PageBreadcrumb items={["Danh sách phiếu nhập", "Chỉnh sửa"]} />
+        <PageBreadcrumb
+          items={[
+            { label: "Danh sách phiếu nhập", path: "/admin/vaccine-receipts" },
+            "Chỉnh sửa",
+          ]}
+        />
         <Card className="rounded-none shadow-sm">
           <CardContent className="p-6 text-center">
             <p className="text-gray-600">
@@ -240,7 +245,12 @@ export default function VaccineReceiptEditPage() {
         </h1>
       </div>
 
-      <PageBreadcrumb items={["Danh sách phiếu nhập", "Chỉnh sửa"]} />
+      <PageBreadcrumb
+        items={[
+          { label: "Danh sách phiếu nhập", path: "/admin/vaccine-receipts" },
+          "Chỉnh sửa",
+        ]}
+      />
 
       {/* Main Content */}
       <Card className="rounded-none shadow-sm">
@@ -255,9 +265,11 @@ export default function VaccineReceiptEditPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               {/* Debug form errors */}
               {Object.keys(form.formState.errors).length > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-red-800 mb-2">Form Validation Errors:</h4>
-                  <pre className="text-xs text-red-600 whitespace-pre-wrap">
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                  <h4 className="mb-2 font-semibold text-red-800">
+                    Form Validation Errors:
+                  </h4>
+                  <pre className="text-xs whitespace-pre-wrap text-red-600">
                     {JSON.stringify(form.formState.errors, null, 2)}
                   </pre>
                 </div>
@@ -276,15 +288,6 @@ export default function VaccineReceiptEditPage() {
                 isLoadingBatches={isLoadingBatches}
               />
 
-              {/* Warning Message */}
-              <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-                <p className="font-nunito-500 text-sm text-yellow-800">
-                  <strong>Lưu ý:</strong> Hiện tại form này chỉ cập nhật ngày
-                  nhập. Các thay đổi ở phần chi tiết vaccine sẽ không được lưu.
-                  Để chỉnh sửa chi tiết vaccine, vui lòng liên hệ quản trị viên.
-                </p>
-              </div>
-
               {/* Action Buttons */}
               <div className="flex items-center justify-between border-t border-gray-100 pt-6">
                 <div className="flex items-center gap-4">
@@ -298,35 +301,12 @@ export default function VaccineReceiptEditPage() {
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Quay lại
                   </Button>
-
-                  {/* Debug button */}
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={async () => {
-                      console.log("Edit form values:", form.getValues());
-                      console.log("Edit form errors:", form.formState.errors);
-                      console.log("Edit form is valid:", form.formState.isValid);
-                      console.log("VaccineReceiptId:", vaccineReceiptId);
-
-                      const isValid = await form.trigger();
-                      console.log("Edit manual validation result:", isValid);
-                    }}
-                    className="text-xs"
-                  >
-                    Debug
-                  </Button>
                 </div>
 
                 <Button
                   type="submit"
                   disabled={isSubmitting}
                   className="font-nunito-600 bg-primary hover:bg-secondary min-w-32 text-white"
-                  onClick={() => {
-                    console.log("Edit submit button clicked!");
-                    console.log("Current form values:", form.getValues());
-                    console.log("Form state:", form.formState);
-                  }}
                 >
                   {isSubmitting && <ButtonSpinner variant="white" size="sm" />}
                   <Save className="mr-2 h-4 w-4" />

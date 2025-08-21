@@ -56,27 +56,26 @@ export default function VaccineReceiptDetailPage() {
     navigate(`${baseRoute}/vaccine-receipts`);
   };
 
-  const handleEdit = () => {
-    setShowEditModal(true);
-  };
-
   if (error) {
-    return <VaccineReceiptErrorState onBack={handleBack} onEdit={handleEdit} />;
+    return <VaccineReceiptErrorState onBack={handleBack} />;
   }
 
   if (isPending) {
-    return (
-      <VaccineReceiptLoadingState onBack={handleBack} onEdit={handleEdit} />
-    );
+    return <VaccineReceiptLoadingState onBack={handleBack} />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50/30">
       {/* Header Section */}
-      <VaccineReceiptDetailHeader onBack={handleBack} onEdit={handleEdit} />
+      {vaccineReceiptId && (
+        <VaccineReceiptDetailHeader
+          onBack={handleBack}
+          vaccineReceiptId={vaccineReceiptId}
+        />
+      )}
 
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Main Information Card */}
           <div className="lg:col-span-2">

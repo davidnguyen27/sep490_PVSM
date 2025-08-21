@@ -15,8 +15,10 @@ import { UserRole } from "@/shared/constants/roles.constants";
 import { APPOINTMENT_STATUS } from "@/shared/constants/status.constants";
 import { VACCINATION_APPOINTMENT_STEPS } from "../constants/steps.constants";
 
+// Shared Components (continued)
+import { RejectModal } from "@/components/shared";
+
 // Local Components
-import { RejectModal } from "../components";
 import { StepContent } from "../components/StepContent";
 
 // Local Hooks
@@ -32,6 +34,12 @@ export default function VaccinationAppDetailPage() {
   const [searchParams] = useSearchParams();
   const appointmentId = searchParams.get("appointmentId");
   const { user } = useAuth();
+
+  // Determine base path for breadcrumb by role
+  const basePath =
+    user?.role === 3
+      ? "/vet/vaccination-appointments"
+      : "/staff/vaccination-appointments";
 
   const {
     formData,
@@ -123,7 +131,9 @@ export default function VaccinationAppDetailPage() {
         <h1 className="text-primary font-inter-700 flex items-center gap-2 text-xl">
           <SendToBack /> Theo dõi quá trình tiêm
         </h1>
-        <PageBreadcrumb items={["Tiêm chủng", "Chi tiết"]} />
+        <PageBreadcrumb
+          items={[{ label: "Danh sách lịch hẹn", path: basePath }, "Chi tiết"]}
+        />
       </div>
 
       <StepProgress

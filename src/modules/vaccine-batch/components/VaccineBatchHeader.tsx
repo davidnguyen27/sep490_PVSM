@@ -12,8 +12,8 @@ export function VaccineBatchHeader({
   onGoBack,
 }: VaccineBatchHeaderProps) {
   const breadcrumbItems = [
-    { label: "Lô vaccine", href: "/admin/vaccine-batches" },
-    { label: `Lịch sử lô ${batchNumber || "N/A"}`, href: "#" },
+    { label: "Lô vắc-xin", path: "/admin/vaccine-batches" },
+    { label: `Lịch sử lô ${batchNumber || "N/A"}` },
   ];
 
   return (

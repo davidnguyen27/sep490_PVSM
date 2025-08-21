@@ -3,13 +3,12 @@ import { Button } from "@/components/ui/button";
 
 interface VaccineExportErrorStateProps {
   onBack: () => void;
-  onEdit: () => void;
 }
 
-export default function VaccineExportErrorState({
-  onBack,
-  onEdit,
-}: VaccineExportErrorStateProps) {
+export default function VaccineExportErrorState(
+  props: VaccineExportErrorStateProps,
+) {
+  const { onBack } = props;
   return (
     <div className="min-h-screen bg-gray-50/30">
       {/* Header Section */}
@@ -32,13 +31,7 @@ export default function VaccineExportErrorState({
                 </h1>
               </div>
             </div>
-            <Button
-              onClick={onEdit}
-              disabled
-              className="bg-primary hover:bg-primary/90 text-white"
-            >
-              Chỉnh sửa
-            </Button>
+            {/* Nút chỉnh sửa đã bị loại bỏ */}
           </div>
         </div>
       </div>

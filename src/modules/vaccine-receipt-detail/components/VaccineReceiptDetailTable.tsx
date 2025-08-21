@@ -69,7 +69,7 @@ export function VaccineReceiptDetailTable({
     <div className="bg-linen overflow-hidden rounded-none border border-gray-100">
       <Table>
         <TableHeader>
-          <TableRow className="bg-primary">
+          <TableRow className="bg-primary hover:bg-primary">
             <TableHead className="font-nunito-500 text-white">STT</TableHead>
             <TableHead className="font-nunito-500 text-white">
               Lô vaccine

@@ -55,10 +55,6 @@ export default function QuickStatsActions({
           <h3 className="font-inter-600 mb-3 text-sm text-gray-900">
             Thao tác nhanh
           </h3>
-          <button className="bg-primary font-nunito-500 flex w-full items-center justify-center space-x-2 border border-gray-200 px-4 py-3 text-white transition-colors hover:bg-teal-700">
-            <icons.Calendar className="h-5 w-5" />
-            <span>Tạo lịch hẹn mới</span>
-          </button>
           <button className="font-nunito-500 flex w-full items-center justify-center space-x-2 border border-gray-200 bg-green-600 px-4 py-3 text-white transition-colors hover:bg-green-700">
             <icons.PawPrint className="h-5 w-5" />
             <span>Đăng ký thú cưng</span>

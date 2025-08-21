@@ -202,7 +202,7 @@ export function StepContent({
           onExportInvoice={onExportInvoice}
         />
       ) : (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
+        <div className="bg-linen rounded-none border border-gray-200 p-6 shadow-md">
           <div className="text-center text-gray-600">
             <p className="text-lg font-medium">Bước thanh toán</p>
             <p className="mt-2 text-sm">
@@ -248,6 +248,20 @@ export function StepContent({
     </div>
   );
 
+  const renderRejectStep = () => (
+    <div className="space-y-6">
+      {renderCommonCards()}
+      <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-center">
+        <h2 className="mb-2 text-2xl font-bold text-red-600">
+          Lịch tiêm đã bị từ chối
+        </h2>
+        <p className="text-gray-700">
+          Lý do: {data.notes || "Không có lý do cụ thể."}
+        </p>
+      </div>
+    </div>
+  );
+
   switch (currentViewStatus) {
     case APPOINTMENT_STATUS.PROCESSING:
       return renderStepConfirm();
@@ -259,6 +273,8 @@ export function StepContent({
       return renderStepPayment();
     case APPOINTMENT_STATUS.PAID:
       return renderStepCompleted();
+    case 10:
+      return renderRejectStep();
     default:
       return renderFinalized();
   }

@@ -13,7 +13,7 @@ import { useSidebar } from "@/shared/hooks/useSidebar";
 import { useAuth } from "@/modules/auth/hooks/use-auth-context";
 import LogoutButton from "@/components/shared/LogoutButton";
 import { useNavigate } from "react-router-dom";
-import { Menu, Plus, ChevronDown, Scan, User } from "lucide-react";
+import { Menu, ChevronDown, Scan, User } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 
 // Types for better type safety
@@ -29,8 +29,6 @@ const HEADER_STYLES = {
   container: "w-full bg-[#E0F7F5]",
   menuButton:
     "bg-primary flex size-16 items-center justify-center text-white transition-colors duration-200",
-  createButton:
-    "bg-primary hover:bg-secondary items-center space-x-2 px-3 py-2.5 text-sm font-inter-500 text-white transition-colors duration-200 md:flex rounded-sm",
   iconButton:
     "rounded-lg p-2 text-gray-600 transition-colors duration-200 hover:bg-gray-100 hover:text-dark",
   notificationBadge:
@@ -38,7 +36,7 @@ const HEADER_STYLES = {
   searchInput:
     "w-full border-gray-300 bg-gray-50 py-3 pr-12 pl-12 text-sm font-nunito-400 focus:border-transparent focus:ring-2 focus:ring-blue-500",
   scanButton:
-    "bg-green-600 hover:bg-green-700 items-center space-x-2 px-3 py-2.5 text-sm font-inter-500 text-white transition-colors duration-200 md:flex rounded-sm",
+    "bg-primary hover:bg-secondary items-center space-x-2 px-3 py-2.5 text-sm font-inter-500 text-white transition-colors duration-200 md:flex rounded-sm",
   brandTitle: "hidden text-2xl font-inter-700 text-[#2D3748] sm:block",
   userProfile: "relative flex items-center space-x-3",
   userButton:
@@ -64,10 +62,17 @@ export default function Header() {
 
   // Mock user data - replace with actual user state
   const currentUser: User = {
-    name: user?.email?.split('@')[0] || "User",
+    name: user?.email?.split("@")[0] || "User",
     email: user?.email || "user@vaxpet.vn",
     initials: user?.email?.charAt(0).toUpperCase() || "U",
-    role: user?.role === 1 ? "Admin" : user?.role === 2 ? "Staff" : "Vet",
+    role:
+      user?.role === 1
+        ? "Admin"
+        : user?.role === 2
+          ? "Staff"
+          : user?.role === 3
+            ? "Vet"
+            : "Unknown",
   };
 
   // Optimized event handlers with useCallback to prevent unnecessary re-renders
@@ -84,13 +89,8 @@ export default function Header() {
   const handleSettings = useCallback(() => {
     console.log("Opening settings...");
     setIsDropdownOpen(false);
-    // Add actual settings logic here
-  }, []);
-
-  const handleCreateAppointment = useCallback(() => {
-    console.log("Creating appointment...");
-    // Add actual create appointment logic here
-  }, []);
+    navigate("/admin/settings");
+  }, [navigate]);
 
   const handleScanMicrochip = useCallback(() => {
     console.log("Opening microchip scanner...");
@@ -172,22 +172,18 @@ export default function Header() {
             title="Quét microchip tìm lịch hẹn"
           >
             <Scan size={18} />
-            <span>Quét chip</span>
+            <span>Tra cứu</span>
           </button>
 
-          {/* Create Appointment Button */}
-          <button
-            onClick={handleCreateAppointment}
-            className={HEADER_STYLES.createButton}
-          >
-            <Plus size={18} />
-            <span>Tạo lịch hẹn</span>
-          </button>
-
-          {/* Settings Button */}
-          <button className={HEADER_STYLES.iconButton}>
-            <icons.Settings size={20} />
-          </button>
+          {/* Settings Button: chỉ hiển thị nếu không phải Staff (2) hoặc Vet (3) */}
+          {user?.role !== 2 && user?.role !== 3 && (
+            <button
+              className={HEADER_STYLES.iconButton}
+              onClick={handleSettings}
+            >
+              <icons.Settings size={20} />
+            </button>
+          )}
 
           {/* Notification Button */}
           <button className={`${HEADER_STYLES.iconButton} relative`}>
@@ -218,8 +214,9 @@ export default function Header() {
 
               <ChevronDown
                 size={16}
-                className={`text-gray-500 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""
-                  }`}
+                className={`text-gray-500 transition-transform duration-200 ${
+                  isDropdownOpen ? "rotate-180" : ""
+                }`}
               />
             </div>
 
@@ -263,7 +260,7 @@ export default function Header() {
                 <div className="py-2">
                   <LogoutButton
                     variant="ghost"
-                    className={`${HEADER_STYLES.dropdownItem} text-red-600 hover:bg-red-50 w-full justify-start`}
+                    className={`${HEADER_STYLES.dropdownItem} w-full justify-start text-red-600 hover:bg-red-50`}
                     showIcon={true}
                     showText={true}
                   />
@@ -279,7 +276,7 @@ export default function Header() {
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Scan className="h-5 w-5 text-green-600" />
+              <Scan className="text-primary h-5 w-5" />
               Tra cứu microchip
             </DialogTitle>
             <DialogDescription>
@@ -303,7 +300,7 @@ export default function Header() {
                   <Button
                     onClick={handleScanSubmit}
                     disabled={!scannedCode.trim()}
-                    className="bg-green-600 hover:bg-green-700"
+                    className="bg-primary hover:bg-secondary"
                   >
                     Tìm kiếm
                   </Button>

@@ -189,11 +189,3 @@ export const useVaccinationStore = create<VaccinationState>()(
     { name: "vaccination-store" },
   ),
 );
-
-// Selectors for better performance
-export const useVaccinationValidation = () =>
-  useVaccinationStore((state) => ({
-    isStepValid: state.isStepValid,
-    canEditStep: state.canEditStep,
-    getStepValidationStatus: state.getStepValidationStatus,
-  }));

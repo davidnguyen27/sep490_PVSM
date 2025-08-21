@@ -62,4 +62,10 @@ export const diseaseService = {
       .delete(`/api/Disease/delete-disease/${diseaseId}`)
       .then((res) => res.data);
   },
+
+  async getDiseaseBySpecies(species: string): Promise<Disease[]> {
+    return await axiosInstance
+      .get(`/api/Disease/get-disease-by-species/${species}`)
+      .then((res) => (res.data.success ? res.data.data : []));
+  },
 };

@@ -18,7 +18,7 @@ export function ResultCard({
   readOnly = false,
 }: ResultCardProps) {
   return (
-    <Card className="bg-linen rounded-none">
+    <Card className="bg-linen rounded-none py-4">
       <CardHeader>
         <CardTitle className="text-foreground text-base font-semibold">
           Thông tin sau cấy microchip

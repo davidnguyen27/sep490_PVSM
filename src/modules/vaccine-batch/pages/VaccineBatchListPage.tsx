@@ -156,8 +156,10 @@ export default function VaccineBatchListPage() {
                   </h1>
                   <PageBreadcrumb
                     items={[
-                      "Lô vắc-xin",
-                      `Chi tiết ${vaccineBatchDetail?.batchNumber || vaccineBatchId}`,
+                      { label: "Lô vắc-xin", path: "/admin/vaccine-batches" },
+                      {
+                        label: `Chi tiết ${vaccineBatchDetail?.batchNumber || vaccineBatchId}`,
+                      },
                     ]}
                   />
                 </div>
@@ -172,7 +174,7 @@ export default function VaccineBatchListPage() {
               </div>
             </div>
 
-            <div className="rounded-lg bg-white p-6 shadow-sm">
+            <div>
               {isDetailLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <Spinner />
@@ -212,7 +214,7 @@ export default function VaccineBatchListPage() {
             </div>
             <PageBreadcrumb items={["Lô vắc-xin"]} />
 
-            <div className="bg-linen flex items-end justify-between p-4 shadow-md">
+            <div className="flex items-end justify-between">
               <div className="flex items-end justify-between gap-4">
                 <SearchLabel value={search} onChange={setSearch} />
                 <VaccineBatchFilter
@@ -240,7 +242,7 @@ export default function VaccineBatchListPage() {
               >
                 {isCreating && <ButtonSpinner variant="white" size="sm" />}
                 <Plus className="mr-2 h-4 w-4" />
-                {isCreating ? "Đang tạo..." : "Thêm lô vaccine"}
+                {isCreating ? "Đang tạo..." : "Thêm lô vắc-xin"}
               </Button>
             </div>
 

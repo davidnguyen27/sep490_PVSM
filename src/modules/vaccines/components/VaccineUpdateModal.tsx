@@ -123,7 +123,7 @@ export function VaccineUpdateModal({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-primary text-xl font-semibold">
+          <DialogTitle className="text-primary font-nunito-700 text-xl">
             Cập nhật vaccine
           </DialogTitle>
         </DialogHeader>
@@ -134,7 +134,7 @@ export function VaccineUpdateModal({
             <div className="space-y-4">
               {/* Vaccine Name */}
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium">
+                <Label htmlFor="name" className="font-nunito-500 text-sm">
                   Tên vaccine <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -151,7 +151,7 @@ export function VaccineUpdateModal({
 
               {/* Price */}
               <div className="space-y-2">
-                <Label htmlFor="price" className="text-sm font-medium">
+                <Label htmlFor="price" className="font-nunito-500 text-sm">
                   Giá (VNĐ) <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -171,7 +171,10 @@ export function VaccineUpdateModal({
 
               {/* Description */}
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-sm font-medium">
+                <Label
+                  htmlFor="description"
+                  className="font-nunito-500 text-sm"
+                >
                   Mô tả <span className="text-red-500">*</span>
                 </Label>
                 <Textarea
@@ -193,7 +196,7 @@ export function VaccineUpdateModal({
             <div className="space-y-4">
               {/* Image Upload */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Hình ảnh</Label>
+                <Label className="font-nunito-500 text-sm">Hình ảnh</Label>
 
                 {previewUrl ? (
                   <div className="relative">
@@ -249,7 +252,7 @@ export function VaccineUpdateModal({
 
               {/* Notes */}
               <div className="space-y-2">
-                <Label htmlFor="notes" className="text-sm font-medium">
+                <Label htmlFor="notes" className="font-nunito-500 text-sm">
                   Ghi chú
                 </Label>
                 <Textarea

@@ -81,24 +81,24 @@ export function AppointmentTable({
                 <TableCell className="font-nunito text-dark text-center text-sm">
                   {(currentPage - 1) * pageSize + idx + 1}
                 </TableCell>
-                <TableCell className="font-nunito text-dark text-center text-sm">
+                <TableCell className="font-nunito text-dark max-w-[120px] truncate text-center text-sm">
                   {item.microchip.appointmentDetailCode}
                 </TableCell>
-                <TableCell className="text-primary font-nunito cursor-pointer text-center text-sm underline">
+                <TableCell className="text-primary font-nunito max-w-[140px] cursor-pointer truncate text-center text-sm underline">
                   {item.microchip.appointment.petResponseDTO.name}
                 </TableCell>
-                <TableCell className="text-primary font-nunito cursor-pointer text-center text-sm underline">
+                <TableCell className="text-primary font-nunito max-w-[140px] cursor-pointer truncate text-center text-sm underline">
                   {item.microchip.appointment.customerResponseDTO.fullName}
                 </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
+                <TableCell className="text-dark font-nunito max-w-[120px] truncate text-center text-sm">
                   {formatData.formatDateTime(item.microchip.appointmentDate)}
                 </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
+                <TableCell className="text-dark font-nunito max-w-[120px] truncate text-center text-sm">
                   {formatData.formatLocation(
                     item.microchip.appointment.location,
                   )}
                 </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
+                <TableCell className="text-dark font-nunito max-w-[180px] truncate text-center text-sm">
                   {item.microchip.appointment.address}
                 </TableCell>
                 <TableCell className="text-center">
@@ -108,11 +108,6 @@ export function AppointmentTable({
                       "font-nunito cursor-pointer text-xs transition-transform hover:scale-110",
                       getBadgeColor(item.microchip.appointmentStatus),
                     )}
-                    onClick={() =>
-                      navigate(
-                        `${basePath}/detail?appointmentId=${item.microchip.appointmentId}`,
-                      )
-                    }
                   >
                     {AppStatusMapped[item.microchip.appointmentStatus]}
                   </Badge>
@@ -122,6 +117,11 @@ export function AppointmentTable({
                     <BadgeInfo
                       size={16}
                       className="text-info cursor-pointer transition-transform hover:scale-110"
+                      onClick={() =>
+                        navigate(
+                          `${basePath}?appointmentId=${item.microchip.appointmentId}`,
+                        )
+                      }
                     />
                     <SquarePen
                       size={16}

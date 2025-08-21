@@ -134,7 +134,7 @@ export default function VaccineReceiptListPage() {
         </div>
         <PageBreadcrumb items={["Phiếu nhập vaccine"]} />
 
-        <div className="bg-linen flex items-end justify-between p-4 shadow-md">
+        <div className="flex items-end justify-between p-4">
           <div className="flex items-end justify-between gap-4">
             <SearchLabel value={search} onChange={setSearch} />
           </div>

@@ -4,26 +4,40 @@ import {
   SearchLabel,
   AppointmentFilter,
 } from "@/components/shared";
-import { useDebounce } from "@/shared/hooks";
-import { useState } from "react";
+import { useDebounce, useVetId } from "@/shared/hooks";
+import { useEffect, useState } from "react";
 import { useConditionAppointments } from "../hooks/useConditionAppointments";
 import { AppointmentTable } from "../components/AppointmentTable";
-import { BookCheck } from "lucide-react";
+import { BookCheck, RotateCcw } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import AppointmentDetailPage from "./AppointmentDetailPage";
 
 export default function ListAppointmentPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState({
     location: "",
     status: "",
   });
 
   const debouncedSearch = useDebounce(search, 500, { leading: true });
-  const { data, isPending, isFetching } = useConditionAppointments({
+  const vetId = useVetId();
+
+  const { data, isPending, isFetching, refetch } = useConditionAppointments({
     pageNumber: page,
     pageSize: 10,
     keyWord: debouncedSearch,
+    vetId: vetId,
   });
+
+  useEffect(() => {
+    document.title = "PVMS | Lịch hẹn khám bệnh";
+
+    return () => {
+      document.title = "PVMS | Lịch hẹn khám bệnh";
+    };
+  }, []);
 
   const conditionApps = data?.data.pageData ?? [];
   const totalPages = data?.data.pageInfo.totalPage ?? 1;
@@ -40,16 +54,23 @@ export default function ListAppointmentPage() {
     return matchLocation && matchStatus;
   });
 
+  const appointmentId = searchParams.get("appointmentId");
+  const isDetailMode = !!appointmentId;
+
+  if (isDetailMode) {
+    return <AppointmentDetailPage />;
+  }
+
   return (
-    <>
+    <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-primary font-inter-600 flex items-center gap-2 text-xl">
+        <h1 className="text-primary font-inter-700 my-4 flex items-center gap-2 text-xl">
           <BookCheck /> Chứng nhận sức khỏe
         </h1>
-        <PageBreadcrumb items={["Trang chủ", "Lịch hẹn"]} />
+        <PageBreadcrumb items={["Danh sách lịch hẹn"]} />
       </div>
 
-      <div className="bg-linen flex flex-wrap items-end gap-4 p-4 shadow-md">
+      <div className="flex flex-wrap items-end gap-4 p-4">
         <SearchLabel value={search} onChange={setSearch} />
         <AppointmentFilter
           location={filters.location}
@@ -59,6 +80,15 @@ export default function ListAppointmentPage() {
             setPage(1);
           }}
         />
+        <button
+          type="button"
+          className="bg-primary hover:bg-secondary ml-auto flex items-center gap-1 rounded px-3 py-2 text-white transition"
+          title="Làm mới dữ liệu"
+          onClick={() => refetch()}
+        >
+          <RotateCcw size={16} />
+          Làm mới
+        </button>
       </div>
 
       <AppointmentTable
@@ -73,6 +103,6 @@ export default function ListAppointmentPage() {
         totalPages={totalPages}
         onPageChange={(newPage) => setPage(newPage)}
       />
-    </>
+    </div>
   );
 }

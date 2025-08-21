@@ -81,22 +81,37 @@ export function AppointmentTable({
                 <TableCell className="font-nunito text-dark text-center text-sm">
                   {(currentPage - 1) * pageSize + idx + 1}
                 </TableCell>
-                <TableCell className="font-nunito text-dark text-center text-sm">
+                <TableCell
+                  className="font-nunito text-dark max-w-[120px] truncate text-center text-sm"
+                  title={item.appointment.appointmentCode}
+                >
                   {item.appointment.appointmentCode}
                 </TableCell>
-                <TableCell className="text-primary font-nunito cursor-pointer text-center text-sm underline">
+                <TableCell
+                  className="text-primary font-nunito max-w-[120px] cursor-pointer truncate text-center text-sm underline"
+                  title={item.appointment.petResponseDTO.name}
+                >
                   {item.appointment.petResponseDTO.name}
                 </TableCell>
-                <TableCell className="text-primary font-nunito cursor-pointer text-center text-sm underline">
+                <TableCell
+                  className="text-primary font-nunito max-w-[120px] cursor-pointer truncate text-center text-sm underline"
+                  title={item.appointment.customerResponseDTO.fullName}
+                >
                   {item.appointment.customerResponseDTO.fullName}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
                   {formatData.formatDateTime(item.appointment.appointmentDate)}
                 </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
+                <TableCell
+                  className="text-dark font-nunito max-w-[120px] truncate text-center text-sm"
+                  title={formatData.formatLocation(item.appointment.location)}
+                >
                   {formatData.formatLocation(item.appointment.location)}
                 </TableCell>
-                <TableCell className="text-dark font-nunito text-center text-sm">
+                <TableCell
+                  className="text-dark font-nunito max-w-[160px] truncate text-center text-sm"
+                  title={item.appointment.address}
+                >
                   {item.appointment.address}
                 </TableCell>
                 <TableCell className="text-center">

@@ -1,5 +1,4 @@
-import React from "react";
-import { Calendar, User, FileText, DollarSign, Tag, Image } from "lucide-react";
+import { Calendar, User, FileText, Tag, Image } from "lucide-react";
 
 import {
   Dialog,
@@ -22,20 +21,22 @@ interface VaccineDetailModalProps {
   isLoading?: boolean;
 }
 
-export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
+export function VaccineDetailModal({
   open,
   onClose,
   vaccine,
   isLoading = false,
-}) => {
+}: VaccineDetailModalProps) {
   if (isLoading) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+        <DialogContent className="modal-scrollbar font-inter max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-center py-20">
             <div className="space-y-4 text-center">
               <Spinner className="mx-auto h-8 w-8" />
-              <p className="text-gray-500">Đang tải thông tin vaccine...</p>
+              <p className="font-nunito text-gray-500">
+                Đang tải thông tin vaccine...
+              </p>
             </div>
           </div>
         </DialogContent>
@@ -46,10 +47,12 @@ export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
   if (!vaccine) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="modal-scrollbar font-inter max-w-2xl">
           <div className="py-10 text-center">
             <FileText className="mx-auto mb-4 h-16 w-16 text-gray-400" />
-            <p className="text-gray-500">Không tìm thấy thông tin vaccine</p>
+            <p className="font-nunito text-gray-500">
+              Không tìm thấy thông tin vaccine
+            </p>
             <Button variant="outline" onClick={onClose} className="mt-4">
               Đóng
             </Button>
@@ -61,17 +64,19 @@ export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
-        <DialogHeader className="flex flex-row items-center justify-between pb-4">
-          <DialogTitle className="text-primary flex items-center gap-2 text-2xl font-bold">
+      <DialogContent className="modal-scrollbar font-inter flex max-h-[90vh] flex-col p-0">
+        {/* Header cố định */}
+        <DialogHeader className="sticky top-0 z-10 border-b bg-white px-6 pt-6 pb-4">
+          <DialogTitle className="text-primary font-nunito-700 flex items-center gap-2 text-2xl">
             <FileText className="h-6 w-6" />
             Chi tiết vaccine
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        {/* Nội dung cuộn */}
+        <div className="font-nunito flex-1 space-y-6 overflow-y-auto px-6 py-6">
           {/* Header Info */}
-          <div className="rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
+          <div className="font-nunito rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
             <div className="flex items-start gap-6">
               {/* Image */}
               <div className="flex-shrink-0">
@@ -91,13 +96,15 @@ export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
               {/* Basic Info */}
               <div className="flex-1 space-y-3">
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900">
+                  <h3 className="font-nunito-500 text-2xl text-gray-900">
                     {vaccine.name}
                   </h3>
                   <p className="mt-1 flex items-center gap-2 text-gray-600">
                     <Tag className="h-4 w-4" />
                     Mã vaccine:{" "}
-                    <span className="font-medium">{vaccine.vaccineCode}</span>
+                    <span className="font-nunito-500">
+                      {vaccine.vaccineCode}
+                    </span>
                   </p>
                 </div>
 
@@ -119,8 +126,8 @@ export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
                         : vaccine.status}
                   </Badge>
 
-                  <div className="flex items-center gap-1 font-semibold text-green-600">
-                    <DollarSign className="h-4 w-4" />
+                  <div className="font-nunito-600 flex items-center gap-1 text-green-600">
+                    <Tag className="h-4 w-4" />
                     {formatData.formatCurrency(vaccine.price)}
                   </div>
                 </div>
@@ -135,8 +142,8 @@ export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
             {/* Left Column */}
             <div className="space-y-6">
               {/* Description */}
-              <div className="rounded-lg border bg-white p-4">
-                <h4 className="mb-3 flex items-center gap-2 font-semibold text-gray-900">
+              <div className="font-nunito rounded-lg border bg-white p-4">
+                <h4 className="font-nunito-600 mb-3 flex items-center gap-2 text-gray-900">
                   <FileText className="h-4 w-4 text-blue-500" />
                   Mô tả chi tiết
                 </h4>
@@ -147,8 +154,8 @@ export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
 
               {/* Notes */}
               {vaccine.notes && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-                  <h4 className="mb-3 flex items-center gap-2 font-semibold text-amber-800">
+                <div className="font-nunito rounded-lg border border-amber-200 bg-amber-50 p-4">
+                  <h4 className="font-nunito-600 mb-3 flex items-center gap-2 text-amber-800">
                     <FileText className="h-4 w-4 text-amber-600" />
                     Ghi chú
                   </h4>
@@ -162,21 +169,21 @@ export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
             {/* Right Column */}
             <div className="space-y-6">
               {/* Creation Info */}
-              <div className="rounded-lg border bg-white p-4">
-                <h4 className="mb-4 flex items-center gap-2 font-semibold text-gray-900">
+              <div className="font-nunito rounded-lg border bg-white p-4">
+                <h4 className="font-nunito-600 mb-4 flex items-center gap-2 text-gray-900">
                   <Calendar className="h-4 w-4 text-blue-500" />
                   Thông tin tạo
                 </h4>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Ngày tạo:</span>
-                    <span className="font-medium">
+                    <span className="font-nunito-500">
                       {formatData.formatDateTime(vaccine.createdAt)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Người tạo:</span>
-                    <span className="flex items-center gap-1 font-medium">
+                    <span className="font-nunito-500 flex items-center gap-1">
                       <User className="h-3 w-3" />
                       {vaccine.createdBy || "N/A"}
                     </span>
@@ -185,15 +192,15 @@ export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
               </div>
 
               {/* Modification Info */}
-              <div className="rounded-lg border bg-white p-4">
-                <h4 className="mb-4 flex items-center gap-2 font-semibold text-gray-900">
+              <div className="font-nunito rounded-lg border bg-white p-4">
+                <h4 className="font-nunito-600 mb-4 flex items-center gap-2 text-gray-900">
                   <Calendar className="h-4 w-4 text-green-500" />
                   Thông tin cập nhật
                 </h4>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Ngày cập nhật:</span>
-                    <span className="font-medium">
+                    <span className="font-nunito-500">
                       {vaccine.modifiedAt
                         ? formatData.formatDateTime(vaccine.modifiedAt)
                         : "Chưa cập nhật"}
@@ -201,7 +208,7 @@ export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600">Người cập nhật:</span>
-                    <span className="flex items-center gap-1 font-medium">
+                    <span className="font-nunito-500 flex items-center gap-1">
                       <User className="h-3 w-3" />
                       {vaccine.modifiedBy || "N/A"}
                     </span>
@@ -210,8 +217,8 @@ export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
               </div>
 
               {/* Technical Info */}
-              <div className="rounded-lg border bg-gray-50 p-4">
-                <h4 className="mb-4 flex items-center gap-2 font-semibold text-gray-900">
+              <div className="font-nunito rounded-lg border bg-gray-50 p-4">
+                <h4 className="font-nunito-600 mb-4 flex items-center gap-2 text-gray-900">
                   <Tag className="h-4 w-4 text-gray-500" />
                   Thông tin kỹ thuật
                 </h4>
@@ -232,15 +239,15 @@ export const VaccineDetailModal: React.FC<VaccineDetailModalProps> = ({
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 border-t pt-4">
-            <Button variant="outline" onClick={onClose}>
-              Đóng
-            </Button>
-          </div>
+        {/* Bottom cố định */}
+        <div className="z-10 flex justify-end gap-3 border-t bg-white px-6 pt-4 pb-6">
+          <Button variant="outline" onClick={onClose}>
+            Đóng
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
-};
+}

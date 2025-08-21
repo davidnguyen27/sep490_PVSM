@@ -84,11 +84,9 @@ export default function VaccineListPage() {
         </div>
         <PageBreadcrumb items={["Danh sách vắc-xin"]} />
 
-        <div className="bg-linen flex items-end justify-between p-4 shadow-md">
-          <div className="flex items-end justify-between gap-4">
+        <div className="flex items-end justify-between">
+          <div className="flex items-end justify-between">
             <SearchLabel value={search} onChange={setSearch} />
-            {/* TODO: Add VaccineFilter component when ready */}
-            {/* <VaccineFilter /> */}
           </div>
 
           {/* Search loading indicator */}

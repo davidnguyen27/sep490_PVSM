@@ -84,13 +84,13 @@ export default function VetManagementPage() {
       <div className="space-y-6">
         <div className="flex items-center space-x-2">
           <UserCheck color="#00B8A9" />
-          <h1 className="text-primary font-nunito text-2xl font-bold">
+          <h1 className="text-primary font-nunito-700 text-2xl">
             Quản lý bác sỹ
           </h1>
         </div>
         <PageBreadcrumb items={["Bác sĩ"]} />
 
-        <div className="bg-linen flex items-end justify-between p-4 shadow-md">
+        <div className="flex items-end justify-between p-4">
           <div className="flex items-end justify-between gap-4">
             <SearchLabel value={search} onChange={setSearch} />
             <VetFilter

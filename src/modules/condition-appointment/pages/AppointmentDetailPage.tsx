@@ -21,6 +21,11 @@ export default function AppointmentDetailPage() {
   const appointmentDetailId = Number(searchParams.get("appointmentId"));
   const { user } = useAuth();
 
+  const basePath =
+    user?.role === 3
+      ? "/vet/condition-appointments"
+      : "/staff/condition-appointments";
+
   const {
     formData,
     activeStep,
@@ -105,7 +110,9 @@ export default function AppointmentDetailPage() {
           <SendToBack />
           Theo dõi quá trình cấp chứng nhận
         </h1>
-        <PageBreadcrumb items={["Trang chủ", "Lịch hẹn", "Chi tiết"]} />
+        <PageBreadcrumb
+          items={[{ label: "Danh sách lịch hẹn", path: basePath }, "Chi tiết"]}
+        />
       </div>
 
       <StepProgress

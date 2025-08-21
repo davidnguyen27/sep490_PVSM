@@ -60,7 +60,7 @@ export function useMicrochipHandlers({
 
       handleStatusUpdate({
         appointmentId: data.microchip?.appointmentId,
-        appointmentStatus: APPOINTMENT_STATUS.REJECTED,
+        appointmentStatus: APPOINTMENT_STATUS.CANCELLED,
         note,
       });
       setShowReject(false);

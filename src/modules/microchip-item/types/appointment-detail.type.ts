@@ -1,0 +1,75 @@
+export interface AppointmentDetail {
+  appointmentId: number | null;
+  customerId: number | null;
+  petId: number | null;
+  appointmentCode: string;
+  appointmentDate: string;
+  serviceType: number;
+  location: number;
+  address: string;
+  appointmentStatus: number;
+  createdAt: string;
+  createdBy: string;
+  modifiedAt: string;
+  modifiedBy: string;
+  isDeleted: boolean;
+  customerResponseDTO: {
+    customerId: number | null;
+    accountId: number | null;
+    membershipId: number | null;
+    customerCode: string;
+    fullName: string;
+    userName: string;
+    image: string;
+    phoneNumber: string;
+    dateOfBirth: string;
+    gender: string;
+    address: string;
+    currentPoints: 1055;
+    redeemablePoints: 220;
+    totalSpent: 2900000;
+    createdAt: string;
+    createdBy: string;
+    modifiedAt: string;
+    modifiedBy: string;
+    isDeleted: boolean;
+    accountResponseDTO: {
+      accountId: number | null;
+      email: string;
+      role: number;
+      vetId: number | null;
+    };
+    membershipResponseDTO: {
+      membershipId: number | null;
+      membershipCode: string;
+      name: string;
+      description: string;
+      minPoints: number;
+      benefits: string;
+      rank: string;
+      createdAt: string;
+      createdBy: string;
+      modifiedAt: string;
+      modifiedBy: string;
+      isDeleted: boolean;
+    };
+  };
+  petResponseDTO: {
+    petId: number | null;
+    customerId: number | null;
+    petCode: string;
+    name: string;
+    species: string;
+    breed: string;
+    gender: string;
+    dateOfBirth: string;
+    placeToLive: string;
+    placeOfBirth: string;
+    image: string;
+    weight: string;
+    color: string;
+    nationality: string;
+    isSterilized: boolean;
+    isDeleted: boolean;
+  };
+}

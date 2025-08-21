@@ -5,21 +5,18 @@ import { AlertCircle } from "lucide-react";
 
 interface VaccineReceiptErrorStateProps {
   onBack: () => void;
-  onEdit: () => void;
 }
 
 interface VaccineReceiptLoadingStateProps {
   onBack: () => void;
-  onEdit: () => void;
 }
 
 export function VaccineReceiptErrorState({
   onBack,
-  onEdit,
 }: VaccineReceiptErrorStateProps) {
   return (
     <div className="min-h-screen bg-gray-50/30">
-      <VaccineReceiptDetailHeader onBack={onBack} onEdit={onEdit} />
+      <VaccineReceiptDetailHeader onBack={onBack} vaccineReceiptId={0} />
 
       {/* Error Content */}
       <div className="mx-auto max-w-7xl px-6 py-12">
@@ -45,11 +42,11 @@ export function VaccineReceiptErrorState({
 
 export function VaccineReceiptLoadingState({
   onBack,
-  onEdit,
 }: VaccineReceiptLoadingStateProps) {
+  // Giả định vaccineReceiptId không cần thiết khi loading, truyền tạm giá trị rỗng hoặc 0
   return (
     <div className="min-h-screen bg-gray-50/30">
-      <VaccineReceiptDetailHeader onBack={onBack} onEdit={onEdit} />
+      <VaccineReceiptDetailHeader onBack={onBack} vaccineReceiptId={0} />
 
       {/* Loading Content */}
       <div className="mx-auto max-w-7xl px-6 py-12">

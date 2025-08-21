@@ -25,6 +25,12 @@ import { conditionAppRoutes } from "@/modules/condition-appointment/routes/condi
 
 // Business process modules
 import { paymentRoutes } from "@/modules/payments/routes/payment.route";
+import { membershipRoutes } from "@/modules/membership/routes/membership.route";
+import { vaccineScheduleRoutes } from "@/modules/vaccine-schedules/routes/vaccine-schedule.route";
+import { addressRoutes } from "@/modules/address/routes/address.route";
+import { faqRoutes } from "@/modules/faq/routes/faq.route";
+import { handbookRoutes } from "@/modules/handbook/routes/handbook.route";
+import { supportCategoryRoutes } from "@/modules/support-category";
 
 export function AppRoutes() {
   const routes = [
@@ -33,18 +39,23 @@ export function AppRoutes() {
     ...dashboardRoutes,
 
     // Entity management routes
+    ...addressRoutes,
     ...customerRoutes,
     ...diseaseRoutes,
+    ...faqRoutes,
     ...petRoutes,
     ...vetRoutes,
     ...microchipRoutes,
     ...microchipItemRoutes,
+    ...handbookRoutes,
+    ...supportCategoryRoutes,
     ...vetScheduleRoutes,
     ...vaccineRoutes,
     ...vaccineBatchRoutes,
     ...vaccineDiseaseRoutes,
     ...vaccineReceiptRoutes,
     ...vaccineExportRoutes,
+    ...vaccineScheduleRoutes,
 
     // Appointment workflow routes
     ...vaccinationAppRoutes,
@@ -53,6 +64,7 @@ export function AppRoutes() {
 
     // Business process routes
     ...paymentRoutes,
+    ...membershipRoutes,
   ];
 
   return useRoutes(routes);

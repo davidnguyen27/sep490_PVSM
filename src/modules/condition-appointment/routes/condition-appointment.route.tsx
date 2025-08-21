@@ -4,15 +4,18 @@ import StaffLayout from "@/shared/layouts/StaffLayout";
 import VetLayout from "@/shared/layouts/VetLayout";
 import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
+import ConditionPaymentSuccessPage from "../pages/ConditionPaymentSuccessPage";
 
 const ConditionAppointmentPage = lazy(
   () => import("../pages/ListAppointmentPage"),
 );
-const ConditionDetailPage = lazy(
-  () => import("../pages/AppointmentDetailPage"),
+
+const PetHealthCertificatePage = lazy(
+  () => import("../pages/PetHealthCertificatePage"),
 );
-const ConditionPaymentSuccessPage = lazy(
-  () => import("../pages/ConditionPaymentSuccessPage"),
+
+const ConditionPaymentCancelPage = lazy(
+  () => import("../pages/ConditionPaymentCancelPage"),
 );
 
 export const conditionAppRoutes: RouteObject[] = [
@@ -32,12 +35,16 @@ export const conditionAppRoutes: RouteObject[] = [
             element: <ConditionAppointmentPage />,
           },
           {
-            path: "detail",
-            element: <ConditionDetailPage />,
-          },
-          {
             path: "success",
             element: <ConditionPaymentSuccessPage />,
+          },
+          {
+            path: "cancel",
+            element: <ConditionPaymentCancelPage />,
+          },
+          {
+            path: "pet-health-certificate",
+            element: <PetHealthCertificatePage />,
           },
         ],
       },
@@ -59,8 +66,8 @@ export const conditionAppRoutes: RouteObject[] = [
             element: <ConditionAppointmentPage />,
           },
           {
-            path: "detail",
-            element: <ConditionDetailPage />,
+            path: "pet-health-certificate",
+            element: <PetHealthCertificatePage />,
           },
         ],
       },

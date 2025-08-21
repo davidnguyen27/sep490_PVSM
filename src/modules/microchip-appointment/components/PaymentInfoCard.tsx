@@ -13,6 +13,7 @@ import {
 import {
   useCreatePayment,
   usePaymentStore,
+  useRetryPayment,
   type PaymentPayload,
 } from "@/modules/payments";
 import type { MicrochipDetail } from "../types/detail.type";
@@ -60,7 +61,9 @@ export function PaymentInfoCard({
   const { paymentMethod, setPaymentMethod, setPaymentId } = usePaymentStore();
   const { setQrCode } = usePaymentStore.getState();
   const { mutate, isPending: isLoading } = useCreatePayment();
-  const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher | null>(null);
+  const { mutateAsync: retryPayment } = useRetryPayment();
+  const [selectedVoucher, setSelectedVoucher] =
+    useState<CustomerVoucher | null>(null);
 
   // State for membership management
   const [membershipData, setMembershipData] = useState<Membership | null>(null);
@@ -73,7 +76,8 @@ export function PaymentInfoCard({
 
       setLoadingMembership(true);
       try {
-        const membership = await membershipService.getMembershipByCustomerId(customerId);
+        const membership =
+          await membershipService.getMembershipByCustomerId(customerId);
         setMembershipData(membership);
       } catch (error) {
         console.error("Error fetching membership:", error);
@@ -127,13 +131,18 @@ export function PaymentInfoCard({
     invoiceData?.microchip?.payment?.paymentId || storePaymentId;
   const { setPaymentType } = usePaymentStore.getState();
 
+  // Lấy payment status để xử lý các trạng thái khác nhau
+  const paymentStatus = invoiceData?.microchip?.payment?.paymentStatus;
+  const isPaymentCancelled = paymentStatus === 3;
+  const isPaymentCompleted = paymentId && !isPaymentCancelled;
+
   // Lấy phương thức thanh toán từ invoiceData nếu có
   const savedPaymentMethod = invoiceData?.microchip?.payment?.paymentMethod;
   const displayPaymentMethod =
     savedPaymentMethod === "Cash" ||
-      savedPaymentMethod === "BankTransfer" ||
-      savedPaymentMethod === "CASH" ||
-      savedPaymentMethod === "BANK_TRANSFER"
+    savedPaymentMethod === "BankTransfer" ||
+    savedPaymentMethod === "CASH" ||
+    savedPaymentMethod === "BANK_TRANSFER"
       ? savedPaymentMethod === "CASH"
         ? "Cash"
         : savedPaymentMethod === "BANK_TRANSFER"
@@ -154,7 +163,9 @@ export function PaymentInfoCard({
       customerId,
       microchipItemId,
       paymentMethod: paymentMethod === "Cash" ? 1 : 2,
-      ...(selectedVoucher && { voucherCode: selectedVoucher.voucher.voucherCode })
+      ...(selectedVoucher && {
+        voucherCode: selectedVoucher.voucher.voucherCode,
+      }),
     };
 
     console.log("Microchip Payment payload with voucher:", payload);
@@ -167,7 +178,7 @@ export function PaymentInfoCard({
 
         if (!id) return;
 
-        setPaymentType("vaccination");
+        setPaymentType("microchip");
         setPaymentId(id);
         setQrCode(data.qrCode ?? null);
 
@@ -201,6 +212,53 @@ export function PaymentInfoCard({
     onPaymentSuccess,
   ]);
 
+  const handleRetryPayment = useCallback(async () => {
+    const payload: PaymentPayload = {
+      appointmentDetailId,
+      customerId,
+      microchipItemId,
+      paymentMethod: paymentMethod === "Cash" ? 1 : 2,
+      voucherCode: selectedVoucher ? selectedVoucher.voucher.voucherCode : null,
+    };
+
+    try {
+      const response = await retryPayment(payload);
+      const data = response.data;
+      const id = data?.paymentId;
+
+      if (!id) return;
+
+      setPaymentType("microchip");
+      setPaymentId(id);
+      setQrCode(data.qrCode ?? null);
+
+      if (paymentMethod === "Cash") {
+        onPaymentSuccess?.(id, "Cash");
+      } else if (
+        paymentMethod === "BankTransfer" &&
+        data.checkoutUrl &&
+        data.paymentId
+      ) {
+        const url = new URL(data.checkoutUrl);
+        url.searchParams.set("paymentId", String(data.paymentId));
+        window.location.href = url.toString();
+      }
+    } catch (error) {
+      console.error("Retry payment failed:", error);
+    }
+  }, [
+    appointmentDetailId,
+    customerId,
+    microchipItemId,
+    paymentMethod,
+    selectedVoucher,
+    retryPayment,
+    setPaymentId,
+    setQrCode,
+    setPaymentType,
+    onPaymentSuccess,
+  ]);
+
   return (
     <Card className="bg-linen rounded-none">
       <CardContent className="space-y-4 p-6">
@@ -227,12 +285,15 @@ export function PaymentInfoCard({
           <div className="flex items-center gap-2">
             <BadgePercent size={16} />
             <span>
-              Hạng thành viên: {loadingMembership ? "Đang tải..." : displayMemberRank} ({benefits})
-              {membershipData?.customer?.currentPoints && (
-                <span className="text-gray-500 text-xs ml-2">
-                  - {membershipData.customer.currentPoints} điểm
-                </span>
-              )}
+              Hạng thành viên:{" "}
+              {loadingMembership ? "Đang tải..." : displayMemberRank} (
+              {benefits})
+              {Array.isArray(membershipData?.customer) &&
+                membershipData.customer[0]?.currentPoints && (
+                  <span className="ml-2 text-xs text-gray-500">
+                    - {membershipData.customer[0].currentPoints} điểm
+                  </span>
+                )}
             </span>
           </div>
         </div>
@@ -262,14 +323,17 @@ export function PaymentInfoCard({
           </p>
           {actualDiscountPercent > 0 && (
             <p>
-              Hạng thành viên: {displayMemberRank} (giảm {actualDiscountPercent}%):{" "}
+              Hạng thành viên: {displayMemberRank} (giảm {actualDiscountPercent}
+              %):{" "}
               <span className="text-green-600">{memberDiscountAmount} vnđ</span>
             </p>
           )}
           {voucherDiscountAmount > 0 && (
             <p>
               Giảm giá voucher ({selectedVoucher?.voucher.discountAmount}%):{" "}
-              <span className="text-green-600">{voucherDiscountAmount} vnđ</span>
+              <span className="text-green-600">
+                {voucherDiscountAmount} vnđ
+              </span>
             </p>
           )}
           <p>
@@ -295,12 +359,12 @@ export function PaymentInfoCard({
             <p className="text-sm font-medium">Phương thức thanh toán:</p>
           </div>
 
-          {paymentId ? (
-            // Đã thanh toán - chỉ hiển thị phương thức đã chọn
+          {isPaymentCompleted ? (
+            // Đã thanh toán thành công - chỉ hiển thị phương thức đã chọn
             <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
               {displayPaymentMethod === "Cash" ||
-                invoiceData?.microchip?.payment?.paymentMethod === "Cash" ||
-                invoiceData?.microchip?.payment?.paymentMethod === "CASH" ? (
+              invoiceData?.microchip?.payment?.paymentMethod === "Cash" ||
+              invoiceData?.microchip?.payment?.paymentMethod === "CASH" ? (
                 <>
                   <Banknote size={18} />
                   <span className="text-sm font-medium">Tiền mặt</span>
@@ -325,16 +389,66 @@ export function PaymentInfoCard({
                 </span>
               )}
             </div>
+          ) : isPaymentCancelled ? (
+            // Thanh toán đã bị hủy - hiển thị trạng thái hủy và cho phép chọn lại
+            <>
+              <div className="text-danger mb-3 flex items-center gap-2 rounded-md border-2 border-red-300 bg-red-50 p-3">
+                <span className="text-sm font-medium">
+                  Thanh toán đã bị hủy
+                </span>
+                <span className="ml-auto text-xs text-gray-500">
+                  {invoiceData?.microchip?.payment?.paymentDate &&
+                    new Date(
+                      invoiceData.microchip.payment.paymentDate,
+                    ).toLocaleDateString("vi-VN", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                </span>
+              </div>
+              {/* Cho phép chọn phương thức thanh toán mới */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => handlePaymentMethodChange("Cash")}
+                  disabled={disabled || isLoading}
+                  className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
+                    paymentMethod === "Cash"
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-gray-200 hover:border-gray-300"
+                  } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                >
+                  <Banknote size={18} />
+                  <span className="text-sm font-medium">Tiền mặt</span>
+                </button>
+
+                <button
+                  onClick={() => handlePaymentMethodChange("BankTransfer")}
+                  disabled={disabled}
+                  className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
+                    paymentMethod === "BankTransfer"
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-gray-200 hover:border-gray-300"
+                  } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                >
+                  <Building2 size={18} />
+                  <span className="text-sm font-medium">Chuyển khoản</span>
+                </button>
+              </div>
+            </>
           ) : (
             // Chưa thanh toán - cho phép chọn phương thức
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handlePaymentMethodChange("Cash")}
                 disabled={disabled || isLoading}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "Cash"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-gray-200 hover:border-gray-300"
-                  } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
+                  paymentMethod === "Cash"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-gray-200 hover:border-gray-300"
+                } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Banknote size={18} />
                 <span className="text-sm font-medium">Tiền mặt</span>
@@ -343,10 +457,11 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("BankTransfer")}
                 disabled={disabled}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "BankTransfer"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-gray-200 hover:border-gray-300"
-                  } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
+                  paymentMethod === "BankTransfer"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-gray-200 hover:border-gray-300"
+                } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Building2 size={18} />
                 <span className="text-sm font-medium">Chuyển khoản</span>
@@ -358,14 +473,19 @@ export function PaymentInfoCard({
         {/* Payment Action and Payment Status */}
         <div className="flex items-center justify-end gap-4 pt-4">
           {/* Payment Status */}
-          {paymentId && (
+          {isPaymentCompleted && (
             <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
               Đã thanh toán
             </span>
           )}
+          {isPaymentCancelled && (
+            <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
+              Thanh toán đã hủy
+            </span>
+          )}
 
           {/* Action Button */}
-          {paymentId ? (
+          {isPaymentCompleted ? (
             <Button
               className="bg-secondary hover:bg-secondary/90 px-8 py-2 text-white"
               onClick={onExportInvoice}
@@ -374,14 +494,14 @@ export function PaymentInfoCard({
             </Button>
           ) : (
             <Button
-              onClick={handlePaymentComplete}
+              onClick={
+                isPaymentCancelled ? handleRetryPayment : handlePaymentComplete
+              }
               disabled={disabled || isLoading}
               className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
             >
-              {isLoading && (
-                <Loader2 className="mr-2 animate-spin" size={16} />
-              )}
-              Thanh toán
+              {isLoading && <Loader2 className="mr-2 animate-spin" size={16} />}
+              {isPaymentCancelled ? "Thanh toán lại" : "Thanh toán"}
             </Button>
           )}
         </div>

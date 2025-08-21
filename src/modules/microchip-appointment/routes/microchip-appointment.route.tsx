@@ -6,9 +6,12 @@ import type { RouteObject } from "react-router-dom";
 import VetLayout from "@/shared/layouts/VetLayout";
 
 const MicrochipListPage = lazy(() => import("../pages/MicrochipListPage"));
-const MicrochipDetailPage = lazy(() => import("../pages/MicrochipDetailPage"));
+// const MicrochipDetailPage = lazy(() => import("../pages/MicrochipDetailPage"));
 const MicrochipPaymentSuccessPage = lazy(
   () => import("../pages/MicrochipPaymentSuccessPage"),
+);
+const MicrochipPaymentCancelPage = lazy(
+  () => import("../pages/MicrochipPaymentCancelPage"),
 );
 
 export const microchipAppRoutes: RouteObject[] = [
@@ -28,12 +31,12 @@ export const microchipAppRoutes: RouteObject[] = [
             element: <MicrochipListPage />,
           },
           {
-            path: "detail",
-            element: <MicrochipDetailPage />,
-          },
-          {
             path: "success",
             element: <MicrochipPaymentSuccessPage />,
+          },
+          {
+            path: "cancel",
+            element: <MicrochipPaymentCancelPage />,
           },
         ],
       },
@@ -54,10 +57,6 @@ export const microchipAppRoutes: RouteObject[] = [
           {
             index: true,
             element: <MicrochipListPage />,
-          },
-          {
-            path: "detail",
-            element: <MicrochipDetailPage />,
           },
         ],
       },

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useSearchParams } from "react-router-dom";
 import { AppointmentTable } from "../components";
@@ -11,6 +11,7 @@ import {
 import { useVaccinationApps } from "../hooks/useVaccinations";
 import { Syringe, RotateCcw } from "lucide-react";
 import VaccinationDetailPage from "./VaccinationDetailPage";
+import { useVetId } from "@/shared/hooks";
 
 export default function VaccinationAppListPage() {
   const [search, setSearch] = useState("");
@@ -22,20 +23,7 @@ export default function VaccinationAppListPage() {
   });
 
   // Get vetId from localStorage
-  const vetId = useMemo(() => {
-    try {
-      const userStr = localStorage.getItem("user");
-
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        return user.vetId ? Number(user.vetId) : undefined;
-      }
-      return undefined;
-    } catch (error) {
-      console.error("Error getting vetId from localStorage:", error);
-      return undefined;
-    }
-  }, []);
+  const vetId = useVetId();
 
   const debouncedSearch = useDebounce(search, 500, { leading: true });
 
@@ -73,13 +61,13 @@ export default function VaccinationAppListPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-primary font-inter-600 flex items-center gap-2 text-xl">
+        <h1 className="text-primary font-inter-700 my-4 flex items-center gap-2 text-xl">
           <Syringe /> Tiêm chủng tại Phòng khám
         </h1>
         <PageBreadcrumb items={["Danh sách lịch hẹn"]} />
       </div>
 
-      <div className="bg-linen flex flex-wrap items-end gap-4 p-4 shadow-md">
+      <div className="flex flex-wrap items-end gap-4 p-4">
         <SearchLabel value={search} onChange={setSearch} />
         <AppointmentFilter
           location={filters.location}
@@ -91,8 +79,7 @@ export default function VaccinationAppListPage() {
         />
         <button
           type="button"
-          className="bg-primary hover:bg-secondary ml-auto flex items-center gap-1 rounded px-3 py-2 text-white transition"
-          title="Làm mới dữ liệu"
+          className="bg-primary hover:bg-secondary font-nunito ml-auto flex items-center gap-1 rounded px-3 py-2 text-sm text-white"
           onClick={() => refetch()}
         >
           <RotateCcw size={16} />

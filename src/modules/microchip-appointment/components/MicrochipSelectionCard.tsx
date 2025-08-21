@@ -26,7 +26,7 @@ export function MicrochipSelectionCard({
   const { data, isPending } = useMicrochipItems({
     isUsed: false,
     pageNumber: 1,
-    pageSize: 10,
+    pageSize: 100,
   });
 
   const microchipItems = Array.isArray(data?.data?.pageData)

@@ -1,6 +1,5 @@
 import {
   MoreHorizontal,
-  BadgeInfo,
   ExternalLink,
   SquarePen,
   Trash2,
@@ -29,7 +28,6 @@ interface Props {
 export function VaccineBatchActionMenu({
   batchNumber,
   isDeleting,
-  onQuickView,
   onDetailView,
   onEdit,
   onDelete,
@@ -48,11 +46,6 @@ export function VaccineBatchActionMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={onQuickView} className="cursor-pointer">
-          <BadgeInfo className="mr-2 h-4 w-4 text-blue-600" />
-          Xem chi tiết nhanh
-        </DropdownMenuItem>
-
         <DropdownMenuItem onClick={onDetailView} className="cursor-pointer">
           <ExternalLink className="mr-2 h-4 w-4 text-blue-600" />
           Mở trang chi tiết

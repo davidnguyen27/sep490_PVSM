@@ -5,6 +5,7 @@ interface Params {
   pageNumber: number;
   pageSize: number;
   keyWord?: string;
+  vetId?: number | null;
 }
 
 export function useMicrochipApps(params: Params) {
@@ -14,5 +15,6 @@ export function useMicrochipApps(params: Params) {
     staleTime: 1000 * 60 * 5, // 5 minutes
     placeholderData: (prev) => prev,
     refetchOnWindowFocus: false,
+    retry: 1,
   });
 }

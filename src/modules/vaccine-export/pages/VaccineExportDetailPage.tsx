@@ -1,4 +1,4 @@
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 import { useVaccineExportById } from "../hooks";
 import { useExportDetailByExport } from "@/modules/vaccine-export-detail/hooks";
@@ -12,7 +12,6 @@ import {
 } from "../components";
 
 export default function VaccineExportDetailPage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const exportId = searchParams.get("vaccineExportId");
 
@@ -31,31 +30,28 @@ export default function VaccineExportDetailPage() {
     setSearchParams({});
   };
 
-  const handleEdit = () => {
-    navigate(`/admin/vaccine-exports/edit?exportId=${exportId}`);
-  };
-
   if (error) {
-    return <VaccineExportErrorState onBack={handleBack} onEdit={handleEdit} />;
+    return <VaccineExportErrorState onBack={handleBack} />;
   }
 
   if (isPending) {
-    return (
-      <VaccineExportLoadingState onBack={handleBack} onEdit={handleEdit} />
-    );
+    return <VaccineExportLoadingState onBack={handleBack} />;
   }
 
   if (!vaccineExport) {
-    return <VaccineExportErrorState onBack={handleBack} onEdit={handleEdit} />;
+    return <VaccineExportErrorState onBack={handleBack} />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50/30">
       {/* Header Section */}
-      <VaccineExportDetailHeader onBack={handleBack} onEdit={handleEdit} />
+      <VaccineExportDetailHeader
+        onBack={handleBack}
+        exportId={vaccineExport.vaccineExportId ?? 0}
+      />
 
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Main Information Card */}
           <div className="lg:col-span-2">

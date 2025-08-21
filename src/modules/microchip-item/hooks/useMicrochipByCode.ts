@@ -17,7 +17,6 @@ export function useMicrochipByCode({
     queryFn: () =>
       microchipItemService.getMicrochipItemByCode({
         microchipCode,
-        status,
       }),
     enabled: !!microchipCode && enabled,
     refetchOnWindowFocus: false,

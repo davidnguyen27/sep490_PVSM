@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import type { Microchip } from "../types/microchip.type";
 import Spinner from "@/components/shared/Spinner";
+import { formatData } from "@/shared/utils/format.utils";
 
 interface Props {
   open: boolean;
@@ -42,7 +43,7 @@ export function MicrochipModal({ open, onClose, microchip, isLoading }: Props) {
               <InfoItem label="Mô tả ngắn" value={microchip.description} />
               <InfoItem
                 label="Giá tiền (vnđ)"
-                value={String(microchip.price)}
+                value={String(formatData.formatCurrency(microchip.price))}
               />
               <InfoItem label="Ghi chú" value={microchip.notes} />
               <InfoItem label="Trạng thái" value={microchip.status} />

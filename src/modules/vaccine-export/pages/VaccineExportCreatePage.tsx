@@ -126,7 +126,12 @@ export default function VaccineExportCreatePage() {
         </h1>
       </div>
 
-      <PageBreadcrumb items={["Danh sách xuất kho", "Tạo mới"]} />
+      <PageBreadcrumb
+        items={[
+          { label: "Danh sách phiếu xuất", path: "/admin/vaccine-exports" },
+          "Tạo mới",
+        ]}
+      />
 
       {/* Main Content */}
       <Card className="rounded-none shadow-sm">

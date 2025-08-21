@@ -10,13 +10,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 // types
 import type { VaccineReceiptCreateFormData } from "../schemas/vaccine-receipt.schema";
@@ -96,32 +89,19 @@ export function ColdChainLogSection({
         <FormField
           control={control}
           name={`details.${index}.coldChainLog.event`}
-          render={({ field }) => (
+          render={() => (
             <FormItem>
               <FormLabel className="font-nunito-600 text-sm text-gray-700">
                 Sự kiện <span className="text-red-500">*</span>
               </FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger className="font-nunito-500 focus:ring-primary/20 focus:ring-2">
-                    <SelectValue placeholder="Chọn sự kiện" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="storage" className="font-nunito-500">
-                    Lưu trữ
-                  </SelectItem>
-                  <SelectItem value="transport" className="font-nunito-500">
-                    Vận chuyển
-                  </SelectItem>
-                  <SelectItem value="delivery" className="font-nunito-500">
-                    Giao hàng
-                  </SelectItem>
-                  <SelectItem value="inspection" className="font-nunito-500">
-                    Kiểm tra
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <Input
+                  value="Nhập kho"
+                  readOnly
+                  className="font-nunito-500 cursor-not-allowed bg-gray-100 focus:ring-0"
+                  tabIndex={-1}
+                />
+              </FormControl>
               <FormMessage className="font-nunito-400" />
             </FormItem>
           )}

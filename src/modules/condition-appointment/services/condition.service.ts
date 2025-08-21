@@ -9,6 +9,7 @@ export const conditionService = {
     pageSize: number;
     keyWord: string;
     status?: boolean;
+    vetId?: number | null;
   }): Promise<BaseListResponse<ConditionAppointments>> {
     return await axiosInstance
       .get(

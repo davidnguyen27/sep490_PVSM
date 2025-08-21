@@ -66,7 +66,7 @@ export function useVaccinationHandlers({
 
       handleStatusUpdate({
         appointmentId: data.appointment.appointmentId,
-        appointmentStatus: APPOINTMENT_STATUS.REJECTED,
+        appointmentStatus: APPOINTMENT_STATUS.CANCELLED,
         notes,
       });
       setShowReject(false);

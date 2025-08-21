@@ -129,7 +129,12 @@ export default function VaccineReceiptCreatePage() {
         </h1>
       </div>
 
-      <PageBreadcrumb items={["Danh sách phiếu nhập", "Tạo mới"]} />
+      <PageBreadcrumb
+        items={[
+          { label: "Danh sách phiếu nhập", path: "/admin/vaccine-receipts" },
+          "Tạo phiếu nhập mới",
+        ]}
+      />
 
       {/* Main Content */}
       <Card className="rounded-none shadow-sm">

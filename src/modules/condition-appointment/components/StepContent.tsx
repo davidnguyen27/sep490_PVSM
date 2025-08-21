@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui";
+import { useNavigate } from "react-router-dom";
 import {
   PetInfoCard,
   AppointmentInfoCard,
@@ -48,6 +49,7 @@ export function StepContent({
   onExportInvoice,
 }: Props) {
   const { setVetSelection } = useConditionStore();
+  const navigate = useNavigate();
 
   const paymentId = usePaymentStore((state) => state.paymentId);
   const paymentMethod = usePaymentStore((state) => state.paymentMethod);
@@ -131,8 +133,21 @@ export function StepContent({
         }}
       />
 
-      {currentViewStatus === appointmentStatus && (
-        <div className="flex justify-end gap-4">
+      <div className="flex justify-end gap-4">
+        <Button
+          key="view-detail"
+          variant="outline"
+          className="border-primary text-primary"
+          onClick={() => {
+            const prefix = isVet
+              ? "/vet/condition-appointments"
+              : "/staff/condition-appointments";
+            navigate(`${prefix}/pet-health-certificate`, { state: { data } });
+          }}
+        >
+          Xem chi tiết
+        </Button>
+        {currentViewStatus === appointmentStatus && (
           <Button
             key="finish"
             className="bg-primary text-white"
@@ -141,8 +156,8 @@ export function StepContent({
           >
             Tiếp tục
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 

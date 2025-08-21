@@ -35,7 +35,7 @@ export default function MicrochipPaymentSuccessPage() {
             : "";
 
         toast.success(
-          `Đơn cấp chứng nhận ${paymentIdText} đã thanh toán thành công.`,
+          `Hóa đơn thanh toán ${paymentIdText} đã xử lý thành công.`,
         );
 
         setTimeout(() => {

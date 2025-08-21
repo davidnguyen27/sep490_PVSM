@@ -172,17 +172,30 @@ export function VaccineInjectionTable({ disabled, canEdit, diseaseId }: Props) {
                 />
               </SelectTrigger>
               <SelectContent>
-                {vaccineBatches ? (
+                {Array.isArray(vaccineBatches) ? (
+                  vaccineBatches.filter(
+                    (batch: VaccineBatch) => batch.quantity > 0,
+                  ).length > 0 ? (
+                    vaccineBatches
+                      .filter((batch: VaccineBatch) => batch.quantity > 0)
+                      .map((batch: VaccineBatch) => (
+                        <SelectItem
+                          key={batch.vaccineBatchId}
+                          value={batch.vaccineBatchId.toString()}
+                        >
+                          {batch.vaccineResponseDTO.name} –{" "}
+                          {batch.quantity ?? 0} liều
+                        </SelectItem>
+                      ))
+                  ) : (
+                    <SelectItem value="none" disabled>
+                      Không có lô vaccine phù hợp
+                    </SelectItem>
+                  )
+                ) : vaccineBatches && vaccineBatches.quantity > 0 ? (
                   <SelectItem value={vaccineBatches.vaccineBatchId.toString()}>
                     {vaccineBatches.vaccineResponseDTO.name} –{" "}
                     {vaccineBatches.quantity ?? 0} liều
-                  </SelectItem>
-                ) : savedBatchDetail ? (
-                  <SelectItem
-                    value={savedBatchDetail.vaccineBatchId.toString()}
-                  >
-                    {savedBatchDetail.vaccineResponseDTO.name} –{" "}
-                    {savedBatchDetail.quantity ?? 0} liều
                   </SelectItem>
                 ) : (
                   <SelectItem value="none" disabled>

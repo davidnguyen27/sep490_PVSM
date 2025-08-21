@@ -7,11 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { usePaymentStore } from "@/modules/payments/store/usePaymentStore";
 import { useUpdatePayment } from "@/modules/payments/hooks/useUpdatePayment";
+import { useDetailPayment } from "@/modules/payments/hooks/useDetailPayment";
 
 export default function VaccinationPaymentCancelPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [hasProcessed, setHasProcessed] = useState(false);
 
   // Extract payment parameters from URL
   const orderCode = params.get("orderCode");
@@ -19,76 +21,108 @@ export default function VaccinationPaymentCancelPage() {
   const code = params.get("code");
   const cancel = params.get("cancel");
   const id = params.get("id");
-  const paymentId = id ? Number(id) : null;
   const appointmentDetailId = orderCode ? Number(orderCode) : null;
+
+  // Get payment details using appointmentDetailId
+  const {
+    data: paymentData,
+    isLoading: isLoadingPayment,
+    error: paymentError,
+  } = useDetailPayment(appointmentDetailId);
+
+  // Handle array response from API - get first element if array
+  const actualPaymentData =
+    Array.isArray(paymentData) && paymentData.length > 0
+      ? paymentData[0]
+      : paymentData;
+  const actualPaymentId = actualPaymentData?.paymentId;
 
   // Clear payment store when payment is cancelled
   const { reset } = usePaymentStore();
+
+  // Get stored paymentId as fallback
+  const storedPaymentId = usePaymentStore((state) => state.paymentId);
+
+  // Use the available paymentId (priority: API data > stored > null)
+  const effectivePaymentId = actualPaymentId || storedPaymentId;
 
   // Hook để update payment status
   const updatePayment = useUpdatePayment({
     onSuccess: () => {
       setIsUpdating(false);
       toast.success("Đã cập nhật trạng thái thanh toán hủy.");
+
+      // Navigate back to vaccination list after 2 seconds
+      setTimeout(() => {
+        navigate("/staff/vaccination-appointments");
+      }, 2000);
     },
-    onError: (error) => {
+    onError: () => {
       setIsUpdating(false);
-      console.error("Failed to update payment status:", error);
       toast.error("Có lỗi khi cập nhật trạng thái thanh toán.");
     },
   });
 
   // Validate cancellation parameters
-  const isValidCancellation =
-    code === "00" &&
-    status === "CANCELLED" &&
-    cancel === "true" &&
-    appointmentDetailId !== null &&
-    paymentId !== null;
+  const hasBasicParams =
+    (code === "00" || !code) &&
+    (status === "CANCELLED" || cancel === "true") &&
+    appointmentDetailId !== null;
+
+  const isValidCancellation = hasBasicParams && effectivePaymentId !== null;
+
+  // Show loading while fetching payment data
+  const isWaitingForPaymentData =
+    hasBasicParams && isLoadingPayment && !effectivePaymentId;
 
   useEffect(() => {
-    console.log("Payment Cancel Page - URL params:", {
-      code,
-      status,
-      cancel,
-      paymentId,
-      appointmentDetailId,
-      isValidCancellation,
-    });
-
-    if (isValidCancellation && !isUpdating) {
+    if (
+      isValidCancellation &&
+      !isUpdating &&
+      !hasProcessed &&
+      effectivePaymentId
+    ) {
       setIsUpdating(true);
+      setHasProcessed(true);
 
-      console.log(
-        "Updating payment status to cancelled for paymentId:",
-        paymentId,
-      );
-
-      // Update payment status to 3 (cancelled)
+      // Update payment status to cancelled
       updatePayment.mutate({
-        paymentId: paymentId!,
-        paymentStatus: 3, // 3 = Cancelled status
+        paymentId: effectivePaymentId,
+        paymentStatus: 3,
       });
 
       // Clear payment data from store
       reset();
-
-      // Show cancellation message
-      toast.error("Thanh toán đã bị hủy bởi người dùng.");
-    } else if (!isValidCancellation) {
-      // Invalid parameters
+    } else if (!hasBasicParams && !hasProcessed) {
+      // Invalid basic parameters
       toast.error("Thông tin hủy thanh toán không hợp lệ.");
+      setHasProcessed(true);
+    } else if (
+      hasBasicParams &&
+      !isLoadingPayment &&
+      !effectivePaymentId &&
+      !hasProcessed
+    ) {
+      // Valid basic params but no payment found after loading
+      if (paymentError) {
+        toast.error(`API Error: ${paymentError.message || "Unknown error"}`);
+      } else {
+        toast.error("Không tìm thấy thông tin thanh toán cho lịch hẹn này.");
+      }
+      setHasProcessed(true);
     }
   }, [
     isValidCancellation,
+    hasBasicParams,
     reset,
     updatePayment,
-    paymentId,
+    effectivePaymentId,
     isUpdating,
-    code,
-    status,
-    cancel,
+    isLoadingPayment,
     appointmentDetailId,
+    paymentData,
+    paymentError,
+    hasProcessed,
   ]);
 
   const handleBackToAppointments = () => {
@@ -119,16 +153,20 @@ export default function VaccinationPaymentCancelPage() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {isUpdating && (
+          {(isUpdating || isWaitingForPaymentData) && (
             <div className="text-center">
               <div className="inline-flex items-center gap-2 text-blue-600">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
-                <span>Đang cập nhật trạng thái thanh toán...</span>
+                <span>
+                  {isUpdating
+                    ? "Đang cập nhật trạng thái thanh toán..."
+                    : "Đang tải thông tin thanh toán..."}
+                </span>
               </div>
             </div>
           )}
 
-          {isValidCancellation ? (
+          {!isWaitingForPaymentData && isValidCancellation ? (
             <>
               <div className="text-center text-gray-600">
                 <p className="mb-2">
@@ -178,11 +216,13 @@ export default function VaccinationPaymentCancelPage() {
                 </Button>
               </div>
             </>
-          ) : (
+          ) : !isWaitingForPaymentData ? (
             <>
               <div className="text-center text-gray-600">
                 <p className="mb-4">
-                  Thông tin hủy thanh toán không hợp lệ hoặc không đầy đủ.
+                  {!hasBasicParams
+                    ? "Thông tin hủy thanh toán không hợp lệ hoặc không đầy đủ."
+                    : "Không tìm thấy thông tin thanh toán."}
                 </p>
                 <div className="text-sm text-gray-500">
                   <p>Các thông số nhận được:</p>
@@ -191,6 +231,8 @@ export default function VaccinationPaymentCancelPage() {
                     <li>Status: {status || "Không có"}</li>
                     <li>Order Code: {orderCode || "Không có"}</li>
                     <li>Cancel: {cancel || "Không có"}</li>
+                    <li>Transaction ID: {id || "Không có"}</li>
+                    <li>Payment ID: {effectivePaymentId || "Không có"}</li>
                   </ul>
                 </div>
               </div>
@@ -207,7 +249,7 @@ export default function VaccinationPaymentCancelPage() {
                 </Button>
               </div>
             </>
-          )}
+          ) : null}
         </CardContent>
       </Card>
     </div>

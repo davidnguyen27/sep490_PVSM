@@ -8,6 +8,7 @@ export const microchipAppService = {
     pageNumber: number;
     pageSize: number;
     keyWord?: string;
+    vetId?: number | null;
   }): Promise<BaseListResponse<MicrochipAppointment>> {
     return axiosInstance
       .get("/api/AppointmentForMicrochip/get-all-appointment-microchip", {

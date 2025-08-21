@@ -6,6 +6,7 @@ interface Params {
   pageSize: number;
   keyWord: string;
   status?: boolean;
+  vetId?: number | null;
 }
 
 export function useConditionAppointments(params: Params) {

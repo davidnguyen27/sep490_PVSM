@@ -37,7 +37,6 @@ export function VaccineBatchFilter({
           <SelectContent>
             <SelectItem value="all">Tất cả</SelectItem>
             <SelectItem value="active">Còn hạn</SelectItem>
-            <SelectItem value="expiring">Sắp hết hạn</SelectItem>
             <SelectItem value="expired">Hết hạn</SelectItem>
           </SelectContent>
         </Select>

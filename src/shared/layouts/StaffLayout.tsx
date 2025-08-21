@@ -3,6 +3,7 @@ import Footer from "@/components/shared/Footer";
 import Header from "@/components/shared/Header";
 import Sidebar from "@/components/shared/Sidebar";
 import { icons } from "@/shared/constants/icons.constants";
+import { FileText } from "lucide-react";
 import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 
@@ -48,6 +49,11 @@ const staffSidebarItems = [
         path: "/staff/condition-appointments",
       },
     ],
+  },
+  {
+    label: "Hóa đơn",
+    icon: <FileText size={20} />,
+    path: "/staff/payments",
   },
 ];
 

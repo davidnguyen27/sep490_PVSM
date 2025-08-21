@@ -25,6 +25,7 @@ export function VaccineReceiptDetailsTable({
       setShowDetailModal(true);
     }
   };
+
   return (
     <div className="rounded-none border border-gray-100 bg-white shadow-sm">
       <div className="border-b border-gray-100 px-6 py-4">
@@ -52,7 +53,7 @@ export function VaccineReceiptDetailsTable({
         {detailsError ? (
           <div className="py-12 text-center">
             <div className="mx-auto mb-4 w-fit rounded-full bg-red-50 p-4">
-              <AlertCircle className="h-8 w-8 text-red-500" />
+              <AlertCircle className="text-danger h-8 w-8" />
             </div>
             <h4 className="font-nunito-600 mb-2 text-lg text-gray-900">
               Không thể tải dữ liệu

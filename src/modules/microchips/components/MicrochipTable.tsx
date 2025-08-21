@@ -23,6 +23,7 @@ import {
   useMicrochipDetail,
   useMicrochipUpdate,
 } from "../hooks";
+import { formatData } from "@/shared/utils/format.utils";
 
 interface Props {
   microchips: Microchip[];
@@ -105,7 +106,7 @@ export function MicrochipTable({
                   {item.description}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.price}
+                  {formatData.formatCurrency(item.price)}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
                   {item.status}

@@ -5,6 +5,7 @@ import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
 
 const InvoicePage = lazy(() => import("../pages/InvoicePage"));
+const PaymentListPage = lazy(() => import("../pages/PaymentListPage"));
 
 export const paymentRoutes: RouteObject[] = [
   {
@@ -18,6 +19,10 @@ export const paymentRoutes: RouteObject[] = [
       {
         path: "invoice",
         element: <InvoicePage />,
+      },
+      {
+        path: "payments",
+        element: <PaymentListPage />,
       },
     ],
   },

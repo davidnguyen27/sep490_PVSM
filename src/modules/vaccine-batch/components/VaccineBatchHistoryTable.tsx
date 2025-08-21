@@ -95,9 +95,6 @@ export function VaccineBatchHistoryTable({
               Tồn kho
             </TableHead>
             <TableHead className="font-nunito px-4 py-2 text-center text-sm text-white">
-              Ghi chú
-            </TableHead>
-            <TableHead className="font-nunito px-4 py-2 text-center text-sm text-white">
               Mục đích
             </TableHead>
           </TableRow>
@@ -127,20 +124,21 @@ export function VaccineBatchHistoryTable({
               <TableCell className="text-dark font-nunito text-center text-sm">
                 <Badge
                   variant="secondary"
-                  className={`font-nunito-medium ${item.type === "import"
+                  className={`font-nunito-500 ${
+                    item.type === "import"
                       ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                       : "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
-                    }`}
+                  }`}
                 >
                   {item.type === "import" ? "Nhập kho" : "Xuất kho"}
                 </Badge>
               </TableCell>
 
-              <TableCell className="text-dark font-nunito text-center text-sm">
+              <TableCell className="text-dark font-nunito max-w-[120px] truncate text-center text-sm">
                 {item.type === "import" && item.receiptCode ? (
                   <Badge
                     variant="secondary"
-                    className="font-nunito-medium border-emerald-200 bg-emerald-50 text-emerald-700 transition-colors hover:bg-emerald-100"
+                    className="font-nunito-medium max-w-[100px] truncate border-emerald-200 bg-emerald-50 text-emerald-700 transition-colors hover:bg-emerald-100"
                   >
                     {item.receiptCode}
                   </Badge>
@@ -149,11 +147,11 @@ export function VaccineBatchHistoryTable({
                 )}
               </TableCell>
 
-              <TableCell className="text-dark font-nunito text-center text-sm">
+              <TableCell className="text-dark font-nunito max-w-[120px] truncate text-center text-sm">
                 {item.type === "export" && item.exportCode ? (
                   <Badge
                     variant="secondary"
-                    className="font-nunito-medium border-rose-200 bg-rose-50 text-rose-700 transition-colors hover:bg-rose-100"
+                    className="font-nunito-medium max-w-[100px] truncate border-rose-200 bg-rose-50 text-rose-700 transition-colors hover:bg-rose-100"
                   >
                     {item.exportCode}
                   </Badge>
@@ -184,34 +182,20 @@ export function VaccineBatchHistoryTable({
 
               <TableCell className="text-dark font-nunito text-center text-sm">
                 <span
-                  className={`font-nunito rounded-full px-3 py-1 text-sm ${item.currentStock >= 0
+                  className={`font-nunito rounded-full px-3 py-1 text-sm ${
+                    item.currentStock >= 0
                       ? "bg-blue-50 text-blue-700"
                       : "bg-rose-50 text-rose-700"
-                    }`}
+                  }`}
                 >
                   {item.currentStock.toLocaleString()}
                 </span>
               </TableCell>
 
-              <TableCell className="text-dark font-nunito max-w-xs text-center text-sm">
-                {item.notes ? (
-                  <div className={`rounded-lg px-3 py-2 ${item.type === "import"
-                      ? "bg-emerald-50"
-                      : "bg-rose-50"
-                    }`}>
-                    <span className="font-nunito text-sm leading-relaxed text-gray-700">
-                      {item.notes}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-sm text-gray-300">—</span>
-                )}
-              </TableCell>
-
-              <TableCell className="text-dark font-nunito text-center text-sm">
+              <TableCell className="text-dark font-nunito max-w-[120px] truncate text-center text-sm">
                 {item.purpose ? (
-                  <div className="rounded-lg bg-amber-50 px-3 py-2">
-                    <span className="font-nunito text-sm text-gray-700">
+                  <div className="max-w-[100px] truncate rounded-lg bg-amber-50 px-3 py-2">
+                    <span className="font-nunito truncate text-sm text-gray-700">
                       {item.purpose}
                     </span>
                   </div>

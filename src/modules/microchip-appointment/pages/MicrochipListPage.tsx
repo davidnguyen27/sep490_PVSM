@@ -8,21 +8,28 @@ import {
 } from "@/components/shared";
 import { useMicrochipApps } from "../hooks/useMicrochips";
 import { AppointmentTable } from "../components/AppointmentTable";
-import { Cpu } from "lucide-react";
+import { Cpu, RotateCcw } from "lucide-react";
+import { useVetId } from "@/shared/hooks";
+import { useSearchParams } from "react-router-dom";
+import MicrochipAppDetailPage from "./MicrochipDetailPage";
 
 export default function MicrochipAppListPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState({
     location: "",
     status: "",
   });
 
   const debouncedSearch = useDebounce(search, 500, { leading: true });
-  const { data, isPending, isFetching } = useMicrochipApps({
+  const vetId = useVetId();
+
+  const { data, isPending, isFetching, refetch } = useMicrochipApps({
     pageNumber: page,
     pageSize: 10,
     keyWord: debouncedSearch,
+    vetId: vetId,
   });
 
   const microchipApps = data?.data.pageData ?? [];
@@ -40,16 +47,23 @@ export default function MicrochipAppListPage() {
     return matchLocation && matchStatus;
   });
 
+  const appointmentId = searchParams.get("appointmentId");
+  const isDetailMode = !!appointmentId;
+
+  if (isDetailMode) {
+    return <MicrochipAppDetailPage />;
+  }
+
   return (
-    <>
+    <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-primary font-inter-600 flex items-center gap-2 text-xl">
+        <h1 className="text-primary font-inter-600 my-4 flex items-center gap-2 text-xl">
           <Cpu /> Cấy microchip
         </h1>
-        <PageBreadcrumb items={["Trang chủ", "Danh sách lịch hẹn"]} />
+        <PageBreadcrumb items={["Danh sách lịch hẹn"]} />
       </div>
 
-      <div className="bg-linen flex flex-wrap items-end gap-4 p-4 shadow-md">
+      <div className="flex flex-wrap items-end gap-4 p-4">
         <SearchLabel value={search} onChange={setSearch} />
         <AppointmentFilter
           location={filters.location}
@@ -59,6 +73,15 @@ export default function MicrochipAppListPage() {
             setPage(1);
           }}
         />
+        <button
+          type="button"
+          className="bg-primary hover:bg-secondary ml-auto flex items-center gap-1 rounded px-3 py-2 text-white transition"
+          title="Làm mới dữ liệu"
+          onClick={() => refetch()}
+        >
+          <RotateCcw size={16} />
+          Làm mới
+        </button>
       </div>
 
       <AppointmentTable
@@ -73,6 +96,6 @@ export default function MicrochipAppListPage() {
         totalPages={totalPages}
         onPageChange={(newPage) => setPage(newPage)}
       />
-    </>
+    </div>
   );
 }

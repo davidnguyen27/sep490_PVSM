@@ -27,6 +27,11 @@ export default function MicrochipAppDetailPage() {
   const appointmentId = Number(searchParams.get("appointmentId"));
   const { user } = useAuth();
 
+  const basePath =
+    user?.role === 3
+      ? "/vet/microchip-appointments"
+      : "/staff/microchip-appointments";
+
   const {
     formData,
     activeStep,
@@ -111,7 +116,9 @@ export default function MicrochipAppDetailPage() {
         <h1 className="text-primary font-inter-700 flex items-center gap-2 text-xl">
           <SendToBack /> Theo dõi quá trình cấy microchip
         </h1>
-        <PageBreadcrumb items={["Trang chủ", "Lịch hẹn", "Chi tiết"]} />
+        <PageBreadcrumb
+          items={[{ label: "Danh sách lịch hẹn", path: basePath }, "Chi tiết"]}
+        />
       </div>
 
       <StepProgress

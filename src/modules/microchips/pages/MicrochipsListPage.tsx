@@ -39,7 +39,7 @@ export default function MicrochipsListPage() {
     document.title = "PVMS | Quản lý microchip";
 
     return () => {
-      document.title = "PVMS | Dashboard";
+      document.title = "PVMS | Quản lý microchip";
     };
   }, []);
 
@@ -85,7 +85,7 @@ export default function MicrochipsListPage() {
         </div>
         <PageBreadcrumb items={["Microchips"]} />
 
-        <div className="bg-linen flex items-end justify-between p-4 shadow-md">
+        <div className="flex items-end justify-between p-4">
           <div className="flex items-end justify-between gap-4">
             <SearchLabel value={search} onChange={setSearch} />
             <MicrochipFilter />

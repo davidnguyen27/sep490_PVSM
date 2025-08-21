@@ -6,6 +6,19 @@ export interface MicrochipByCodeResponse {
   data: MicrochipItemByCode;
 }
 
+interface appointmentDetail {
+  appointmentDetailId: number | null;
+  appointmentId: number | null;
+  appointmentDetailCode: string;
+  serviceType: number;
+  appointmentStatus: number;
+  createdAt: string;
+  createdBy: string;
+  modifiedAt: string;
+  modifiedBy: string;
+  appointmentDate: string;
+}
+
 export interface MicrochipItemByCode {
   microchipId: number | null;
   name: string;
@@ -28,7 +41,7 @@ export interface MicrochipItemByCode {
     color: string;
     nationality: string;
     isSterilized: boolean;
-    appointmentDetails: [];
+    appointmentDetails: appointmentDetail[];
     customer: {
       customerId: number | null;
       accountId: number | null;

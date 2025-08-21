@@ -231,12 +231,17 @@ export default function EditVaccineExportPage() {
         </h1>
       </div>
 
-      <PageBreadcrumb items={["Danh sách xuất kho", "Cập nhật"]} />
+      <PageBreadcrumb
+        items={[
+          { label: "Danh sách phiếu xuất", path: "/admin/vaccine-exports" },
+          "Chỉnh sửa",
+        ]}
+      />
 
       {/* Main Content */}
       <Card className="rounded-none shadow-sm">
         <CardHeader className="border-b border-gray-100 bg-gray-50/50 py-4">
-          <CardTitle className="font-nunito-700 text-dark text-lg">
+          <CardTitle className="font-nunito-700 text-dark my-0 text-lg">
             Cập nhật phiếu xuất kho vắc-xin - Mã: {vaccineExport.exportCode}
           </CardTitle>
         </CardHeader>

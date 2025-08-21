@@ -86,7 +86,7 @@ export function useConditionHandlers({
     (note: string) => {
       if (!data?.appointment?.appointmentId) return;
 
-      const payload = buildPayloadFromForm(APPOINTMENT_STATUS.REJECTED);
+      const payload = buildPayloadFromForm(APPOINTMENT_STATUS.CANCELLED);
       if (payload) {
         payload.note = note;
         handleStatusUpdate(payload);

@@ -13,6 +13,11 @@ const adminSidebarItems = [
     path: "/admin/dashboard",
   },
   {
+    label: "Lịch tiêm",
+    icon: <icons.CalendarRange size={20} />,
+    path: "/admin/vaccine-schedules",
+  },
+  {
     label: "Hồ sơ",
     icon: <icons.Users size={20} />,
     children: [
@@ -29,15 +34,9 @@ const adminSidebarItems = [
     ],
   },
   {
-    label: "Nhân sự",
-    icon: <icons.ShieldCheck size={20} />,
-    children: [
-      {
-        label: "Bác sỹ",
-        icon: <icons.Stethoscope size={18} />,
-        path: "/admin/vets",
-      },
-    ],
+    label: "Bác sỹ",
+    icon: <icons.Stethoscope size={20} />,
+    path: "/admin/vets",
   },
   {
     label: "Vắc xin",
@@ -78,7 +77,7 @@ const adminSidebarItems = [
   {
     label: "Hạng thành viên",
     icon: <icons.BadgeInfo size={20} />,
-    path: "/admin/membership",
+    path: "/admin/memberships",
   },
 ];
 

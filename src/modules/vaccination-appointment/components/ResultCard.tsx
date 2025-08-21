@@ -24,7 +24,7 @@ export function ResultCard({
   canEdit,
 }: ResultCardProps) {
   return (
-    <Card className="bg-linen rounded-none">
+    <Card className="bg-linen rounded-none py-4">
       <CardHeader>
         <CardTitle className="font-nunito-700 text-primary flex items-center gap-2 text-lg underline">
           <ClipboardPen size={16} /> Thông tin sau tiêm vaccine
