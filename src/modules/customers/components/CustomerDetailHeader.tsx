@@ -2,6 +2,8 @@ import { ArrowLeft, Edit, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PageBreadcrumb } from "@/components/shared";
+import { useAuth } from "@/modules/auth";
+import { getCustomerRoutePaths } from "../utils/customer-route.utils";
 
 interface CustomerDetailHeaderProps {
   onGoBack: () => void;
@@ -12,7 +14,15 @@ export function CustomerDetailHeader({
   onGoBack,
   onEdit,
 }: CustomerDetailHeaderProps) {
-  const breadcrumbItems = ["Quản lý khách hàng", "Chi tiết khách hàng"];
+  const { user } = useAuth();
+
+  // Get role-based paths
+  const paths = getCustomerRoutePaths(user?.role || 2);
+
+  const breadcrumbItems = [
+    { label: "Danh sách khách hàng", path: paths.base },
+    "Chi tiết",
+  ];
 
   return (
     <div className="space-y-6">

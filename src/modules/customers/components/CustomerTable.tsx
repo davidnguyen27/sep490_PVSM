@@ -25,7 +25,6 @@ import {
 import type { Customer } from "../types/customer.type";
 import { EmptyTable, TableSkeleton } from "@/components/shared";
 import { useCustomerDelete } from "../hooks/useCustomerDelete";
-import { formatData } from "@/shared/utils/format.utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -106,20 +105,17 @@ export function CustomerTable({
 
   // Sort customers: Default newest first (by customerId desc), with STT sorting option
   const getSortedCustomers = () => {
-    // Filter out deleted customers first
-    const activeCustomers = customers.filter((customer) => !customer.isDeleted);
-
-    // Sort by customerId desc to show newest customers first
-    const newestFirstCustomers = [...activeCustomers].sort((a, b) => {
+    // Do NOT filter isDeleted here; customers prop is already filtered by parent
+    const sorted = [...customers].sort((a, b) => {
       const aId = a.customerId ?? 0;
       const bId = b.customerId ?? 0;
       return bId - aId;
     });
 
-    if (sortOrder === null) return newestFirstCustomers;
+    if (sortOrder === null) return sorted;
 
     // Apply STT sorting on already sorted data
-    const indexedCustomers = newestFirstCustomers.map((customer, index) => ({
+    const indexedCustomers = sorted.map((customer, index) => ({
       ...customer,
       originalIndex: (currentPage - 1) * pageSize + index + 1,
     }));
@@ -200,7 +196,7 @@ export function CustomerTable({
                     {item.fullName}
                   </TableCell>
                   <TableCell className="text-dark font-nunito-400 text-center text-sm">
-                    {formatData.formatDateYMD(item.dateOfBirth)}
+                    {item.dateOfBirth}
                   </TableCell>
                   <TableCell className="text-dark font-nunito-400 text-center text-sm">
                     {item.phoneNumber}

@@ -14,8 +14,8 @@ export const FormSection: React.FC<FormSectionProps> = ({
   icon: Icon,
   children,
 }) => (
-  <Card className="border-border rounded-none shadow-sm">
-    <CardHeader className="bg-linen">
+  <Card className="border-border rounded-none pb-6 shadow-sm">
+    <CardHeader className="bg-linen py-2 shadow-sm">
       <CardTitle className="font-nunito-600 text-primary flex items-center space-x-2 text-lg">
         <Icon size={FORM_CONFIG.ICON_SIZE.medium} />
         <span>{title}</span>

@@ -31,6 +31,7 @@ import { addressRoutes } from "@/modules/address/routes/address.route";
 import { faqRoutes } from "@/modules/faq/routes/faq.route";
 import { handbookRoutes } from "@/modules/handbook/routes/handbook.route";
 import { supportCategoryRoutes } from "@/modules/support-category";
+import { voucherRoutes } from "@/modules/voucher/routes/voucher.route";
 
 export function AppRoutes() {
   const routes = [
@@ -45,6 +46,7 @@ export function AppRoutes() {
     ...faqRoutes,
     ...petRoutes,
     ...vetRoutes,
+    ...voucherRoutes,
     ...microchipRoutes,
     ...microchipItemRoutes,
     ...handbookRoutes,

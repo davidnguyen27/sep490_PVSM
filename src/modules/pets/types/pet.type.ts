@@ -14,6 +14,7 @@ export interface Pet {
   color: string;
   nationality: string;
   isSterilized: boolean; // ✅ Changed from `true` to `boolean`
+  isDeleted: boolean; // ✅ Field for soft delete status
   customerResponseDTO: object;
   // Index signature to make it compatible with SortableItem
   [key: string]: unknown;

@@ -9,6 +9,19 @@ export const formatData = {
     return `${year}-${month}-${day}`;
   },
 
+  parseDateDMYtoMDY(date: string): string {
+    if (!date) return date;
+    if (
+      /\d{4}-\d{2}-\d{2}/.test(date) ||
+      (/\d{2}\/\d{2}\/\d{4}/.test(date) && date.indexOf("/") === 2)
+    )
+      return date;
+    // Nếu là dd/mm/yyyy thì chuyển thành mm/dd/yyyy
+    const [dd, mm, yyyy] = date.split("/");
+    if (dd && mm && yyyy) return `${mm}/${dd}/${yyyy}`;
+    return date;
+  },
+
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",

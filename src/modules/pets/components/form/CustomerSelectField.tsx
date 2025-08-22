@@ -33,11 +33,13 @@ interface CustomerSelectFieldProps {
   maxDisplayItems?: number;
 }
 
-// ✅ Separate component cho Customer Item để optimize re-renders
+// Separate component cho Customer Item để optimize re-renders
 const CustomerItem = React.memo(
   ({ customer }: { customer: CustomerOption }) => (
     <div className="flex flex-col">
-      <div className="text-sm font-medium">{customer.fullData.fullName}</div>
+      <div className="font-nunito-500 text-sm">
+        {customer.fullData.fullName}
+      </div>
       <div className="text-muted-foreground flex items-center gap-1 text-xs">
         <span>Mã: {customer.customerCode}</span>
         {customer.fullData.phoneNumber && (
@@ -50,7 +52,7 @@ const CustomerItem = React.memo(
 
 CustomerItem.displayName = "CustomerItem";
 
-// ✅ Error state component với retry action
+// Error state component với retry action
 const ErrorState = React.memo(
   ({ error, onRetry }: { error: string; onRetry: () => void }) => (
     <div className="space-y-2 p-4 text-center">
@@ -73,7 +75,7 @@ const ErrorState = React.memo(
 
 ErrorState.displayName = "ErrorState";
 
-// ✅ Main component với advanced features
+// Main component with advanced features
 export const CustomerSelectField: React.FC<CustomerSelectFieldProps> = ({
   form,
   disabled = false,
@@ -84,7 +86,7 @@ export const CustomerSelectField: React.FC<CustomerSelectFieldProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
-  // ✅ Conditional hook usage based on search
+  // Conditional hook usage based on search
   const baseQuery = useCustomers({
     enabled: !showSearch || searchTerm === "",
     pageSize: maxDisplayItems,
@@ -92,16 +94,16 @@ export const CustomerSelectField: React.FC<CustomerSelectFieldProps> = ({
 
   const searchQuery = useCustomerSearch(searchTerm);
 
-  // ✅ Smart query selection
+  // Smart query selection
   const activeQuery = showSearch && searchTerm ? searchQuery : baseQuery;
   const { customers, loading, error, refetch } = activeQuery;
 
-  // ✅ Memoized filtered customers để tránh re-computation
+  // Memoized filtered customers để tránh re-computation
   const displayCustomers = useMemo(() => {
     return customers.slice(0, maxDisplayItems);
   }, [customers, maxDisplayItems]);
 
-  // ✅ Selected customer info for display
+  // Selected customer info for display
   const selectedCustomer = useMemo(() => {
     const currentValue = form.watch("customerId");
     return customers.find((c) => c.value === currentValue);
@@ -116,6 +118,11 @@ export const CustomerSelectField: React.FC<CustomerSelectFieldProps> = ({
           <FormLabel className="flex items-center gap-2">
             <User className="h-4 w-4" />
             Khách hàng
+            {disabled && (
+              <span className="text-muted-foreground text-xs">
+                (Không thể thay đổi)
+              </span>
+            )}
             {loading && <InlineLoading size="xs" />}
           </FormLabel>
 
@@ -126,16 +133,25 @@ export const CustomerSelectField: React.FC<CustomerSelectFieldProps> = ({
             onOpenChange={setIsOpen}
           >
             <FormControl>
-              <SelectTrigger className={error ? "border-destructive" : ""}>
+              <SelectTrigger
+                className={`${error ? "border-destructive" : ""} ${
+                  disabled ? "bg-muted cursor-not-allowed opacity-75" : ""
+                }`}
+              >
                 <SelectValue placeholder={placeholder} className="text-left">
                   {selectedCustomer && (
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">
+                      <span className="font-nunito-500">
                         {selectedCustomer.fullData.fullName}
                       </span>
                       <span className="text-muted-foreground text-xs">
                         ({selectedCustomer.customerCode})
                       </span>
+                      {disabled && (
+                        <span className="text-muted-foreground text-xs">
+                          • Đã khóa
+                        </span>
+                      )}
                     </div>
                   )}
                 </SelectValue>
@@ -143,7 +159,7 @@ export const CustomerSelectField: React.FC<CustomerSelectFieldProps> = ({
             </FormControl>
 
             <SelectContent className="w-[400px]">
-              {/* ✅ Search input khi enable */}
+              {/* Search input khi enable */}
               {showSearch && (
                 <div className="border-b p-2">
                   <div className="relative">
@@ -159,7 +175,7 @@ export const CustomerSelectField: React.FC<CustomerSelectFieldProps> = ({
                 </div>
               )}
 
-              {/* ✅ Content area */}
+              {/* Content area */}
               <div className="max-h-[300px] overflow-y-auto">
                 {loading ? (
                   <div className="p-4 text-center">
@@ -185,7 +201,7 @@ export const CustomerSelectField: React.FC<CustomerSelectFieldProps> = ({
                       </SelectItem>
                     ))}
 
-                    {/* ✅ Show count if there are more items */}
+                    {/* Show count if there are more items */}
                     {customers.length > maxDisplayItems && (
                       <div className="text-muted-foreground border-t p-2 text-center text-xs">
                         Hiển thị {maxDisplayItems} trong {customers.length}{" "}
@@ -200,12 +216,28 @@ export const CustomerSelectField: React.FC<CustomerSelectFieldProps> = ({
 
           <FormMessage />
 
-          {/* ✅ Helper text */}
+          {/* Helper text */}
           {selectedCustomer && (
-            <p className="text-muted-foreground text-xs">
-              Đã chọn: {selectedCustomer.fullData.fullName}
-              {selectedCustomer.fullData.phoneNumber &&
-                ` • ${selectedCustomer.fullData.phoneNumber}`}
+            <p
+              className={`text-xs ${disabled ? "text-muted-foreground" : "text-muted-foreground"}`}
+            >
+              {disabled ? (
+                <>
+                  Khách hàng: {selectedCustomer.fullData.fullName}
+                  {selectedCustomer.fullData.phoneNumber &&
+                    ` • ${selectedCustomer.fullData.phoneNumber}`}{" "}
+                  •{" "}
+                  <span className="italic">
+                    Không thể thay đổi trong chế độ cập nhật
+                  </span>
+                </>
+              ) : (
+                <>
+                  Đã chọn: {selectedCustomer.fullData.fullName}
+                  {selectedCustomer.fullData.phoneNumber &&
+                    ` • ${selectedCustomer.fullData.phoneNumber}`}
+                </>
+              )}
             </p>
           )}
         </FormItem>

@@ -27,7 +27,7 @@ const adminSidebarItems = [
         path: "/admin/pet-profiles",
       },
       {
-        label: "Chủ nuôi",
+        label: "Khách hàng",
         icon: <icons.User size={18} />,
         path: "/admin/customers",
       },

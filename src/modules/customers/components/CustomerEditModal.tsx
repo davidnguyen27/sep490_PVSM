@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,21 +28,21 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { User, Phone, Mail, MapPin, Calendar, UserCheck } from "lucide-react";
 import type { Customer } from "../types/customer.type";
-import { z } from "zod";
+import { customerUpdateSchema, type CustomerUpdateSchema } from "../schemas";
 
-const customerUpdateSchema = z.object({
-  fullName: z.string().min(1, "Họ tên không được để trống"),
-  userName: z.string().min(1, "Tên đăng nhập không được để trống"),
-  phoneNumber: z.string().min(10, "Số điện thoại phải ít nhất 10 số"),
-  email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
-  dateOfBirth: z.string().min(1, "Ngày sinh không được để trống"),
-  gender: z.enum(["Male", "Female"], {
-    required_error: "Vui lòng chọn giới tính",
-  }),
-  address: z.string().min(1, "Địa chỉ không được để trống"),
-});
-
-type CustomerUpdateSchema = z.infer<typeof customerUpdateSchema>;
+// Format date yyyy-mm-dd -> dd/mm/yyyy
+function formatDateToDMY(dateStr?: string) {
+  if (!dateStr) return "";
+  const [y, m, d] = dateStr.split("-");
+  if (!y || !m || !d) return dateStr;
+  return `${d}/${m}/${y}`;
+}
+// Format date dd/mm/yyyy -> yyyy-mm-dd
+function formatDateToYMD(dateStr: string) {
+  const [d, m, y] = dateStr.split("/");
+  if (!d || !m || !y) return dateStr;
+  return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+}
 
 interface Props {
   open: boolean;
@@ -61,22 +62,50 @@ export function CustomerEditModal({
   const form = useForm<CustomerUpdateSchema>({
     resolver: zodResolver(customerUpdateSchema),
     defaultValues: {
-      fullName: customer?.fullName || "",
-      userName: customer?.userName || "",
-      phoneNumber: customer?.phoneNumber || "",
-      email: customer?.accountResponseDTO?.email || "",
-      dateOfBirth: customer?.dateOfBirth || "",
-      gender: (customer?.gender as "Male" | "Female") || "Male",
-      address: customer?.address || "",
+      fullName: "",
+      userName: "",
+      phoneNumber: "",
+      email: "",
+      dateOfBirth: "",
+      gender: "Male",
+      address: "",
     },
   });
 
+  // Reset form when customer data changes
+  useEffect(() => {
+    if (customer) {
+      form.reset({
+        fullName: customer.fullName || "",
+        userName: customer.userName || "",
+        phoneNumber: customer.phoneNumber || "",
+        email: customer.accountResponseDTO?.email || "",
+        dateOfBirth: formatDateToDMY(customer.dateOfBirth),
+        gender: (customer.gender as "Male" | "Female") || "Male",
+        address: customer.address || "",
+      });
+    }
+  }, [customer, form]);
+
   const handleSubmit = (data: CustomerUpdateSchema) => {
-    onSubmit(data);
+    // Convert dateOfBirth to yyyy-mm-dd before submit
+    const submitData = {
+      ...data,
+      dateOfBirth: formatDateToYMD(data.dateOfBirth),
+    };
+    onSubmit(submitData);
   };
 
   const handleClose = () => {
-    form.reset();
+    form.reset({
+      fullName: "",
+      userName: "",
+      phoneNumber: "",
+      email: "",
+      dateOfBirth: "",
+      gender: "Male",
+      address: "",
+    });
     onClose();
   };
 
@@ -84,7 +113,7 @@ export function CustomerEditModal({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-primary flex items-center gap-2">
+          <DialogTitle className="text-primary font-nunito-700 mb-4 flex items-center gap-2 text-lg">
             <User size={20} />
             Chỉnh sửa thông tin khách hàng
           </DialogTitle>
@@ -93,167 +122,186 @@ export function CustomerEditModal({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
+            className="font-nunito space-y-6"
           >
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {/* Full Name */}
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <User size={16} className="text-primary" />
-                      Họ và tên
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nhập họ và tên"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* User Name */}
-              <FormField
-                control={form.control}
-                name="userName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <UserCheck size={16} className="text-green-600" />
-                      Tên đăng nhập
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nhập tên đăng nhập"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Phone Number */}
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Phone size={16} className="text-blue-600" />
-                      Số điện thoại
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nhập số điện thoại"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Email */}
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Mail size={16} className="text-purple-600" />
-                      Email
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Nhập email"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Date of Birth */}
-              <FormField
-                control={form.control}
-                name="dateOfBirth"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Calendar size={16} className="text-orange-600" />
-                      Ngày sinh
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="date" disabled={isLoading} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Gender */}
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Giới tính</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={isLoading}
-                    >
+            {/* Show loading state when fetching customer data */}
+            {!customer && isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <div className="border-primary mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-b-2"></div>
+                  <p className="text-muted-foreground font-nunito text-sm">
+                    Đang tải thông tin khách hàng...
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {/* Full Name */}
+                <FormField
+                  control={form.control}
+                  name="fullName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <User size={16} className="text-primary" />
+                        Họ và tên
+                      </FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chọn giới tính" />
-                        </SelectTrigger>
+                        <Input
+                          placeholder="Nhập họ và tên"
+                          disabled={isLoading}
+                          {...field}
+                        />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Male">Nam</SelectItem>
-                        <SelectItem value="Female">Nữ</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* User Name */}
+                <FormField
+                  control={form.control}
+                  name="userName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <UserCheck size={16} className="text-green-600" />
+                        Tên đăng nhập
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Nhập tên đăng nhập"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Phone Number */}
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Phone size={16} className="text-blue-600" />
+                        Số điện thoại
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Nhập số điện thoại"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Email */}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  disabled
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Mail size={16} className="text-purple-600" />
+                        Email
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Nhập email"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Date of Birth */}
+                <FormField
+                  control={form.control}
+                  name="dateOfBirth"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Calendar size={16} className="text-orange-600" />
+                        Ngày sinh
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          placeholder="dd/mm/yyyy"
+                          disabled={isLoading}
+                          autoComplete="off"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Gender */}
+                <FormField
+                  control={form.control}
+                  name="gender"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Giới tính</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={isLoading}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn giới tính" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Male">Nam</SelectItem>
+                          <SelectItem value="Female">Nữ</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+            {/* Address - only show when not loading */}
+            {(customer || !isLoading) && (
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <MapPin size={16} className="text-red-600" />
+                      Địa chỉ
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Nhập địa chỉ đầy đủ"
+                        disabled={isLoading}
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
-
-            {/* Address */}
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <MapPin size={16} className="text-red-600" />
-                    Địa chỉ
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Nhập địa chỉ đầy đủ"
-                      disabled={isLoading}
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            )}{" "}
             <DialogFooter>
               <Button
                 type="button"
@@ -266,7 +314,7 @@ export function CustomerEditModal({
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="min-w-[100px]"
+                className="font-nunito-500 min-w-[100px]"
               >
                 {isLoading ? "Đang lưu..." : "Lưu thay đổi"}
               </Button>

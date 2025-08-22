@@ -68,6 +68,7 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
   const { user } = useAuth();
 
   // Use shared table sorting hook
+  // Do NOT filter isDeleted here; pets prop is already filtered by parent
   const {
     sortOrder,
     sortedData: sortedPets,
@@ -222,10 +223,14 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
                         </Tooltip>
                       </TooltipProvider>
 
-                      <ConfirmDelete onConfirm={() => deletePet(item.petId)}>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <ConfirmDelete
+                              onConfirm={() => deletePet(item.petId)}
+                              title="Xóa thú cưng"
+                              description="Bạn có chắc chắn muốn xóa thú cưng này? Hành động này không thể hoàn tác."
+                            >
                               <Trash2
                                 size={16}
                                 className={`cursor-pointer transition-transform hover:scale-110 ${
@@ -234,13 +239,13 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
                                     : "text-danger"
                                 }`}
                               />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="font-nunito">Xóa</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </ConfirmDelete>
+                            </ConfirmDelete>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="font-nunito">Xóa</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </TableCell>
                 </TableRow>

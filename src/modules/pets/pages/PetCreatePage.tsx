@@ -2,7 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { petSchema, type PetSchema } from "../schemas/pet.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { PetFormCreate } from "../components";
+import { PetFormUpdate } from "../components/PetFormUpdate";
 import { useNavigate } from "react-router-dom";
 import { usePetCreation } from "../hooks/usePetCreation";
 import { PageLoader, PageBreadcrumb } from "@/components/shared";
@@ -147,7 +147,7 @@ export default function PetCreatePage() {
             </CardHeader>
             <CardContent className="p-8">
               <div className="mx-auto max-w-4xl">
-                <PetFormCreate form={form} onSubmit={onSubmit} />
+                <PetFormUpdate form={form} onSubmit={onSubmit} mode="create" />
               </div>
             </CardContent>
           </Card>
