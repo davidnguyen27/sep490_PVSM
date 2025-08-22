@@ -10,15 +10,19 @@ import { Filter } from "lucide-react";
 interface Props {
   gender?: string;
   species?: string;
+  isDeleted?: string;
   onGenderChange: (gender: string) => void;
   onSpeciesChange: (species: string) => void;
+  onIsDeletedChange: (isDeleted: string) => void;
 }
 
 export function PetFilter({
   gender,
   species,
+  isDeleted,
   onGenderChange,
   onSpeciesChange,
+  onIsDeletedChange,
 }: Props) {
   return (
     <div className="flex items-center justify-between gap-4">
@@ -70,6 +74,28 @@ export function PetFilter({
             </SelectItem>
             <SelectItem value="Cat" className="font-nunito-500">
               Mèo
+            </SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={isDeleted || "all"}
+          onValueChange={(value) =>
+            onIsDeletedChange(value === "all" ? "" : value)
+          }
+        >
+          <SelectTrigger className="font-nunito-500 h-9 w-[160px] text-sm">
+            <SelectValue placeholder="Trạng thái" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all" className="font-nunito-500">
+              Tất cả trạng thái
+            </SelectItem>
+            <SelectItem value="false" className="font-nunito-500">
+              Đang hoạt động
+            </SelectItem>
+            <SelectItem value="true" className="font-nunito-500">
+              Đã xóa
             </SelectItem>
           </SelectContent>
         </Select>

@@ -14,7 +14,7 @@ import {
 import { CustomerDetailPage } from "../index";
 
 // hooks
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useCustomers, useCustomerById, useCustomerUpdate } from "../hooks";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -25,11 +25,20 @@ import { User } from "lucide-react";
 export default function CustomerManagementPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [status, setStatus] = useState<string>("all"); // all | active | deleted
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const customerId = searchParams.get("customerId");
   const action = searchParams.get("action");
+
+  useEffect(() => {
+    document.title = "PVMS | Quản lý khách hàng";
+
+    return () => {
+      document.title = "PVMS | Quản lý khách hàng";
+    };
+  }, []);
 
   // Customer data for list view - frontend sorting handles newest first
   const debouncedSearch = useDebounce(search, 500, { leading: true });
@@ -91,16 +100,16 @@ export default function CustomerManagementPage() {
       <div className="space-y-6">
         <div className="flex items-center space-x-2">
           <User color="#00B8A9" />
-          <h1 className="text-primary font-nunito text-2xl font-bold">
+          <h1 className="text-primary font-inter-700 text-xl">
             Quản lý khách hàng
           </h1>
         </div>
         <PageBreadcrumb items={["Khách hàng"]} />
 
-        <div className="bg-linen flex items-end justify-between p-4 shadow-md">
+        <div className="flex items-end justify-between py-4">
           <div className="flex items-end justify-between gap-4">
             <SearchLabel value={search} onChange={setSearch} />
-            <CustomerFilter />
+            <CustomerFilter status={status} onStatusChange={setStatus} />
           </div>
 
           {/* Search loading indicator */}
@@ -110,7 +119,13 @@ export default function CustomerManagementPage() {
         </div>
 
         <CustomerTable
-          customers={pageData}
+          customers={
+            status === "all"
+              ? pageData
+              : status === "active"
+                ? pageData.filter((c) => !c.isDeleted)
+                : pageData.filter((c) => c.isDeleted)
+          }
           isPending={isPending || isFetching}
           currentPage={page}
           pageSize={10}

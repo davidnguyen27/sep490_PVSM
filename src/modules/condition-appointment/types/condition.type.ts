@@ -1,3 +1,5 @@
+import type { Microchip } from "@/modules/microchips";
+import type { VaccineBatch } from "@/modules/vaccine-batch";
 import type { Vet } from "@/modules/vets/types/vet.type";
 
 export interface ConditionAppointments {
@@ -43,6 +45,8 @@ export interface ConditionAppointments {
     modifiedBy: string;
     isDeleted: boolean;
   };
+  vaccineBatch: VaccineBatch;
+  microchip: Microchip;
   appointment: {
     appointmentId: number | null;
     customerId: number | null;

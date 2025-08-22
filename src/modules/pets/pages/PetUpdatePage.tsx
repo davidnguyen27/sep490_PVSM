@@ -6,6 +6,7 @@ import { PetFormUpdate } from "../components/PetFormUpdate";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePetDetail, usePetUpdate } from "../hooks";
 import { useEffect } from "react";
+import { formatData } from "@/shared/utils/format.utils";
 import { PageLoader, PageBreadcrumb } from "@/components/shared";
 import { useAuth } from "@/modules/auth";
 import { getPetRoutePaths } from "../utils/pet-route.utils";
@@ -61,7 +62,7 @@ export default function PetUpdatePage() {
         species: data.species,
         breed: data.breed,
         gender: data.gender,
-        dateOfBirth: data.dateOfBirth,
+        dateOfBirth: formatData.parseDateDMYtoMDY(data.dateOfBirth),
         placeOfBirth: data.placeOfBirth,
         placeToLive: data.placeToLive,
         weight: data.weight,
@@ -149,9 +150,8 @@ export default function PetUpdatePage() {
           <div className="flex justify-center">
             <PageBreadcrumb
               items={[
-                "Quản lý thú cưng",
+                { label: "Danh sách thú cưng", path: paths.base },
                 data?.name ? `${data.name}` : "Đang tải...",
-                "Chỉnh sửa",
               ]}
             />
           </div>
@@ -201,14 +201,14 @@ export default function PetUpdatePage() {
           )}
 
           {/* Main Form Card */}
-          <Card className="rounded-none border-0 bg-white shadow-lg">
+          <Card className="rounded-none border-0 bg-white pb-6 shadow-lg">
             <CardHeader className="from-primary/5 to-primary/10 border-b-0 bg-gradient-to-r py-6">
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="bg-primary/10 rounded-lg p-2">
                     <PawPrint className="text-primary h-5 w-5" />
                   </div>
-                  <span className="font-inter-600 text-dark text-xl">
+                  <span className="font-nunito-700 text-dark text-xl">
                     Thông tin chi tiết
                   </span>
                 </div>
@@ -224,8 +224,8 @@ export default function PetUpdatePage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8">
-              <div className="mx-auto max-w-4xl">
-                <PetFormUpdate form={form} onSubmit={onSubmit} />
+              <div className="mx-auto">
+                <PetFormUpdate form={form} onSubmit={onSubmit} mode="update" />
               </div>
             </CardContent>
           </Card>

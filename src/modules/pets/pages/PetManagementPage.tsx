@@ -14,7 +14,7 @@ import { PetUpdatePage, PetCreatePage } from "./";
 // hooks
 import { useState, useEffect } from "react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
-import { usePets, usePetFilters } from "../hooks";
+import { usePets, usePetFilters, usePetFiltering } from "../hooks";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 // icons
@@ -31,6 +31,7 @@ export default function PetManagementPage() {
     filters,
     updateGender,
     updateSpecies,
+    updateIsDeleted,
     resetFilters,
     hasActiveFilters,
   } = usePetFilters();
@@ -43,6 +44,13 @@ export default function PetManagementPage() {
     keyWord: debouncedSearch,
     gender: filters.gender || undefined,
     species: filters.species || undefined,
+  });
+
+  // Get raw data and apply frontend filtering
+  const pageData = data?.data.pageData ?? [];
+  const { filteredPets } = usePetFiltering({
+    pets: pageData,
+    filters,
   });
 
   // Set document title for Pet Management page
@@ -69,7 +77,6 @@ export default function PetManagementPage() {
     return <PetCreatePage />;
   }
 
-  const pageData = data?.data.pageData ?? [];
   const totalPages = data?.data.pageInfo.totalPage ?? 1;
 
   // Reset page when filters change
@@ -80,6 +87,11 @@ export default function PetManagementPage() {
 
   const handleSpeciesChange = (newSpecies: string) => {
     updateSpecies(newSpecies);
+    setPage(1);
+  };
+
+  const handleIsDeletedChange = (newIsDeleted: string) => {
+    updateIsDeleted(newIsDeleted);
     setPage(1);
   };
 
@@ -105,20 +117,22 @@ export default function PetManagementPage() {
       <div className="space-y-6">
         <div className="flex items-center space-x-2">
           <PawPrint color="#00B8A9" />
-          <h1 className="text-primary font-inter-700 text-2xl">
+          <h1 className="text-primary font-inter-700 text-xl">
             Quản lý thú cưng
           </h1>
         </div>
         <PageBreadcrumb items={["Thú cưng"]} />
 
-        <div className="bg-linen flex items-end justify-between p-4 shadow-md">
+        <div className="flex items-end justify-between py-4">
           <div className="flex items-end justify-between gap-4">
             <SearchLabel value={search} onChange={setSearch} />
             <PetFilter
               gender={filters.gender}
               species={filters.species}
+              isDeleted={filters.isDeleted}
               onGenderChange={handleGenderChange}
               onSpeciesChange={handleSpeciesChange}
+              onIsDeletedChange={handleIsDeletedChange}
             />
             {hasActiveFilters && (
               <Button
@@ -150,7 +164,7 @@ export default function PetManagementPage() {
         </div>
 
         <PetTable
-          pets={pageData}
+          pets={filteredPets}
           isPending={isPending || isFetching}
           currentPage={page}
           pageSize={10}

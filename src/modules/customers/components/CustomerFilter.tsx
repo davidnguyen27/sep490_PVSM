@@ -7,24 +7,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function CustomerFilter() {
+interface Props {
+  status: string;
+  onStatusChange: (status: string) => void;
+}
+
+export function CustomerFilter({ status, onStatusChange }: Props) {
   return (
-    <>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="status" className="font-inter text-xs font-semibold">
-          Trạng thái
-        </Label>
-        <Select value={status?.toString()}>
-          <SelectTrigger id="status">
-            <SelectValue placeholder="Mặc định" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="default">Tất cả</SelectItem>
-            <SelectItem value="Active"></SelectItem>
-            <SelectItem value="Available">Cái</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </>
+    <div className="flex flex-col gap-1">
+      <Label htmlFor="status" className="font-nunito text-xs">
+        Trạng thái
+      </Label>
+      <Select value={status} onValueChange={onStatusChange}>
+        <SelectTrigger id="status">
+          <SelectValue placeholder="Tất cả" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Tất cả</SelectItem>
+          <SelectItem value="active">Đang hoạt động</SelectItem>
+          <SelectItem value="deleted">Đã xóa</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
