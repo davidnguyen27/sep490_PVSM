@@ -115,15 +115,13 @@ export function VaccineTable({
             {tableHeaders.map((header, index) => (
               <TableHead
                 key={header}
-                className={`font-nunito px-4 py-2 text-center text-sm text-white ${
-                  index === 0
-                    ? `cursor-pointer transition-colors ${
-                        sortOrder !== null
-                          ? "bg-green/20 hover:bg-green/30"
-                          : "hover:bg-primary/80"
-                      }`
-                    : ""
-                }`}
+                className={`font-nunito px-4 py-2 text-center text-sm text-white ${index === 0
+                  ? `cursor-pointer transition-colors ${sortOrder !== null
+                    ? "bg-green/20 hover:bg-green/30"
+                    : "hover:bg-primary/80"
+                  }`
+                  : ""
+                  }`}
                 onClick={index === 0 ? handleSortClick : undefined}
               >
                 {index === 0 ? (
@@ -251,29 +249,26 @@ export function VaccineTable({
                         </Tooltip>
                       </TooltipProvider>
 
-                      <ConfirmDeleteVaccine
-                        onConfirm={() => handleDelete(vaccineItem.vaccineId!)}
-                        vaccineName={vaccineItem.name}
-                        isDeleting={isDeleting}
-                      >
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Trash2
-                                size={16}
-                                className={`cursor-pointer transition-transform hover:scale-110 ${
-                                  isDeleting
-                                    ? "pointer-events-none opacity-50"
-                                    : "text-danger"
-                                }`}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="font-nunito">Xóa</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </ConfirmDeleteVaccine>
+                      <div className="flex items-center gap-2">
+                        <ConfirmDeleteVaccine
+                          onConfirm={() => handleDelete(vaccineItem.vaccineId!)}
+                          vaccineName={vaccineItem.name}
+                          isDeleting={isDeleting}
+                        >
+                          <button
+                            type="button"
+                            className={`p-1 rounded hover:bg-gray-100 ${isDeleting
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                              }`}
+                          >
+                            <Trash2
+                              size={16}
+                              className="text-danger cursor-pointer transition-transform hover:scale-110"
+                            />
+                          </button>
+                        </ConfirmDeleteVaccine>
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>

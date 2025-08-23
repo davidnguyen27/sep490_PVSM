@@ -29,12 +29,7 @@ export function VoucherTable({
   onView,
   isLoading = false,
 }: VoucherTableProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
+  // discountAmount is treated as percentage in UI
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), "dd/MM/yyyy", { locale: vi });
@@ -53,7 +48,7 @@ export function VoucherTable({
               <TableHead>Mã voucher</TableHead>
               <TableHead>Tên voucher</TableHead>
               <TableHead>Điểm yêu cầu</TableHead>
-              <TableHead>Giảm giá</TableHead>
+              <TableHead>Giảm giá (%)</TableHead>
               <TableHead>Ngày hết hạn</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
@@ -104,7 +99,7 @@ export function VoucherTable({
               <TableHead>Mã voucher</TableHead>
               <TableHead>Tên voucher</TableHead>
               <TableHead>Điểm yêu cầu</TableHead>
-              <TableHead>Giảm giá</TableHead>
+              <TableHead>Giảm giá (%)</TableHead>
               <TableHead>Ngày hết hạn</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
@@ -141,7 +136,7 @@ export function VoucherTable({
                     </Badge>
                   </TableCell>
                   <TableCell className="font-medium text-green-600">
-                    {formatCurrency(voucher.discountAmount)}
+                    {voucher.discountAmount}%
                   </TableCell>
                   <TableCell>
                     <span

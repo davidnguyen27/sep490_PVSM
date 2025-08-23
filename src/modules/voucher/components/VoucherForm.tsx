@@ -97,17 +97,17 @@ export function VoucherForm({
             )}
           />
 
-          {/* Số tiền giảm giá */}
+          {/* % giảm giá */}
           <FormField
             control={form.control}
             name="discountAmount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Số tiền giảm giá (VNĐ) *</FormLabel>
+                <FormLabel>Giảm giá (%) *</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
-                    placeholder="Nhập số tiền giảm giá"
+                    placeholder="Nhập % giảm giá (0 - 100)"
                     {...field}
                     onChange={(e) => field.onChange(Number(e.target.value))}
                     disabled={isLoading}

@@ -62,7 +62,7 @@ export default function VaccinationAppListPage() {
     <div className="space-y-6">
       <div className="space-y-1">
         <h1 className="text-primary font-inter-700 my-4 flex items-center gap-2 text-xl">
-          <Syringe /> Tiêm chủng tại Phòng khám
+          <Syringe /> Lịch Hẹn Tiêm Chủng
         </h1>
         <PageBreadcrumb items={["Danh sách lịch hẹn"]} />
       </div>

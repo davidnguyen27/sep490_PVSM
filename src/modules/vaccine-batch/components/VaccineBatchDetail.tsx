@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 
 // Utils
 import { formatData } from "@/shared/utils/format.utils";
@@ -142,7 +141,46 @@ export function VaccineBatchDetail({ vaccineBatch }: Props) {
           </CardContent>
         </Card>
 
-        {/* Thông tin hệ thống */}
+        {/* Thông tin lô vaccine */}
+        <Card className="bg-linen rounded-none py-4 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Package className="text-primary h-5 w-5" />
+              Thông tin lô vaccine
+            </CardTitle>
+            <CardDescription>Thông tin sản xuất và bảo quản</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="font-nunito-500 text-sm text-gray-500">
+                Nhà sản xuất
+              </label>
+              <p className="mt-1 text-sm text-gray-700">
+                {vaccineBatch.manufacturer || "Chưa cập nhật"}
+              </p>
+            </div>
+            <div>
+              <label className="font-nunito-500 text-sm text-gray-500">
+                Nguồn gốc
+              </label>
+              <p className="mt-1 text-sm text-gray-700">
+                {vaccineBatch.source || "Chưa cập nhật"}
+              </p>
+            </div>
+            <div>
+              <label className="font-nunito-500 text-sm text-gray-500">
+                Điều kiện bảo quản
+              </label>
+              <p className="mt-1 text-sm text-gray-700">
+                {vaccineBatch.storageCondition || "Chưa cập nhật"}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Thông tin hệ thống */}
+      <div className="grid grid-cols-1 gap-6">
         <Card className="bg-linen rounded-none py-4 shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -151,7 +189,7 @@ export function VaccineBatchDetail({ vaccineBatch }: Props) {
             </CardTitle>
             <CardDescription>Lịch sử tạo & cập nhật</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <h4 className="font-nunito-600 mb-1 flex items-center gap-1 text-gray-900">
                 <User className="h-4 w-4" /> Thông tin tạo
@@ -167,7 +205,6 @@ export function VaccineBatchDetail({ vaccineBatch }: Props) {
                 </p>
               </div>
             </div>
-            <Separator />
             <div>
               <h4 className="font-nunito-600 mb-1 flex items-center gap-1 text-gray-900">
                 <User className="h-4 w-4" /> Thông tin cập nhật

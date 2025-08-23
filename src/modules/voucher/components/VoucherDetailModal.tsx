@@ -28,12 +28,7 @@ export function VoucherDetailModal({
 }: VoucherDetailModalProps) {
   if (!voucher) return null;
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
+  // discountAmount is represented as percentage in UI
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), "dd/MM/yyyy HH:mm", { locale: vi });
@@ -99,11 +94,11 @@ export function VoucherDetailModal({
             <div className="space-y-2">
               <div className="flex items-center space-x-2 text-sm font-medium text-gray-700">
                 <TagIcon className="h-4 w-4" />
-                <span>Số tiền giảm giá</span>
+                <span>Giảm giá (%)</span>
               </div>
               <div className="rounded-lg border p-3">
                 <p className="text-lg font-semibold text-green-600">
-                  {formatCurrency(voucher.discountAmount)}
+                  {voucher.discountAmount}%
                 </p>
               </div>
             </div>
@@ -116,11 +111,10 @@ export function VoucherDetailModal({
               </div>
               <div className="rounded-lg border p-3">
                 <p
-                  className={`text-lg font-semibold ${
-                    isExpired(voucher.expirationDate)
-                      ? "text-red-600"
-                      : "text-gray-900"
-                  }`}
+                  className={`text-lg font-semibold ${isExpired(voucher.expirationDate)
+                    ? "text-red-600"
+                    : "text-gray-900"
+                    }`}
                 >
                   {formatDateOnly(voucher.expirationDate)}
                 </p>

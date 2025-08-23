@@ -15,8 +15,8 @@ export const voucherSchema = z.object({
     .max(500, "Mô tả không được quá 500 ký tự"),
   discountAmount: z
     .number()
-    .min(0, "Số tiền giảm giá phải lớn hơn hoặc bằng 0")
-    .max(10000000, "Số tiền giảm giá không được quá 10,000,000"),
+    .min(0, "% giảm giá phải lớn hơn hoặc bằng 0")
+    .max(100, "% giảm giá không được quá 100"),
   expirationDate: z
     .string()
     .min(1, "Ngày hết hạn không được để trống")

@@ -12,6 +12,8 @@ import type { Membership } from "../types/membership.type";
 import { formatData } from "@/shared/utils/format.utils";
 import { BadgeInfo, SquarePen, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import ConfirmDelete from "@/components/shared/ConfirmDelete";
+import { useMembershipDelete } from "../hooks/useMembershipDelete";
 
 type Props = {
   data: Membership[];
@@ -34,6 +36,8 @@ const tableHeaders = [
 
 export function MembershipTable({ data, isPending, onEdit, onDelete }: Props) {
   const navigate = useNavigate();
+  const { mutate: deleteMembership, isPending: isDeleting } =
+    useMembershipDelete();
 
   const handleViewDetail = (membershipId: number) => {
     navigate(`/admin/memberships?membershipId=${membershipId}`);
@@ -115,11 +119,19 @@ export function MembershipTable({ data, isPending, onEdit, onDelete }: Props) {
                       className="text-purple cursor-pointer transition-transform hover:scale-110"
                       onClick={() => onEdit && onEdit(item)}
                     />
-                    <Trash2
-                      size={16}
-                      className="text-danger cursor-pointer transition-transform hover:scale-110"
-                      onClick={() => onDelete && onDelete(item)}
-                    />
+                    <ConfirmDelete
+                      onConfirm={() =>
+                        onDelete ? onDelete(item) : deleteMembership(item.membershipId)
+                      }
+                    >
+                      <Trash2
+                        size={16}
+                        className={`cursor-pointer transition-transform hover:scale-110 ${isDeleting
+                          ? "pointer-events-none opacity-50"
+                          : "text-danger"
+                          }`}
+                      />
+                    </ConfirmDelete>
                   </div>
                 </TableCell>
               </TableRow>
