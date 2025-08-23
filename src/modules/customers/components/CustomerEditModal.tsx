@@ -162,6 +162,7 @@ export function CustomerEditModal({
                 <FormField
                   control={form.control}
                   name="userName"
+                  disabled
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">

@@ -7,7 +7,7 @@ import { dashboardRoutes } from "@/modules/dashboard";
 // Entity management modules
 import { customerRoutes } from "@/modules/customers/routes/customer.route";
 import { diseaseRoutes } from "@/modules/diseases/routes/disease.route";
-import { petRoutes } from "@/modules/pets/routes/pet.route";
+import { petRoutes } from "@/modules/pets";
 import { vetRoutes } from "@/modules/vets/routes/vet.route";
 import { microchipRoutes } from "@/modules/microchips/routes/microchip.route";
 import { microchipItemRoutes } from "@/modules/microchip-item";

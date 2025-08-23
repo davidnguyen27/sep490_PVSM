@@ -6,7 +6,6 @@ import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
 
 const CustomerListPage = lazy(() => import("../pages/CustomerListPage"));
-const CustomerDetailPage = lazy(() => import("../pages/CustomerDetailPage"));
 
 export const customerRoutes: RouteObject[] = [
   {
@@ -32,17 +31,8 @@ export const customerRoutes: RouteObject[] = [
     ),
     children: [
       {
-        path: "customer-profiles",
-        children: [
-          {
-            index: true,
-            element: <CustomerListPage />,
-          },
-          {
-            path: "detail",
-            element: <CustomerDetailPage />,
-          },
-        ],
+        path: "customers",
+        element: <CustomerListPage />,
       },
     ],
   },

@@ -17,7 +17,9 @@ import { CustomerDetailPage } from "../index";
 import { useEffect, useState } from "react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useCustomers, useCustomerById, useCustomerUpdate } from "../hooks";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+
+import { useCustomerDetailNavigation } from "../hooks/useCustomerDetailNavigation";
 
 // icons
 import { User } from "lucide-react";
@@ -27,7 +29,7 @@ export default function CustomerManagementPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<string>("all"); // all | active | deleted
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const { handleGoBack } = useCustomerDetailNavigation();
 
   const customerId = searchParams.get("customerId");
   const action = searchParams.get("action");
@@ -61,12 +63,11 @@ export default function CustomerManagementPage() {
     return <CustomerDetailPage />;
   }
 
-  const pageData = data?.data.pageData ?? [];
-  const totalPages = data?.data.pageInfo.totalPage ?? 1;
+  const pageData = data?.data?.pageData ?? [];
+  const totalPages = data?.data?.pageInfo?.totalPage ?? 1;
 
-  const handleCloseModal = () => {
-    navigate("/admin/customers", { replace: true });
-  };
+  // Use navigation hook to get correct route for both admin and staff
+  const handleCloseModal = handleGoBack;
 
   const handleUpdateCustomer = (data: {
     fullName: string;

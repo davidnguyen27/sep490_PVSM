@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// ✅ Base schema with common fields
+// Base schema with common fields
 const basePetSchema = z.object({
   customerId: z.string().min(1, "Chọn khách hàng!"),
   name: z.string().min(1, "Nhập tên thú cưng!"),
@@ -16,14 +16,14 @@ const basePetSchema = z.object({
   isSterilized: z.boolean(),
 });
 
-// ✅ Schema for creating new pets (image required)
+// Schema for creating new pets (image required)
 export const petCreateSchema = basePetSchema.extend({
   image: z
     .instanceof(File)
     .refine((file) => file.size > 0, "Chọn hình ảnh thú cưng!"),
 });
 
-// ✅ Schema for updating pets (image optional, can be File or string URL)
+// Schema for updating pets (image optional, can be File or string URL)
 export const petSchema = basePetSchema.extend({
   image: z
     .union([

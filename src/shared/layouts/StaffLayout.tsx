@@ -20,12 +20,12 @@ const staffSidebarItems = [
       {
         label: "Khách hàng",
         icon: <icons.User size={20} />,
-        path: "/staff/customer-profiles",
+        path: "/staff/customers",
       },
       {
         label: "Thú cưng",
         icon: <icons.PawPrint size={20} />,
-        path: "/staff/pet-profiles",
+        path: "/staff/pets",
       },
     ],
   },

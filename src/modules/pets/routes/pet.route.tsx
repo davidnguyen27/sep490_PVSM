@@ -19,7 +19,7 @@ export const petRoutes: RouteObject[] = [
     ),
     children: [
       {
-        path: "pet-profiles",
+        path: "pets",
         element: <PetManagementPage />,
       },
     ],
@@ -33,7 +33,7 @@ export const petRoutes: RouteObject[] = [
     ),
     children: [
       {
-        path: "pet-profiles",
+        path: "pets",
         element: <PetManagementPage />,
       },
     ],
@@ -47,7 +47,7 @@ export const petRoutes: RouteObject[] = [
     ),
     children: [
       {
-        path: "pet-profiles",
+        path: "pets",
         element: <PetManagementPage />,
       },
     ],
