@@ -29,6 +29,11 @@ interface Props {
   disabled?: boolean;
   canEdit?: boolean;
   readOnly?: boolean;
+  assignedVet?: {
+    vetId: number;
+    vetCode: string;
+    name: string;
+  };
 }
 
 export function VetSelectionCard({
@@ -37,6 +42,7 @@ export function VetSelectionCard({
   disabled,
   appointmentDate,
   canEdit,
+  assignedVet,
 }: Props) {
   const slot = Utils.extractSlotFromAppointmentDate(appointmentDate);
   const dateOnly = appointmentDate.split("T")[0];
@@ -50,11 +56,23 @@ export function VetSelectionCard({
     ? schedulesData.map((item) => item?.data).filter(Boolean)
     : [];
 
+  // Filter schedules for selection (not already booked/assigned)
   const filteredSchedules = vetSchedules.filter((schedule) => {
+    const scheduleDateOnly = schedule.scheduleDate.split("T")[0];
+    return (
+      scheduleDateOnly === dateOnly &&
+      schedule.slotNumber === slot &&
+      schedule.status !== 2 // Exclude already booked vets
+    );
+  });
+
+  // All schedules for this slot (including status=2 to find assigned vet)
+  const allSlotSchedules = vetSchedules.filter((schedule) => {
     const scheduleDateOnly = schedule.scheduleDate.split("T")[0];
     return scheduleDateOnly === dateOnly && schedule.slotNumber === slot;
   });
 
+  // Available vets for selection
   const availableVets = Array.from(
     new Map(
       filteredSchedules.map((schedule) => [
@@ -64,7 +82,15 @@ export function VetSelectionCard({
     ).values(),
   );
 
-  const selectedVet = availableVets.find((v) => v.vetId === value.vetId);
+  // Find selected vet - check all schedules (including assigned ones)
+  let selectedVet = allSlotSchedules.find(
+    (s) => s.vetResponse.vetId === value.vetId,
+  )?.vetResponse;
+
+  // Fallback: if assigned vet not found in schedules, use assignedVet prop
+  if (!selectedVet && assignedVet && assignedVet.vetId === value.vetId) {
+    selectedVet = assignedVet;
+  }
 
   return (
     <Card className="bg-linen space-y-4 rounded-none p-6">
@@ -140,23 +166,22 @@ export function VetSelectionCard({
                 ))}
               </SelectContent>
             </Select>
-          ) : (
+          ) : selectedVet ? (
             <div className="bg-muted flex items-center gap-3 rounded-md border px-4 py-3 text-sm">
               <UserRound size={18} className="text-muted-foreground" />
               <div>
-                {selectedVet ? (
-                  <>
-                    <div className="text-foreground font-nunito-500">
-                      {selectedVet.name}
-                    </div>
-                    <div className="text-muted-foreground font-nunito text-xs">
-                      Mã: {selectedVet.vetCode}
-                    </div>
-                  </>
-                ) : (
-                  <span>Chưa chọn bác sĩ</span>
-                )}
+                <div className="text-foreground font-nunito-500">
+                  {selectedVet.name}
+                </div>
+                <div className="text-muted-foreground font-nunito text-xs">
+                  Mã: {selectedVet.vetCode}
+                </div>
               </div>
+            </div>
+          ) : (
+            <div className="bg-muted flex items-center gap-3 rounded-md border px-4 py-3 text-sm">
+              <UserRound size={18} className="text-muted-foreground" />
+              <span>Chưa chọn bác sĩ</span>
             </div>
           )}
         </div>

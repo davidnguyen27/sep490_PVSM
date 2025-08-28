@@ -200,15 +200,17 @@ export default function Header() {
 
         {/* Right: actions (scan, settings, notification, user) */}
         <div className="flex items-center space-x-3 px-4">
-          {/* Scan microchip button */}
-          <button
-            onClick={handleScanMicrochip}
-            className={HEADER_STYLES.scanButton}
-            title="Quét microchip tìm lịch hẹn"
-          >
-            <Scan size={18} />
-            <span>Tra cứu</span>
-          </button>
+          {/* Scan microchip button: chỉ hiển thị cho Staff và Vet */}
+          {user?.role !== 1 && (
+            <button
+              onClick={handleScanMicrochip}
+              className={HEADER_STYLES.scanButton}
+              title="Quét microchip tìm lịch hẹn"
+            >
+              <Scan size={18} />
+              <span>Tra cứu</span>
+            </button>
+          )}
 
           {/* Settings button: only show if not Staff (2) or Vet (3) */}
           {user?.role !== 2 && user?.role !== 3 && (

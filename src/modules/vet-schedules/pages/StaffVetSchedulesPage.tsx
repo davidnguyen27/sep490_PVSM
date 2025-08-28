@@ -320,6 +320,9 @@ const StaffVetSchedulesPage = () => {
           <WeeklyStatsCards
             stats={weeklyStats}
             onAddSchedule={handleAddSchedule}
+            disableAdd={
+              selectedDate <= new Date(new Date().setHours(0, 0, 0, 0))
+            }
           />
 
           {/* Lịch tuần */}
@@ -351,6 +354,7 @@ const StaffVetSchedulesPage = () => {
         onClose={() => setIsModalOpen(false)}
         mode={modalMode}
         existingSchedule={existingSchedule}
+        selectedDate={selectedDate}
       />
     </div>
   );

@@ -54,7 +54,7 @@ export default function MicrochipsListPage() {
     isUsed: false,
   });
 
-  let pageData: MicrochipItem[] = data?.data.pageData ?? [];
+  let pageData: MicrochipItem[] = data?.data?.pageData ?? [];
   if (status === "active") {
     pageData = pageData.filter(
       (item) => item.microchipResponse.isDeleted === false,
@@ -64,7 +64,7 @@ export default function MicrochipsListPage() {
       (item) => item.microchipResponse.isDeleted === true,
     );
   }
-  const totalPages = data?.data.pageInfo.totalPage ?? 1;
+  const totalPages = data?.data?.pageInfo.totalPage ?? 1;
 
   const handleCreate = (payload: MicrochipSchema) => {
     createMicrochip(payload, {

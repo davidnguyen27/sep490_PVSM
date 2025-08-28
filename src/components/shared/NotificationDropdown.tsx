@@ -98,7 +98,9 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 variant="outline"
                 className="ml-3 px-2 py-1 text-xs"
                 onClick={() => {
-                  onNavigate("/admin/vaccine-batch");
+                  onNavigate(
+                    `/admin/vaccine-batches?vaccineBatchId=${batch.id}&action=view`,
+                  );
                   onClose();
                 }}
               >

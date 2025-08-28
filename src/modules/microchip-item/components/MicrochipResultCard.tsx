@@ -1,5 +1,5 @@
 // 📁 src/features/microchip/MicrochipResultCard.tsx
-import React, { useState } from "react";
+import React from "react";
 import {
   Card,
   CardContent,
@@ -26,8 +26,8 @@ import {
 import { formatData } from "@/shared/utils/format.utils";
 import { AppStatusMapped, getBadgeColor } from "@/shared/utils/status.utils";
 import type { MicrochipItemByCode } from "../types/microchip-item-by-code.type";
-import { useAppointmentDetail } from "../hooks/useAppointmentDetail";
-import { AppointmentDetailDialog } from "./MicrochipAppointmentDetail";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/modules/auth";
 
 interface Props {
   searchCode: string;
@@ -42,22 +42,34 @@ export function MicrochipResultCard({
   error,
   petInfo,
 }: Props) {
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [selectedAppointmentId, setSelectedAppointmentId] = useState<
-    number | null
-  >(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // fetch chi tiết lịch hẹn qua hook đã tách
-  const {
-    data: appointmentDetail,
-    isFetching: isDetailLoading,
-    error: detailError,
-  } = useAppointmentDetail(selectedAppointmentId, detailOpen);
-
-  const onViewDetail = (appointmentId: number | null) => {
+  const onViewDetail = (appointmentId: number | null, serviceType: number) => {
     if (appointmentId == null) return;
-    setSelectedAppointmentId(appointmentId);
-    setDetailOpen(true);
+
+    // Xác định base path theo role
+    const basePath = user?.role === 3 ? "/vet" : "/staff";
+
+    // Xác định endpoint theo serviceType
+    let endpoint = "";
+    switch (serviceType) {
+      case 1: // Vaccination
+        endpoint = "vaccination-appointments";
+        break;
+      case 2: // Microchip
+        endpoint = "microchip-appointments";
+        break;
+      case 3: // Health condition
+        endpoint = "condition-appointments";
+        break;
+      default:
+        endpoint = "appointments";
+        break;
+    }
+
+    // Điều hướng đến URL tương ứng
+    navigate(`${basePath}/${endpoint}?appointmentId=${appointmentId}`);
   };
 
   if (isLoading) {
@@ -89,55 +101,49 @@ export function MicrochipResultCard({
     const customer = pet.customer;
 
     return (
-      <>
-        <Card className="rounded-none border-green-200 py-4">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <CardTitle className="font-inter-600 text-green-700">
-                Thông tin thú cưng
-              </CardTitle>
-            </div>
-            <CardDescription className="font-nunito-400 flex items-center gap-1">
-              <Tag className="h-4 w-4 text-gray-500" /> Đã tìm thấy thông tin
-              cho mã microchip:
-              <code className="rounded bg-gray-100 px-1.5 py-0.5">
-                {searchCode}
-              </code>
-            </CardDescription>
-          </CardHeader>
+      <Card className="rounded-none border-green-200 py-4">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <CardTitle className="font-inter-600 text-green-700">
+              Thông tin thú cưng
+            </CardTitle>
+          </div>
+          <CardDescription className="font-nunito-400 flex items-center gap-1">
+            <Tag className="h-4 w-4 text-gray-500" /> Đã tìm thấy thông tin cho
+            mã microchip:
+            <code className="rounded bg-gray-100 px-1.5 py-0.5">
+              {searchCode}
+            </code>
+          </CardDescription>
+        </CardHeader>
 
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <PetInfoBlock pet={pet} />
-              <OwnerInfoBlock customer={customer} />
-            </div>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <PetInfoBlock pet={pet} />
+            <OwnerInfoBlock customer={customer} />
+          </div>
 
-            <Separator />
+          <Separator />
 
-            <MicrochipInfoBlock
-              searchCode={searchCode}
-              installationDate={petInfo.installationDate}
-              status={petInfo.status}
+          <MicrochipInfoBlock
+            searchCode={searchCode}
+            installationDate={petInfo.installationDate}
+            status={petInfo.status}
+          />
+
+          {pet.appointmentDetails?.filter(
+            (appointment) => appointment.appointmentStatus,
+          ).length > 0 && (
+            <AppointmentTable
+              appointments={pet.appointmentDetails.filter(
+                (appointment) => appointment.appointmentStatus,
+              )}
+              onViewDetail={onViewDetail}
             />
-
-            {pet.appointmentDetails?.length > 0 && (
-              <AppointmentTable
-                appointments={pet.appointmentDetails}
-                onViewDetail={onViewDetail}
-              />
-            )}
-          </CardContent>
-        </Card>
-
-        <AppointmentDetailDialog
-          open={detailOpen}
-          onOpenChange={setDetailOpen}
-          isLoading={isDetailLoading}
-          error={detailError as unknown}
-          detail={appointmentDetail?.data}
-        />
-      </>
+          )}
+        </CardContent>
+      </Card>
     );
   }
 
@@ -254,7 +260,7 @@ const AppointmentTable = ({
   onViewDetail,
 }: {
   appointments: MicrochipItemByCode["pet"]["appointmentDetails"];
-  onViewDetail: (appointmentId: number | null) => void;
+  onViewDetail: (appointmentId: number | null, serviceType: number) => void;
 }) => (
   <div className="mt-6">
     <h4 className="font-inter-600 text-primary mb-2 flex items-center gap-2 text-base">
@@ -298,7 +304,7 @@ const AppointmentTable = ({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => onViewDetail(a.appointmentId)}
+                  onClick={() => onViewDetail(a.appointmentId, a.serviceType)}
                 >
                   Xem chi tiết
                 </Button>

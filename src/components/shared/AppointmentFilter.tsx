@@ -49,7 +49,7 @@ export default function AppointmentFilter({
 
       <div className="flex flex-col gap-1">
         <Label htmlFor="status" className="font-nunito-600 text-xs">
-          Dịch vụ
+          Địa điểm
         </Label>
         <Select
           value={location}

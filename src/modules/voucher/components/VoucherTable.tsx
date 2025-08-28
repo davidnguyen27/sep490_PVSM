@@ -1,5 +1,3 @@
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import {
   Table,
   TableBody,
@@ -13,6 +11,7 @@ import {
 import { ConfirmDelete } from "@/components/shared";
 import { Edit, Trash2, Eye } from "lucide-react";
 import type { Voucher } from "../types/voucher.type";
+import { formatData } from "@/shared/utils/format.utils";
 
 interface VoucherTableProps {
   vouchers: Voucher[];
@@ -29,17 +28,6 @@ export function VoucherTable({
   onView,
   isLoading = false,
 }: VoucherTableProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), "dd/MM/yyyy", { locale: vi });
-  };
-
   const isExpired = (expirationDate: string) => {
     return new Date(expirationDate) < new Date();
   };
@@ -104,7 +92,7 @@ export function VoucherTable({
               <TableHead>Mã voucher</TableHead>
               <TableHead>Tên voucher</TableHead>
               <TableHead>Điểm yêu cầu</TableHead>
-              <TableHead>Giảm giá</TableHead>
+              <TableHead>Giảm giá (%)</TableHead>
               <TableHead>Ngày hết hạn</TableHead>
               <TableHead>Trạng thái</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
@@ -141,7 +129,7 @@ export function VoucherTable({
                     </Badge>
                   </TableCell>
                   <TableCell className="font-medium text-green-600">
-                    {formatCurrency(voucher.discountAmount)}
+                    {voucher.discountAmount}
                   </TableCell>
                   <TableCell>
                     <span
@@ -151,7 +139,7 @@ export function VoucherTable({
                           : "text-gray-900"
                       }
                     >
-                      {formatDate(voucher.expirationDate)}
+                      {formatData.formatDateTime(voucher.expirationDate)}
                     </span>
                   </TableCell>
                   <TableCell>

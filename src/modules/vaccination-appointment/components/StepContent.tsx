@@ -92,11 +92,12 @@ export function StepContent({
         selectedDiseaseId={formData.diseaseId}
         onSelect={setSelectedDiseaseId}
         disabled={!canEdit(APPOINTMENT_STATUS.PROCESSING)}
+        appointment={data.appointment}
       />
       {currentViewStatus === appointmentStatus && (
         <div className="flex justify-end gap-4">
           <Button variant="destructive" onClick={onShowReject}>
-            Hủy
+            Từ chối
           </Button>
           <Button
             className="bg-primary text-white"
@@ -126,6 +127,9 @@ export function StepContent({
       />
       {currentViewStatus === appointmentStatus && (
         <div className="flex justify-end gap-2">
+          <Button variant="destructive" onClick={onShowReject}>
+            Từ chối
+          </Button>
           <Button
             className="bg-primary text-white"
             onClick={onProceedToInjection}

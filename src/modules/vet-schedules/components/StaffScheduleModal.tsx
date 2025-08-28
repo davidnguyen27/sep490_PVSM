@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -44,6 +44,7 @@ interface StaffScheduleModalProps {
   onClose: () => void;
   mode: "add" | "edit";
   existingSchedule?: VetSchedule | null;
+  selectedDate?: Date;
 }
 
 interface FormData {
@@ -76,17 +77,42 @@ export function StaffScheduleModal({
   onClose,
   mode,
   existingSchedule,
+  selectedDate,
 }: StaffScheduleModalProps) {
   const [selectedSlots, setSelectedSlots] = useState<number[]>(
     existingSchedule ? [existingSchedule.slotNumber] : [],
   );
 
+  // Tính toán ngày mặc định cho scheduleDate khi tạo mới
+  const defaultScheduleDate = useMemo(() => {
+    let result = new Date();
+    if (mode === "add") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selectedDate) {
+        const sel = new Date(selectedDate);
+        sel.setHours(0, 0, 0, 0);
+        if (sel <= today) {
+          // Nếu là hôm nay hoặc quá khứ, lấy ngày mai
+          result = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+        } else {
+          // Nếu là tương lai, lấy selectedDate
+          result = selectedDate;
+        }
+      } else {
+        // Không có selectedDate, lấy ngày mai
+        result = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+      }
+    } else if (existingSchedule) {
+      result = new Date(existingSchedule.scheduleDate);
+    }
+    return result;
+  }, [mode, selectedDate, existingSchedule]);
+
   const form = useForm<FormData>({
     defaultValues: {
       vetId: existingSchedule?.vetId?.toString() || "",
-      scheduleDate: existingSchedule
-        ? new Date(existingSchedule.scheduleDate)
-        : new Date(),
+      scheduleDate: defaultScheduleDate,
       slotNumbers: existingSchedule ? [existingSchedule.slotNumber] : [],
       status: existingSchedule?.status?.toString() || "1",
     },
@@ -101,15 +127,16 @@ export function StaffScheduleModal({
       form.setValue("status", existingSchedule.status?.toString() || "1");
       setSelectedSlots([existingSchedule.slotNumber]);
     } else {
+      // Khi tạo mới, sử dụng defaultScheduleDate thay vì new Date()
       form.reset({
         vetId: "",
-        scheduleDate: new Date(),
+        scheduleDate: defaultScheduleDate,
         slotNumbers: [],
         status: "1",
       });
       setSelectedSlots([]);
     }
-  }, [existingSchedule, form]);
+  }, [existingSchedule, form, defaultScheduleDate]);
 
   // Hooks
   const { data: vetsResponse, isLoading: isLoadingVets } = useVets({
@@ -274,9 +301,13 @@ export function StaffScheduleModal({
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) =>
-                            date < new Date() || date < new Date("1900-01-01")
-                          }
+                          disabled={(date) => {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            return (
+                              date <= today || date < new Date("1900-01-01")
+                            );
+                          }}
                           initialFocus
                           locale={vi}
                         />

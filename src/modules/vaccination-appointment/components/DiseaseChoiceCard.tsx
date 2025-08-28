@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -8,54 +8,55 @@ import {
   PawPrint,
   Cat,
   Dog,
-  Filter,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/shared/hooks/useDebounce";
-import { useDiseases } from "@/modules/diseases";
+import { useDiseaseBySpecies } from "@/modules/diseases/hooks/useDiseaseBySpecies";
 
 interface Props {
   selectedDiseaseId: number | null;
   onSelect: (diseaseId: number | null) => void;
   disabled?: boolean;
-  petSpecies?: "Dog" | "Cat";
+  appointment?: {
+    petResponseDTO?: {
+      species?: string;
+    };
+  };
 }
 
 export function DiseaseChoiceCard({
   selectedDiseaseId,
   onSelect,
   disabled,
-  petSpecies,
+  appointment,
 }: Props) {
   const [open, setOpen] = useState(true);
   const [search, setSearch] = useState("");
-  const [selectedSpecies, setSelectedSpecies] = useState<"All" | "Dog" | "Cat">(
-    petSpecies ? petSpecies : "All",
-  );
+
+  // Normalize species to 'Dog' or 'Cat' (supports both English and Vietnamese, case-insensitive)
+  const normalizeSpecies = (value?: string) => {
+    if (!value) return undefined;
+    const v = value.trim().toLowerCase();
+    if (v === "dog" || v === "chó") return "Dog";
+    if (v === "cat" || v === "mèo") return "Cat";
+    return undefined;
+  };
+  const species = normalizeSpecies(appointment?.petResponseDTO?.species);
 
   const debouncedSearch = useDebounce(search, 400);
-
-  const { data, isLoading, isFetching } = useDiseases({
-    pageNumber: 1,
-    pageSize: 100,
-    keyWord: debouncedSearch,
-  });
-
-  // Lọc bệnh theo loài thú cưng
-  const diseases = (data?.data.pageData || []).filter((disease) => {
-    if (selectedSpecies === "All") return true;
-    return disease.species === selectedSpecies;
-  });
-
-  // Tính toán số lượng bệnh theo loài để hiển thị badge
-  const dogDiseaseCount = (data?.data.pageData || []).filter(
-    (disease) => disease.species === "Dog",
-  ).length;
-
-  const catDiseaseCount = (data?.data.pageData || []).filter(
-    (disease) => disease.species === "Cat",
-  ).length;
+  const {
+    data: diseasesData,
+    isLoading,
+    isFetching,
+  } = useDiseaseBySpecies(species || "");
+  const diseases = React.useMemo(() => {
+    if (!species || !diseasesData) return [];
+    const keyword = debouncedSearch.trim().toLowerCase();
+    return diseasesData.filter((disease) =>
+      disease.name.toLowerCase().includes(keyword),
+    );
+  }, [species, diseasesData, debouncedSearch]);
 
   return (
     <Card className="bg-linen rounded-none">
@@ -96,60 +97,27 @@ export function DiseaseChoiceCard({
               />
             </div>
 
-            {/* Species filter */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1 text-sm text-gray-500">
-                <Filter size={14} /> Lọc theo loài:
+            {/* Show species badge or warning if species is missing */}
+            {species ? (
+              <div className="flex items-center justify-end">
+                <Badge className="border-blue-200 bg-blue-100 text-blue-800">
+                  <PawPrint size={12} className="mr-1" />
+                  Registered pet: {species === "Dog" ? "Dog" : "Cat"}
+                </Badge>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSelectedSpecies("All")}
-                  disabled={disabled}
-                  className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    selectedSpecies === "All"
-                      ? "bg-primary text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
-                >
-                  <PawPrint size={12} /> Tất cả (
-                  {(data?.data.pageData || []).length})
-                </button>
-                <button
-                  onClick={() => setSelectedSpecies("Dog")}
-                  disabled={disabled}
-                  className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    selectedSpecies === "Dog"
-                      ? "bg-primary text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
-                >
-                  <Dog size={12} /> Chó ({dogDiseaseCount})
-                </button>
-                <button
-                  onClick={() => setSelectedSpecies("Cat")}
-                  disabled={disabled}
-                  className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    selectedSpecies === "Cat"
-                      ? "bg-primary text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
-                >
-                  <Cat size={12} /> Mèo ({catDiseaseCount})
-                </button>
-
-                {petSpecies && (
-                  <div className="ml-auto">
-                    <Badge className="border-blue-200 bg-blue-100 text-blue-800">
-                      <PawPrint size={12} className="mr-1" />
-                      Thú cưng đăng ký: {petSpecies === "Dog" ? "Chó" : "Mèo"}
-                    </Badge>
-                  </div>
-                )}
+            ) : (
+              <div className="rounded-md border border-red-100 bg-red-50 p-4 text-center">
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <PawPrint className="text-red-500" size={24} />
+                  <p className="font-nunito text-red-700">
+                    No pet species information found in this appointment.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* List */}
-            {isLoading || isFetching ? (
+            {!species ? null : isLoading || isFetching ? (
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {Array.from({ length: 4 }).map((_, idx) => (
                   <Skeleton
@@ -158,7 +126,9 @@ export function DiseaseChoiceCard({
                   />
                 ))}
               </div>
-            ) : diseases.length === 0 ? (
+            ) : diseases.length === 0 ||
+              !diseasesData ||
+              diseasesData.length === 0 ? (
               <div className="rounded-md border border-yellow-100 bg-yellow-50 p-4 text-center">
                 <div className="flex flex-col items-center justify-center gap-2">
                   {search ? (
@@ -168,12 +138,17 @@ export function DiseaseChoiceCard({
                         Không tìm thấy bệnh phù hợp với từ khóa "{search}"
                       </p>
                     </>
-                  ) : selectedSpecies !== "All" ? (
+                  ) : !diseasesData || diseasesData.length === 0 ? (
                     <>
                       <PawPrint className="text-yellow-500" size={24} />
                       <p className="font-nunito text-yellow-700">
-                        Không có bệnh nào dành cho{" "}
-                        {selectedSpecies === "Dog" ? "chó" : "mèo"}
+                        Không có dữ liệu bệnh nào cho loài{" "}
+                        {species === "Dog"
+                          ? "chó"
+                          : species === "Cat"
+                            ? "mèo"
+                            : "này"}{" "}
+                        trong hệ thống
                       </p>
                     </>
                   ) : (
@@ -187,7 +162,6 @@ export function DiseaseChoiceCard({
                   <button
                     onClick={() => {
                       setSearch("");
-                      setSelectedSpecies("All");
                     }}
                     className="text-primary mt-2 text-sm font-medium hover:underline"
                     disabled={disabled}
@@ -198,33 +172,6 @@ export function DiseaseChoiceCard({
               </div>
             ) : (
               <>
-                {selectedSpecies !== "All" && (
-                  <div className="mb-3 px-1">
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className="bg-primary/10 text-primary border-primary/30"
-                      >
-                        <span className="mr-1">
-                          {selectedSpecies === "Dog" ? (
-                            <Dog size={12} />
-                          ) : (
-                            <Cat size={12} />
-                          )}
-                        </span>
-                        Đang lọc: {selectedSpecies === "Dog" ? "Chó" : "Mèo"}
-                      </Badge>
-                      <button
-                        className="text-xs text-gray-500 hover:text-gray-700"
-                        onClick={() => setSelectedSpecies("All")}
-                        disabled={disabled}
-                      >
-                        Xóa bộ lọc
-                      </button>
-                    </div>
-                  </div>
-                )}
-
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {diseases.map((disease) => (
                     <div

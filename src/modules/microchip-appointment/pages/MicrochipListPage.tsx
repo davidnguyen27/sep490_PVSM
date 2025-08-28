@@ -57,7 +57,7 @@ export default function MicrochipAppListPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-primary font-inter-600 my-4 flex items-center gap-2 text-xl">
+        <h1 className="text-primary font-inter-700 my-4 flex items-center gap-2 text-2xl">
           <Cpu /> Cấy microchip
         </h1>
         <PageBreadcrumb items={["Danh sách lịch hẹn"]} />

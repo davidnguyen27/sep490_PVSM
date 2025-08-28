@@ -12,21 +12,28 @@ export interface MicrochipDetail {
     modifiedAt: string;
     modifiedBy: string;
     vet: {
-      vetId: number | null;
-      accountId: number | null;
+      vetId: number;
+      accountId: number;
       vetCode: string;
       name: string;
-      image: string;
+      image: string | null;
       specialization: string;
       dateOfBirth: string;
       phoneNumber: string;
       account: {
-        accountId: number | null;
+        accountId: number;
         email: string;
         role: number;
+        vetId: number;
       };
-      scheduleResponse: [];
-    };
+      scheduleResponse: Array<{
+        vetScheduleId: number;
+        vetId: number;
+        scheduleDate: string;
+        slotNumber: number;
+        status: number;
+      }>;
+    } | null;
     microchipItem: {
       microchipItemId: number | null;
       petId: number | null;

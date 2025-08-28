@@ -129,16 +129,16 @@ export default function VaccinationPaymentCancelPage() {
     navigate("/staff/vaccination-appointments");
   };
 
-  const handleRetryPayment = () => {
-    if (appointmentDetailId) {
-      // Navigate back to the appointment detail with the payment step
-      navigate(
-        `/staff/vaccination-appointments/detail/${appointmentDetailId}?step=payment`,
-      );
-    } else {
-      navigate("/staff/vaccination-appointments");
-    }
-  };
+  // const handleRetryPayment = () => {
+  //   if (appointmentDetailId) {
+  //     // Navigate back to the appointment detail with the payment step
+  //     navigate(
+  //       `/staff/vaccination-appointments/detail/${appointmentDetailId}?step=payment`,
+  //     );
+  //   } else {
+  //     navigate("/staff/vaccination-appointments");
+  //   }
+  // };
 
   return (
     <div className="container mx-auto max-w-2xl py-8">
@@ -197,13 +197,13 @@ export default function VaccinationPaymentCancelPage() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-                <Button
+                {/* <Button
                   onClick={handleRetryPayment}
                   disabled={isUpdating}
                   className="bg-primary hover:bg-primary/90 text-white disabled:opacity-50"
                 >
                   Thử thanh toán lại
-                </Button>
+                </Button> */}
 
                 <Button
                   onClick={handleBackToAppointments}

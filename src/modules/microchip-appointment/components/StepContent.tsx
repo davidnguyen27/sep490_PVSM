@@ -76,7 +76,7 @@ export function StepContent({
       {currentViewStatus === appointmentStatus && (
         <div className="flex justify-end gap-4">
           <Button key="reject" variant="destructive" onClick={onShowReject}>
-            Hủy
+            Từ chối
           </Button>
           <Button
             key="confirm"
@@ -91,34 +91,53 @@ export function StepContent({
     </div>
   );
 
-  const renderStepCheckIn = () => (
-    <div className="space-y-6">
-      {renderCommonInfo()}
+  const renderStepCheckIn = () => {
+    // If vet is already assigned, use it; otherwise use form data
+    const vetSelectionValue = data.microchip.vet
+      ? { vetId: data.microchip.vet.vetId }
+      : formData.vetSelection;
 
-      <VetSelectionCard
-        value={formData.vetSelection}
-        onChange={setVetSelection}
-        disabled={isPending || !canEdit(APPOINTMENT_STATUS.CONFIRMED)}
-        appointmentDate={data?.microchip.appointmentDate}
-        canEdit={canEdit(APPOINTMENT_STATUS.CONFIRMED)}
-      />
-      {currentViewStatus === appointmentStatus && (
-        <div className="flex justify-end">
-          <Button
-            className="bg-primary text-white"
-            onClick={onAssignVet}
-            disabled={
-              isPending ||
-              !isStep2Valid ||
-              !canEdit(APPOINTMENT_STATUS.CONFIRMED)
-            }
-          >
-            Tiếp tục
-          </Button>
-        </div>
-      )}
-    </div>
-  );
+    return (
+      <div className="space-y-6">
+        {renderCommonInfo()}
+
+        <VetSelectionCard
+          value={vetSelectionValue}
+          onChange={setVetSelection}
+          disabled={isPending || !canEdit(APPOINTMENT_STATUS.CONFIRMED)}
+          appointmentDate={data?.microchip.appointmentDate}
+          canEdit={canEdit(APPOINTMENT_STATUS.CONFIRMED)}
+          assignedVet={
+            data.microchip.vet
+              ? {
+                  vetId: data.microchip.vet.vetId,
+                  vetCode: data.microchip.vet.vetCode,
+                  name: data.microchip.vet.name,
+                }
+              : undefined
+          }
+        />
+        {currentViewStatus === appointmentStatus && (
+          <div className="flex justify-end">
+            <Button key="reject" variant="destructive" onClick={onShowReject}>
+              Hủy lịch hẹn
+            </Button>
+            <Button
+              className="bg-primary text-white"
+              onClick={onAssignVet}
+              disabled={
+                isPending ||
+                !isStep2Valid ||
+                !canEdit(APPOINTMENT_STATUS.CONFIRMED)
+              }
+            >
+              Tiếp tục
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderStepInject = () => (
     <div className="space-y-6">
@@ -152,24 +171,37 @@ export function StepContent({
   const renderStepPayment = () => (
     <div className="space-y-6">
       {renderCommonInfo()}
-      <PaymentInfoCard
-        ownerName={data.microchip.appointment?.customerResponseDTO?.fullName}
-        petName={data.microchip.appointment?.petResponseDTO?.name}
-        memberRank=""
-        discountPercent={0}
-        productName={data.microchip?.microchipItem?.name}
-        unitPrice={data.microchip?.microchipItem?.microchipResponse?.price}
-        quantity={1}
-        appointmentDetailId={data.microchip?.appointmentDetailId}
-        customerId={data.microchip.appointment?.customerResponseDTO?.customerId}
-        microchipItemId={formData.microchipItemId!}
-        invoiceData={data}
-        onPaymentSuccess={(paymentId, method) => {
-          setPaymentId(paymentId);
-          setPaymentMethod(method);
-        }}
-        onExportInvoice={onExportInvoice}
-      />
+      {!isVet ? (
+        <PaymentInfoCard
+          ownerName={data.microchip.appointment?.customerResponseDTO?.fullName}
+          petName={data.microchip.appointment?.petResponseDTO?.name}
+          memberRank=""
+          discountPercent={0}
+          productName={data.microchip?.microchipItem?.name}
+          unitPrice={data.microchip?.microchipItem?.microchipResponse?.price}
+          quantity={1}
+          appointmentDetailId={data.microchip?.appointmentDetailId}
+          customerId={
+            data.microchip.appointment?.customerResponseDTO?.customerId
+          }
+          microchipItemId={formData.microchipItemId!}
+          invoiceData={data}
+          onPaymentSuccess={(paymentId, method) => {
+            setPaymentId(paymentId);
+            setPaymentMethod(method);
+          }}
+          onExportInvoice={onExportInvoice}
+        />
+      ) : (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
+          <div className="text-center text-gray-600">
+            <p className="text-lg font-medium">Bước thanh toán</p>
+            <p className="mt-2 text-sm">
+              Bạn không có quyền thực hiện thanh toán.
+            </p>
+          </div>
+        </div>
+      )}
       {isPaymentCompleted && paymentMethod !== "BankTransfer" && (
         <div className="flex justify-end">
           <Button
