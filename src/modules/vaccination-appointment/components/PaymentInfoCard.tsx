@@ -9,6 +9,8 @@ import {
   Banknote,
   Building2,
   Loader2,
+  MapPin,
+  Truck,
 } from "lucide-react";
 import { usePaymentStore, type PaymentPayload } from "@/modules/payments";
 import { useCreatePaymentWithUrls } from "@/modules/payments/hooks/useCreatePaymentWithUrls";
@@ -18,6 +20,8 @@ import type { CustomerVoucher } from "@/modules/customer-voucher/types/customer-
 import type { Membership } from "@/modules/membership/types/membership.type";
 import { membershipService } from "@/modules/membership/service/membership.service";
 import { VoucherSelection } from "./VoucherSelection";
+import { useDistanceCalculation } from "@/shared/hooks/useDistanceCalculation";
+import { appointmentService } from "@/modules/appointment/services/appointment.service";
 
 interface Props {
   ownerName: string;
@@ -37,6 +41,9 @@ interface Props {
   ) => void;
   invoiceData?: VaccinationDetail;
   onExportInvoice?: () => void;
+  // Add new props for home service
+  appointmentId: number;
+  appointmentAddress?: string;
 }
 
 export function PaymentInfoCard({
@@ -54,6 +61,8 @@ export function PaymentInfoCard({
   onPaymentSuccess,
   onExportInvoice,
   invoiceData,
+  appointmentId,
+  appointmentAddress,
 }: Props) {
   const { paymentMethod, setPaymentMethod, setPaymentId } = usePaymentStore();
   const { setQrCode } = usePaymentStore.getState();
@@ -68,6 +77,41 @@ export function PaymentInfoCard({
   // State for membership management
   const [membershipData, setMembershipData] = useState<Membership | null>(null);
   const [loadingMembership, setLoadingMembership] = useState(false);
+
+  // Fetch appointment data to get location
+  const [appointmentLocation, setAppointmentLocation] = useState<number | null>(null);
+
+  // Fetch appointment data when appointmentId changes
+  useEffect(() => {
+    const fetchAppointment = async () => {
+      if (!appointmentId) return;
+
+      try {
+        const appointment = await appointmentService.getAppointmentById(appointmentId);
+        setAppointmentLocation(appointment.location);
+      } catch (error) {
+        console.error("Error fetching appointment:", error);
+        setAppointmentLocation(null);
+      }
+    };
+
+    fetchAppointment();
+  }, [appointmentId]);
+
+  // Check if this is a home service appointment (location = 2)
+  const isHomeService = appointmentLocation === 2;
+
+  // Distance calculation for home service
+  const {
+    distance,
+    transportFee,
+    centerLocation,
+    loading: loadingDistance,
+    error: distanceError
+  } = useDistanceCalculation({
+    address: appointmentAddress,
+    isHomeService
+  });
 
   // Fetch membership data when customerId changes
   useEffect(() => {
@@ -118,7 +162,10 @@ export function PaymentInfoCard({
     ? (totalPrice * selectedVoucher.voucher.discountAmount) / 100
     : 0;
   const totalDiscountAmount = memberDiscountAmount + voucherDiscountAmount;
-  const finalAmount = Math.max(0, totalPrice - totalDiscountAmount);
+
+  // Add transport fee for home service
+  const subtotalWithTransport = totalPrice + (isHomeService ? transportFee : 0);
+  const finalAmount = Math.max(0, subtotalWithTransport - totalDiscountAmount);
 
   // Lấy paymentId từ cả store và invoiceData, ưu tiên lấy từ invoiceData nếu có
   const storePaymentId = usePaymentStore((state) => state.paymentId);
@@ -134,9 +181,9 @@ export function PaymentInfoCard({
   const savedPaymentMethod = invoiceData?.payment?.paymentMethod;
   const displayPaymentMethod =
     savedPaymentMethod === "Cash" ||
-    savedPaymentMethod === "BankTransfer" ||
-    savedPaymentMethod === "CASH" ||
-    savedPaymentMethod === "BANK_TRANSFER"
+      savedPaymentMethod === "BankTransfer" ||
+      savedPaymentMethod === "CASH" ||
+      savedPaymentMethod === "BANK_TRANSFER"
       ? savedPaymentMethod === "CASH"
         ? "Cash"
         : savedPaymentMethod === "BANK_TRANSFER"
@@ -291,6 +338,53 @@ export function PaymentInfoCard({
                 )}
             </span>
           </div>
+
+          {/* Display home service info */}
+          {isHomeService && (
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 space-y-2">
+              <div className="flex items-center gap-2 text-blue-700 font-medium">
+                <MapPin size={16} />
+                <span>🏠 Dịch vụ tại nhà</span>
+              </div>
+
+              <div className="text-sm text-gray-600 ml-6">
+                <div className="flex items-start gap-2">
+                  <span className="font-medium">Địa chỉ:</span>
+                  <span>{appointmentAddress}</span>
+                </div>
+
+                {centerLocation && (
+                  <div className="flex items-start gap-2 mt-1">
+                    <span className="font-medium">Từ trung tâm:</span>
+                    <span>{centerLocation}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 mt-1">
+                  <Truck size={14} />
+                  <span className="font-medium">Khoảng cách:</span>
+                  {loadingDistance ? (
+                    <span className="text-blue-500">Đang tính toán...</span>
+                  ) : distanceError ? (
+                    <span className="text-red-500">Không thể tính toán</span>
+                  ) : distance ? (
+                    <span className="text-blue-600 font-medium">{distance.toFixed(1)} km</span>
+                  ) : (
+                    <span className="text-gray-400">--</span>
+                  )}
+                </div>
+
+                {transportFee > 0 && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-medium">Phí di chuyển:</span>
+                    <span className="text-orange-600 font-semibold">
+                      +{transportFee.toLocaleString()} VNĐ
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="overflow-hidden rounded-md border">
@@ -313,6 +407,23 @@ export function PaymentInfoCard({
               {totalPrice.toLocaleString()} vnđ
             </span>
           </div>
+
+          {/* Add transport fee row for home service */}
+          {isHomeService && transportFee > 0 && (
+            <div className="grid grid-cols-4 items-center p-2 text-sm border-t bg-orange-50">
+              <span className="flex items-center gap-1">
+                <Truck size={14} className="text-orange-500" />
+                Phí di chuyển
+              </span>
+              <span className="text-center text-gray-600">
+                {distance ? `${distance.toFixed(1)} km` : '--'}
+              </span>
+              <span className="text-center">1</span>
+              <span className="text-right font-medium text-orange-600">
+                +{transportFee.toLocaleString()} vnđ
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Voucher Selection */}
@@ -329,12 +440,18 @@ export function PaymentInfoCard({
               {totalPrice.toLocaleString()} vnđ
             </span>
           </p>
+          {isHomeService && transportFee > 0 && (
+            <p className="text-orange-600">
+              Phí di chuyển ({distance?.toFixed(1)} km):{" "}
+              <span className="font-medium">+{transportFee.toLocaleString()} vnđ</span>
+            </p>
+          )}
           {actualDiscountPercent > 0 && (
             <p>
               Hạng thành viên: {displayMemberRank} (giảm {actualDiscountPercent}
               %):{" "}
               <span className="text-green-600">
-                {memberDiscountAmount.toLocaleString()} vnđ
+                -{memberDiscountAmount.toLocaleString()} vnđ
               </span>
             </p>
           )}
@@ -342,19 +459,28 @@ export function PaymentInfoCard({
             <p>
               Giảm giá voucher ({selectedVoucher.voucher.discountAmount}%):{" "}
               <span className="text-green-600">
-                {voucherDiscountAmount.toLocaleString()} vnđ
+                -{voucherDiscountAmount.toLocaleString()} vnđ
               </span>
             </p>
           )}
-          <p>
-            Tổng tiền giảm:{" "}
-            <span className="text-green-600">
-              {totalDiscountAmount.toLocaleString()} vnđ
-            </span>
-          </p>
-          <p className="text-base font-semibold">
-            Tổng thanh toán: {finalAmount.toLocaleString()} vnđ
-          </p>
+          {totalDiscountAmount > 0 && (
+            <p>
+              Tổng tiền giảm:{" "}
+              <span className="text-green-600">
+                -{totalDiscountAmount.toLocaleString()} vnđ
+              </span>
+            </p>
+          )}
+          <div className="border-t pt-2 mt-2">
+            <p className="text-base font-semibold">
+              Tổng thanh toán: {finalAmount.toLocaleString()} vnđ
+            </p>
+            {isHomeService && transportFee > 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                (Bao gồm phí di chuyển tại nhà)
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Payment Method Selection */}
@@ -368,8 +494,8 @@ export function PaymentInfoCard({
             // Đã thanh toán thành công - chỉ hiển thị phương thức đã chọn
             <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
               {displayPaymentMethod === "Cash" ||
-              invoiceData?.payment?.paymentMethod === "Cash" ||
-              invoiceData?.payment?.paymentMethod === "CASH" ? (
+                invoiceData?.payment?.paymentMethod === "Cash" ||
+                invoiceData?.payment?.paymentMethod === "CASH" ? (
                 <>
                   <Banknote size={18} />
                   <span className="text-sm font-medium">Tiền mặt</span>
@@ -420,11 +546,10 @@ export function PaymentInfoCard({
                 <button
                   onClick={() => handlePaymentMethodChange("Cash")}
                   disabled={disabled || isLoading}
-                  className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                    paymentMethod === "Cash"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-gray-200 hover:border-gray-300"
-                  } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                  className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "Cash"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-gray-200 hover:border-gray-300"
+                    } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                 >
                   <Banknote size={18} />
                   <span className="text-sm font-medium">Tiền mặt</span>
@@ -433,11 +558,10 @@ export function PaymentInfoCard({
                 <button
                   onClick={() => handlePaymentMethodChange("BankTransfer")}
                   disabled={disabled}
-                  className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                    paymentMethod === "BankTransfer"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-gray-200 hover:border-gray-300"
-                  } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                  className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "BankTransfer"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-gray-200 hover:border-gray-300"
+                    } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                 >
                   <Building2 size={18} />
                   <span className="text-sm font-medium">Chuyển khoản</span>
@@ -450,11 +574,10 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("Cash")}
                 disabled={disabled || isLoading}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                  paymentMethod === "Cash"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "Cash"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-gray-200 hover:border-gray-300"
+                  } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Banknote size={18} />
                 <span className="text-sm font-medium">Tiền mặt</span>
@@ -463,11 +586,10 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("BankTransfer")}
                 disabled={disabled}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                  paymentMethod === "BankTransfer"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "BankTransfer"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-gray-200 hover:border-gray-300"
+                  } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Building2 size={18} />
                 <span className="text-sm font-medium">Chuyển khoản</span>

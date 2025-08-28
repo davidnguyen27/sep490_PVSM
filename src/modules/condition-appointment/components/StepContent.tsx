@@ -177,6 +177,8 @@ export function StepContent({
           customerId={data.appointment.customerResponseDTO.customerId}
           healthConditionId={data.healthConditionId}
           invoiceData={data}
+          appointmentId={data.appointment.appointmentId || 0}
+          appointmentAddress={data.appointment.address}
           onPaymentSuccess={(paymentId, method) => {
             setPaymentId(paymentId);
             setPaymentMethod(method);
