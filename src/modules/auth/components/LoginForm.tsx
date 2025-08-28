@@ -10,7 +10,6 @@ import {
   FormControl,
   Input,
   FormMessage,
-  Checkbox,
   Button,
 } from "@/components/ui";
 import { toast } from "sonner";
@@ -66,7 +65,7 @@ export default function LoginForm() {
               <FormControl>
                 <Input
                   type="email"
-                  placeholder="admin@example.com"
+                  placeholder="email@example.com"
                   className="focus:border-primary focus:ring-primary mx-auto h-12 w-full max-w-md focus:ring-1"
                   {...field}
                 />
@@ -148,24 +147,6 @@ export default function LoginForm() {
 
         {/* Remember + Forgot */}
         <div className="mx-auto mb-8 flex w-full max-w-md items-center justify-between text-sm">
-          <FormField
-            control={form.control}
-            name="remember"
-            render={({ field }) => (
-              <FormItem className="flex items-center">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <FormLabel className="text-dark font-nunito m-0 leading-none">
-                  Ghi nhớ đăng nhập
-                </FormLabel>
-              </FormItem>
-            )}
-          />
-
           <a
             href="/reset-password"
             className="text-primary font-nunito hover:underline"

@@ -10,12 +10,18 @@ import {
 import { MembershipTable } from "../components/MembershipTable";
 import MembershipUpdateModal from "../components/MembershipUpdateModal";
 import { MembershipCreateModal } from "../components/MembershipCreateModal";
+import MembershipConfirmDeleteModal from "../components/MembershipConfirmDeleteModal";
+import { useMembershipDelete } from "../hooks/useMembershipDelete";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import type { Membership } from "../types/membership.type";
 
 export default function MemberShipListPage() {
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletingMembership, setDeletingMembership] =
+    useState<Membership | null>(null);
+  const deleteMutation = useMembershipDelete();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -56,6 +62,26 @@ export default function MemberShipListPage() {
     refetch();
   };
 
+  const handleDelete = (membership: Membership) => {
+    setDeletingMembership(membership);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deletingMembership) return;
+    deleteMutation.mutate(deletingMembership.membershipId, {
+      onSuccess: () => {
+        setDeleteModalOpen(false);
+        setDeletingMembership(null);
+        refetch();
+      },
+      onError: () => {
+        setDeleteModalOpen(false);
+        setDeletingMembership(null);
+      },
+    });
+  };
+
   return (
     <PageLoader
       loading={isPending && !isFetching}
@@ -83,6 +109,17 @@ export default function MemberShipListPage() {
           data={pageData}
           isPending={isPending}
           onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+        <MembershipConfirmDeleteModal
+          open={deleteModalOpen}
+          onClose={() => {
+            setDeleteModalOpen(false);
+            setDeletingMembership(null);
+          }}
+          onConfirm={handleConfirmDelete}
+          membership={deletingMembership}
+          isLoading={deleteMutation.isPending}
         />
         <Pagination
           currentPage={page}

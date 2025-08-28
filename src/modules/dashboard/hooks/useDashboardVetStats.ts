@@ -5,7 +5,6 @@ import { icons } from "@/shared/constants/icons.constants";
 export interface VetStatItem {
   title: string;
   value: number;
-  change?: number;
   iconName: keyof typeof icons;
   color: string;
 }

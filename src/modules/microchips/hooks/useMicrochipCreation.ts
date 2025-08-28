@@ -20,8 +20,6 @@ export function useMicrochipCreation() {
         notes: formData.notes,
         createMicrochipItemRequest: {
           petId: formData.petId || 0,
-          name: formData.itemName,
-          description: formData.itemDescription,
           location: formData.location,
           installationDate: formData.installationDate,
         },

@@ -1,14 +1,4 @@
-import type { DashboardStaffData } from "../types/dashboard.type";
-import type { IconName } from "@/shared/constants/icons.constants";
-
-export interface ActivityData {
-  id: number;
-  title: string;
-  description: string;
-  time: string;
-  iconName: IconName;
-  color: string;
-}
+import type { DashboardStaffData, ActivityData } from "../types/dashboard.type";
 
 export const useStaffRecentActivities = (
   dashboardData: DashboardStaffData | undefined,

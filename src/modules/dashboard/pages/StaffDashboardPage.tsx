@@ -8,7 +8,6 @@ import {
   VaccineManagement,
   DashboardLoading,
   DashboardError,
-  DashboardLayout,
   StatsGrid,
   ActivitiesGrid,
   ChartsGrid,
@@ -35,6 +34,10 @@ export default function StaffDashboardPage() {
   const appointmentStats = useStaffAppointmentStats(dashboardData);
   const recentActivitiesData = useStaffRecentActivities(dashboardData);
 
+  // Lấy role từ localStorage (ưu tiên giống AdminDashboardPage)
+  const roleFromStorage = localStorage.getItem("role");
+  const currentRole = roleFromStorage ? Number(roleFromStorage) : undefined;
+
   if (isLoading) {
     return <DashboardLoading />;
   }
@@ -44,12 +47,14 @@ export default function StaffDashboardPage() {
   }
 
   return (
-    <DashboardLayout>
+    <div className="min-h-full space-y-6">
+      {/* Dashboard Content */}
       {/* Welcome Header */}
       <WelcomeHeader
         pending={appointmentStats.pending}
         completed={appointmentStats.completed}
         lastUpdated={dashboardData?.lastUpdated}
+        role={currentRole}
       />
 
       {/* Stats Cards */}
@@ -59,7 +64,6 @@ export default function StaffDashboardPage() {
             key={index}
             title={stat.title}
             value={stat.value}
-            change={stat.change}
             iconName={stat.iconName}
             color={stat.color}
           />
@@ -95,6 +99,6 @@ export default function StaffDashboardPage() {
           }
         />
       </ChartsGrid>
-    </DashboardLayout>
+    </div>
   );
 }

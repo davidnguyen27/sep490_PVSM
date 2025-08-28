@@ -47,7 +47,7 @@ export function VaccineDetailModal({
   if (!vaccine) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="modal-scrollbar font-inter max-w-2xl">
+        <DialogContent className="modal-scrollbar max-w-2xl rounded-none">
           <div className="py-10 text-center">
             <FileText className="mx-auto mb-4 h-16 w-16 text-gray-400" />
             <p className="font-nunito text-gray-500">
@@ -64,7 +64,7 @@ export function VaccineDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="modal-scrollbar font-inter flex max-h-[90vh] flex-col p-0">
+      <DialogContent className="modal-scrollbar font-nunito flex max-h-[90vh] flex-col rounded-none p-0">
         {/* Header cố định */}
         <DialogHeader className="sticky top-0 z-10 border-b bg-white px-6 pt-6 pb-4">
           <DialogTitle className="text-primary font-nunito-700 flex items-center gap-2 text-2xl">

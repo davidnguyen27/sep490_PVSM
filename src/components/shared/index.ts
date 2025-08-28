@@ -5,6 +5,9 @@ export { default as SearchLabel } from "./SearchLabel";
 export { default as Pagination } from "./Pagination";
 export { default as LogoutButton } from "./LogoutButton";
 export { default as LogoutConfirmModal } from "./LogoutConfirmModal";
+export { default as NotificationDropdown } from "./NotificationDropdown";
+export { default as UserProfileDropdown } from "./UserProfileDropdown";
+export { default as ScanModal } from "./ScanModal";
 
 // Loading Components
 export { default as Spinner } from "./Spinner";

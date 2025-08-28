@@ -1,11 +1,12 @@
 import { RoleGuard } from "@/routes/guards.route";
 import { UserRole } from "@/shared/constants/roles.constants";
 import AdminLayout from "@/shared/layouts/AdminLayout";
+
 import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
 
-const VaccineScheduleListPage = lazy(
-  () => import("../pages/VaccineScheduleListPage"),
+const VaccineScheduleByDiseasePage = lazy(
+  () => import("../pages/VaccineScheduleByDiseasePage"),
 );
 
 export const vaccineScheduleRoutes: RouteObject[] = [
@@ -19,7 +20,7 @@ export const vaccineScheduleRoutes: RouteObject[] = [
     children: [
       {
         path: "vaccine-schedules",
-        element: <VaccineScheduleListPage />,
+        element: <VaccineScheduleByDiseasePage />,
       },
     ],
   },

@@ -23,7 +23,7 @@ export default function VaccineExportsPage() {
     document.title = "PVMS | Quản lý phiếu xuất vắc-xin";
 
     return () => {
-      document.title = "PVMS | Phiếu xuất vắc-xin";
+      document.title = "PVMS | Quản lý phiếu xuất vắc-xin";
     };
   }, []);
 
@@ -98,7 +98,7 @@ export default function VaccineExportsPage() {
     <div className="space-y-6">
       <div className="flex items-center space-x-2">
         <Package color="#00B8A9" />
-        <h1 className="text-primary font-nunito-700 text-2xl">
+        <h1 className="text-primary font-inter-700 text-2xl">
           Quản lý xuất kho vaccine
         </h1>
       </div>

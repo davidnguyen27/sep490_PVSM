@@ -1,11 +1,12 @@
 import { useRoutes } from "react-router-dom";
 
 // Core modules
+import { accountRoutes } from "@/modules/account";
 import { authRoutes } from "@/modules/auth";
 import { dashboardRoutes } from "@/modules/dashboard";
 
 // Entity management modules
-import { customerRoutes } from "@/modules/customers/routes/customer.route";
+import { customerRoutes } from "@/modules/customers";
 import { diseaseRoutes } from "@/modules/diseases/routes/disease.route";
 import { petRoutes } from "@/modules/pets";
 import { vetRoutes } from "@/modules/vets/routes/vet.route";
@@ -32,16 +33,19 @@ import { faqRoutes } from "@/modules/faq/routes/faq.route";
 import { handbookRoutes } from "@/modules/handbook/routes/handbook.route";
 import { supportCategoryRoutes } from "@/modules/support-category";
 import { voucherRoutes } from "@/modules/voucher/routes/voucher.route";
+import { appointmentRoutes } from "@/modules/appointment/routes/appointment.route";
 
 export function AppRoutes() {
   const routes = [
     // Core application routes
+    ...accountRoutes,
     ...authRoutes,
-    ...dashboardRoutes,
 
     // Entity management routes
+    ...appointmentRoutes,
     ...addressRoutes,
     ...customerRoutes,
+    ...dashboardRoutes,
     ...diseaseRoutes,
     ...faqRoutes,
     ...petRoutes,

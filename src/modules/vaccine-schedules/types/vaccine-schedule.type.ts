@@ -15,3 +15,10 @@ export interface VaccineSchedule {
     description: string;
   };
 }
+
+export interface VaccineScheduleByDisease {
+  diseaseId: number;
+  diseaseName: string;
+  species: string;
+  schedules: VaccineSchedule[];
+}

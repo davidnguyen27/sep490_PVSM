@@ -117,7 +117,7 @@ export default function PetManagementPage() {
       <div className="space-y-6">
         <div className="flex items-center space-x-2">
           <PawPrint color="#00B8A9" />
-          <h1 className="text-primary font-inter-700 text-xl">
+          <h1 className="text-primary font-inter-700 text-2xl">
             Quản lý thú cưng
           </h1>
         </div>

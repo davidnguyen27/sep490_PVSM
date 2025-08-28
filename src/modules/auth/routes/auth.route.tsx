@@ -2,6 +2,7 @@ import { lazy } from "react";
 import type { RouteObject } from "react-router-dom";
 
 const LandingPage = lazy(() => import("@/shared/pages/LandingPage"));
+const LoginPage = lazy(() => import("@/modules/auth/pages/LoginPage"));
 const AdminLoginPage = lazy(() => import("@/modules/auth/pages/AdminPage"));
 const StaffLoginPage = lazy(() => import("@/modules/auth/pages/StaffPage"));
 const VetLoginPage = lazy(() => import("@/modules/auth/pages/VetPage"));
@@ -14,6 +15,10 @@ export const authRoutes: RouteObject[] = [
   {
     path: "/",
     element: <LandingPage />,
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
   },
   {
     path: "/admin/login",

@@ -18,9 +18,9 @@ interface Props {
 export function PetModal({ open, onClose, pet, isLoading = false }: Props) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl px-6 py-4">
+      <DialogContent className="max-w-3xl rounded-none px-6 py-4">
         <DialogHeader>
-          <DialogTitle className="font-nunito text-primary flex items-center text-2xl">
+          <DialogTitle className="font-inter-600 text-primary flex items-center text-xl">
             Thông tin chi tiết thú cưng
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-xs">

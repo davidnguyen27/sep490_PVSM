@@ -18,13 +18,23 @@ const adminSidebarItems = [
     path: "/admin/vaccine-schedules",
   },
   {
+    label: "Lịch hẹn",
+    icon: <icons.CalendarRange size={20} />,
+    path: "/admin/appointments",
+  },
+  {
+    label: "Tài khoản",
+    icon: <icons.User size={20} />,
+    path: "/admin/accounts",
+  },
+  {
     label: "Hồ sơ",
     icon: <icons.Users size={20} />,
     children: [
       {
         label: "Thú cưng",
         icon: <icons.PawPrint size={18} />,
-        path: "/admin/pet-profiles",
+        path: "/admin/pets",
       },
       {
         label: "Khách hàng",
@@ -90,8 +100,8 @@ export default function AdminLayout() {
         <Sidebar items={adminSidebarItems} />
 
         <main className="flex min-h-0 flex-1 flex-col bg-gray-100">
-          <div className="flex-1 overflow-y-auto">
-            <div className="mx-auto px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex flex-1 flex-col overflow-y-auto">
+            <div className="flex-1 px-4 py-4 sm:px-6 lg:px-8">
               <Suspense fallback={<Spinner />}>
                 <Outlet />
               </Suspense>

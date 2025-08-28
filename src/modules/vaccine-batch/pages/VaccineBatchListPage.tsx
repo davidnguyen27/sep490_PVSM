@@ -103,7 +103,7 @@ export default function VaccineBatchListPage() {
   });
 
   const vaccineBatches = data?.data?.pageData ?? [];
-  const totalPages = data?.data.pageInfo.totalPage ?? 1;
+  const totalPages = data?.data?.pageInfo?.totalPage ?? 1;
 
   // Filter data based on status
   const filteredData = vaccineBatches.filter((item) => {

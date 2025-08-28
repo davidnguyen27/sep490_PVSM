@@ -20,14 +20,14 @@ import {
 } from "@/components/ui/form";
 import { Input, Button } from "@/components/ui";
 import { Textarea } from "@/components/ui/textarea";
-import type { Microchip } from "../types/microchip.type";
+import type { MicrochipPayload } from "../types/payload.type";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   submit?: (payload: MicrochipSchema) => void;
   isSubmitting?: boolean;
-  defaultValues: Microchip;
+  defaultValues: MicrochipPayload;
 }
 
 export function MicrochipModalUpdate({
@@ -45,6 +45,11 @@ export function MicrochipModalUpdate({
       description: defaultValues?.description ?? "",
       price: defaultValues?.price ?? 0,
       notes: defaultValues?.notes ?? "",
+      petId: defaultValues?.createMicrochipItemRequest?.petId ?? 0,
+      location: defaultValues?.createMicrochipItemRequest?.location ?? "",
+      installationDate:
+        defaultValues?.createMicrochipItemRequest?.installationDate ??
+        new Date().toISOString().split("T")[0],
     },
   });
 
@@ -62,9 +67,9 @@ export function MicrochipModalUpdate({
         }
       }}
     >
-      <DialogContent className="max-w-2xl space-y-4 px-6 py-4">
+      <DialogContent className="max-w-2xl space-y-4 rounded-none px-6 py-4">
         <DialogHeader>
-          <DialogTitle className="text-primary font-nunito-700 text-2xl">
+          <DialogTitle className="text-primary font-nunito-700 mb-4 text-xl">
             Cập nhật microchip
           </DialogTitle>
         </DialogHeader>
@@ -131,6 +136,38 @@ export function MicrochipModalUpdate({
                   <FormLabel>Mô tả ngắn</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="Mô tả ngắn" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vị trí</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Nhập vị trí cài đặt" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="installationDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ngày cài đặt</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      {...field}
+                      placeholder="Chọn ngày cài đặt"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

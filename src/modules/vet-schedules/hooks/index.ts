@@ -3,5 +3,8 @@ export { useScheduleModal } from "./useScheduleModal";
 export { useDateFormatting } from "./useDateFormatting";
 export { useVetSchedules } from "./useVetSchedules";
 export { useVetScheduleByDate } from "./useVetScheduleByDate";
+export { useVetScheduleByVetId } from "./useVetScheduleByVetId";
 export { useCreateSchedule } from "./useCreateSchedule";
 export { useUpdateSchedule } from "./useUpdateSchedule";
+export { useStaffCreateSchedule } from "./useStaffCreateSchedule";
+export { useStaffUpdateSchedule } from "./useStaffUpdateSchedule";

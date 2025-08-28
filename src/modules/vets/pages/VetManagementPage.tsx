@@ -84,8 +84,8 @@ export default function VetManagementPage() {
       <div className="space-y-6">
         <div className="flex items-center space-x-2">
           <UserCheck color="#00B8A9" />
-          <h1 className="text-primary font-nunito-700 text-2xl">
-            Quản lý bác sỹ
+          <h1 className="text-primary font-inter-700 text-2xl">
+            Quản lý bác sĩ
           </h1>
         </div>
         <PageBreadcrumb items={["Bác sĩ"]} />

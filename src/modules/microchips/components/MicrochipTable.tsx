@@ -1,6 +1,7 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import type { Microchip } from "../types/microchip.type";
+import type { MicrochipItem } from "../../microchip-item/types/microchip-item.type";
 import { BadgeInfo, SquarePen, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 // components
 import {
@@ -18,15 +19,12 @@ import { MicrochipModal } from "./MicrochipModal";
 import { MicrochipModalUpdate } from "./MicrochipModalUpdate";
 
 // hooks
-import {
-  useMicrochipDelete,
-  useMicrochipDetail,
-  useMicrochipUpdate,
-} from "../hooks";
+import { useMicrochipDetail, useMicrochipUpdate } from "../hooks";
+import { useDeleteMicrochipItem } from "../../microchip-item/hooks/useDeleteMicrochipItem";
 import { formatData } from "@/shared/utils/format.utils";
 
 interface Props {
-  microchips: Microchip[];
+  microchips: MicrochipItem[];
   isPending: boolean;
   currentPage: number;
   pageSize: number;
@@ -59,8 +57,8 @@ export function MicrochipTable({
   );
   const { mutate: updateMicrochip, isPending: isUpdating } =
     useMicrochipUpdate();
-  const { mutate: deleteMicrochip, isPending: isDeleting } =
-    useMicrochipDelete();
+  const { mutate: deleteMicrochipItem, isPending: isDeleting } =
+    useDeleteMicrochipItem();
 
   const openDetail = Boolean(microchipId) && action !== "edit";
   const openUpdate = Boolean(microchipId) && action === "edit";
@@ -90,26 +88,30 @@ export function MicrochipTable({
           <TableBody>
             {microchips.map((item, idx) => (
               <TableRow
-                key={item.microchipId}
+                key={item.microchipItemId}
                 className="hover:bg-accent/10 transition-colors duration-150"
               >
                 <TableCell className="text-dark font-nunito text-center text-sm">
                   {(currentPage - 1) * pageSize + idx + 1}
                 </TableCell>
                 <TableCell className="text-dark font-nunito max-w-[140px] truncate text-center text-sm">
-                  {item.microchipCode}
+                  {item.microchipResponse.microchipCode}
                 </TableCell>
                 <TableCell className="text-dark font-nunito max-w-[140px] truncate text-center text-sm">
-                  {item.name}
+                  {item.microchipResponse.name}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.description}
+                  {item.microchipResponse.description}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
-                  {formatData.formatCurrency(item.price)}
+                  {formatData.formatCurrency(item.microchipResponse.price)}
                 </TableCell>
                 <TableCell className="text-dark font-nunito text-center text-sm">
-                  {item.status}
+                  {item.microchipResponse.status === "Active" ? (
+                    <Badge variant="default">Hoạt động</Badge>
+                  ) : (
+                    <Badge variant="destructive">Không hoạt động</Badge>
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-center gap-3">
@@ -117,9 +119,12 @@ export function MicrochipTable({
                       size={16}
                       className="text-info cursor-pointer transition-transform hover:scale-110"
                       onClick={() =>
-                        navigate(`?microchipId=${item.microchipId}`, {
-                          replace: false,
-                        })
+                        navigate(
+                          `?microchipId=${item.microchipResponse.microchipId}`,
+                          {
+                            replace: false,
+                          },
+                        )
                       }
                     />
                     <SquarePen
@@ -127,7 +132,7 @@ export function MicrochipTable({
                       className="text-purple cursor-pointer transition-transform hover:scale-110"
                       onClick={() =>
                         navigate(
-                          `?microchipId=${item.microchipId}&action=edit`,
+                          `?microchipId=${item.microchipResponse.microchipId}&action=edit`,
                           {
                             replace: false,
                           },
@@ -135,7 +140,9 @@ export function MicrochipTable({
                       }
                     />
                     <ConfirmDelete
-                      onConfirm={() => deleteMicrochip(item.microchipId)}
+                      onConfirm={() =>
+                        deleteMicrochipItem(item.microchipItemId)
+                      }
                     >
                       <Trash2
                         size={16}
@@ -178,8 +185,6 @@ export function MicrochipTable({
                 notes: payload.notes,
                 createMicrochipItemRequest: {
                   petId: payload.petId,
-                  name: payload.itemName,
-                  description: payload.itemDescription,
                   location: payload.location,
                   installationDate: payload.installationDate,
                 },
@@ -187,7 +192,18 @@ export function MicrochipTable({
             })
           }
           isSubmitting={isUpdating}
-          defaultValues={data}
+          defaultValues={{
+            microchipCode: data.microchipCode,
+            name: data.name,
+            description: data.description,
+            price: data.price,
+            notes: data.notes,
+            createMicrochipItemRequest: {
+              petId: 0,
+              location: "",
+              installationDate: new Date().toISOString().split("T")[0],
+            },
+          }}
         />
       )}
     </div>

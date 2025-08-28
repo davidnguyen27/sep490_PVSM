@@ -8,7 +8,6 @@ import {
   VaccineManagement,
   DashboardLoading,
   DashboardError,
-  DashboardLayout,
   StatsGrid,
   ActivitiesGrid,
   ChartsGrid,
@@ -23,6 +22,9 @@ import {
 } from "../hooks";
 
 export default function VetDashboardPage() {
+  // Lấy role từ localStorage (ưu tiên giống AdminDashboardPage)
+  const roleFromStorage = localStorage.getItem("role");
+  const currentRole = roleFromStorage ? Number(roleFromStorage) : undefined;
   const { data: dashboardData, isLoading, error, isError } = useDashboardVet();
 
   // Custom hooks for data processing
@@ -39,12 +41,14 @@ export default function VetDashboardPage() {
   }
 
   return (
-    <DashboardLayout>
+    <div className="min-h-full space-y-6">
+      {/* Dashboard Content */}
       {/* Welcome Header */}
       <WelcomeHeader
         pending={appointmentStats.pending}
         completed={appointmentStats.completed}
         lastUpdated={dashboardData?.lastUpdated}
+        role={currentRole}
       />
 
       {/* Stats Cards */}
@@ -54,7 +58,6 @@ export default function VetDashboardPage() {
             key={index}
             title={stat.title}
             value={stat.value}
-            change={stat.change?.toString() || "0"}
             iconName={stat.iconName}
             color={stat.color}
           />
@@ -94,6 +97,6 @@ export default function VetDashboardPage() {
           }
         />
       </ChartsGrid>
-    </DashboardLayout>
+    </div>
   );
 }

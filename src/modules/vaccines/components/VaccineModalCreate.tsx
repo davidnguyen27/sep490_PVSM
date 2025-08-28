@@ -120,9 +120,9 @@ export const VaccineModalCreate: React.FC<VaccineModalCreateProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="modal-scrollbar max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="modal-scrollbar max-h-[90vh] max-w-2xl overflow-y-auto rounded-none">
         <DialogHeader>
-          <DialogTitle className="text-primary font-nunito-700 text-xl">
+          <DialogTitle className="text-primary font-nunito-700 mb-4 text-xl">
             Thêm vaccine mới
           </DialogTitle>
         </DialogHeader>

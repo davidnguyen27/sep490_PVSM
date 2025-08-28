@@ -111,9 +111,9 @@ export function CustomerEditModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto rounded-none">
         <DialogHeader>
-          <DialogTitle className="text-primary font-nunito-700 mb-4 flex items-center gap-2 text-lg">
+          <DialogTitle className="text-primary font-inter-600 mb-6 flex items-center gap-2 text-xl">
             <User size={20} />
             Chỉnh sửa thông tin khách hàng
           </DialogTitle>

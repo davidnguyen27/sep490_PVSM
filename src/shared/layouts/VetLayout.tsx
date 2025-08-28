@@ -49,8 +49,8 @@ export default function VetLayout() {
         <Sidebar items={vetSidebarItems} />
 
         <main className="flex min-h-0 flex-1 flex-col bg-gray-50">
-          <div className="flex-1 overflow-y-auto">
-            <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex flex-1 flex-col overflow-y-auto">
+            <div className="flex-1 px-4 py-4 sm:px-6 lg:px-8">
               <Suspense fallback={<Spinner />}>
                 <Outlet />
               </Suspense>

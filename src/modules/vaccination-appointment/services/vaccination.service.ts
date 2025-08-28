@@ -3,6 +3,7 @@ import type { BaseListResponse, BaseResponse } from "@/shared/types/api.type";
 import type { VaccinationApp } from "../types/vaccination.type";
 import type { VaccinationDetail } from "../types/detail.type";
 import type { UpdateStatusParams } from "../types/params.type";
+import type { VaccinationPayload } from "../types/vaccination.payload.type";
 
 interface Params {
   pageNumber: number;
@@ -79,5 +80,14 @@ export const vaccinationService = {
         },
       )
       .then((res) => res.data);
+  },
+
+  async updateAppointmentById(
+    appointmentId: number | null,
+    payload: VaccinationPayload,
+  ): Promise<BaseResponse<VaccinationApp>> {
+    return await axiosInstance
+      .put(`/api/Appointment/update-appointment/${appointmentId}`, payload)
+      .then((res) => res.data.data);
   },
 };

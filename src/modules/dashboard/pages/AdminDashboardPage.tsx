@@ -8,7 +8,6 @@ import {
   VaccineManagement,
   DashboardLoading,
   DashboardError,
-  DashboardLayout,
   StatsGrid,
   ActivitiesGrid,
   ChartsGrid,
@@ -21,6 +20,7 @@ import {
   useAppointmentStats,
   useRecentActivities,
 } from "../hooks";
+import { useAuth } from "@/modules/auth/hooks/use-auth-context";
 
 export default function AdminDashboardPage() {
   const {
@@ -29,6 +29,9 @@ export default function AdminDashboardPage() {
     error,
     isError,
   } = useDashboardAdmin();
+
+  // Lấy user hiện tại
+  const { user } = useAuth();
 
   // Custom hooks for data processing
   const stats = useDashboardStats(dashboardData);
@@ -44,12 +47,14 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <DashboardLayout>
+    <div className="min-h-full space-y-6">
+      {/* Dashboard Content */}
       {/* Welcome Header */}
       <WelcomeHeader
         pending={appointmentStats.pending}
         completed={appointmentStats.completed}
         lastUpdated={dashboardData?.lastUpdated}
+        role={user?.role}
       />
 
       {/* Stats Cards */}
@@ -59,7 +64,6 @@ export default function AdminDashboardPage() {
             key={index}
             title={stat.title}
             value={stat.value}
-            change={stat.change}
             iconName={stat.iconName}
             color={stat.color}
           />
@@ -93,6 +97,6 @@ export default function AdminDashboardPage() {
           }
         />
       </ChartsGrid>
-    </DashboardLayout>
+    </div>
   );
 }

@@ -1,30 +1,19 @@
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { icons } from "@/shared/constants/icons.constants";
 import { images } from "@/shared/constants/images.constants";
 import { useSidebar } from "@/shared/hooks/useSidebar";
 import { useAuth } from "@/modules/auth/hooks/use-auth-context";
-import LogoutButton from "@/components/shared/LogoutButton";
 import { useNavigate } from "react-router-dom";
-import { Menu, ChevronDown, Scan, User } from "lucide-react";
+import { Menu, ChevronDown, Scan } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
+import NotificationDropdown from "@/components/shared/NotificationDropdown";
+import UserProfileDropdown, {
+  type User,
+} from "@/components/shared/UserProfileDropdown";
+import ScanModal from "@/components/shared/ScanModal";
+import useExpiringVaccineBatches from "@/modules/vaccine-batch/hooks/useExpiringVaccineBatches";
 
-// Types for better type safety
-interface User {
-  name: string;
-  email: string;
-  initials: string;
-  role: string;
-}
-
-// Constants for better maintainability
+// UI style constants
 const HEADER_STYLES = {
   container: "w-full bg-[#E0F7F5]",
   menuButton:
@@ -45,22 +34,36 @@ const HEADER_STYLES = {
     "flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-primary to-teal-600",
   userName: "hidden text-sm font-inter-600 text-dark md:block",
   dropdown:
-    "absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 shadow-lg z-50",
+    "absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 shadow-lg z-50 rounded-lg",
   dropdownItem:
-    "flex items-center space-x-3 px-4 py-3 text-sm font-nunito-400 text-gray-700 hover:bg-gray-50 transition-colors duration-200 w-full text-left",
+    "flex items-center space-x-3 px-4 py-3 text-sm font-nunito-400 text-gray-700 hover:bg-gray-50 transition-colors duration-200 w-full text-left cursor-pointer",
   dropdownSeparator: "border-t border-gray-200",
+  notificationDropdown:
+    "absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 shadow-lg z-50 rounded-lg",
+  notificationHeader:
+    "flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg",
+  notificationItem:
+    "flex items-center justify-between px-4 py-3 border-b last:border-b-0 hover:bg-gray-50 transition-colors duration-200 cursor-pointer",
 } as const;
 
 export default function Header() {
-  const { toggleCollapse } = useSidebar();
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  // Fetch expiring vaccine batches for notification
+  const { data: expiringBatches = [] } = useExpiringVaccineBatches();
+
+  // State: notification, user dropdown, scan modal, scan code
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [scannedCode, setScannedCode] = useState("");
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Mock user data - replace with actual user state
+  // Hooks and refs
+  const { toggleCollapse } = useSidebar();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+
+  // User info (replace with actual user state if needed)
   const currentUser: User = {
     name: user?.email?.split("@")[0] || "User",
     email: user?.email || "user@vaxpet.vn",
@@ -75,9 +78,13 @@ export default function Header() {
             : "Unknown",
   };
 
-  // Optimized event handlers with useCallback to prevent unnecessary re-renders
+  // Event handlers (useCallback for optimization)
   const handleDropdownToggle = useCallback(() => {
     setIsDropdownOpen((prev) => !prev);
+  }, []);
+
+  const handleNotificationToggle = useCallback(() => {
+    setIsNotificationOpen((prev) => !prev);
   }, []);
 
   const handleViewProfile = useCallback(() => {
@@ -101,19 +108,31 @@ export default function Header() {
   const handleScanSubmit = useCallback(() => {
     if (scannedCode.trim()) {
       console.log("Navigating to scan page with microchip:", scannedCode);
-      // Close modal and navigate to scan page immediately
       setIsScanModalOpen(false);
-      navigate(`/admin/scan-microchip/${scannedCode.trim()}`);
+      let basePath = "/admin";
+      if (user?.role === 2) {
+        basePath = "/staff";
+      } else if (user?.role === 3) {
+        basePath = "/vet";
+      }
+      navigate(`${basePath}/scan-microchip/${scannedCode.trim()}`);
       setScannedCode("");
     }
-  }, [scannedCode, navigate]);
+  }, [scannedCode, navigate, user?.role]);
 
   const handleScanModalClose = useCallback(() => {
     setIsScanModalOpen(false);
     setScannedCode("");
   }, []);
 
-  // Optimized outside click handler - only add listener when dropdown is open
+  const handleNavigate = useCallback(
+    (path: string) => {
+      navigate(path);
+    },
+    [navigate],
+  );
+
+  // Close dropdowns when clicking outside
   useEffect(() => {
     if (!isDropdownOpen) return;
 
@@ -130,10 +149,26 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isDropdownOpen]);
 
+  useEffect(() => {
+    if (!isNotificationOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
+        setIsNotificationOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isNotificationOpen]);
+
   return (
     <header className={HEADER_STYLES.container}>
       <div className="flex items-center justify-between gap-4">
-        {/* Left section */}
+        {/* Left: menu & brand */}
         <div className="flex items-center">
           <button onClick={toggleCollapse} className={HEADER_STYLES.menuButton}>
             <Menu className="size-5" />
@@ -149,7 +184,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Center section - Search */}
+        {/* Center: search bar */}
         <div className="mx-4 max-w-md flex-1 py-3">
           <div className="relative">
             <icons.Search
@@ -163,9 +198,9 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Right section - Actions */}
+        {/* Right: actions (scan, settings, notification, user) */}
         <div className="flex items-center space-x-3 px-4">
-          {/* Scan Microchip Button */}
+          {/* Scan microchip button */}
           <button
             onClick={handleScanMicrochip}
             className={HEADER_STYLES.scanButton}
@@ -175,7 +210,7 @@ export default function Header() {
             <span>Tra cứu</span>
           </button>
 
-          {/* Settings Button: chỉ hiển thị nếu không phải Staff (2) hoặc Vet (3) */}
+          {/* Settings button: only show if not Staff (2) or Vet (3) */}
           {user?.role !== 2 && user?.role !== 3 && (
             <button
               className={HEADER_STYLES.iconButton}
@@ -185,20 +220,39 @@ export default function Header() {
             </button>
           )}
 
-          {/* Notification Button */}
-          <button className={`${HEADER_STYLES.iconButton} relative`}>
-            <icons.Bell size={20} />
-            <span className={HEADER_STYLES.notificationBadge}>3</span>
-          </button>
+          {/* Notification button */}
+          {user?.role !== 2 && user?.role !== 3 && (
+            <div className="relative" ref={notificationRef}>
+              <button
+                className={`${HEADER_STYLES.iconButton} relative`}
+                onClick={handleNotificationToggle}
+                title="Xem thông báo lô vắc-xin hết hạn"
+              >
+                <icons.Bell size={20} />
+                {expiringBatches.length > 0 && (
+                  <span className={HEADER_STYLES.notificationBadge}>
+                    {expiringBatches.length}
+                  </span>
+                )}
+              </button>
 
-          {/* User Profile Dropdown */}
+              <NotificationDropdown
+                isOpen={isNotificationOpen}
+                expiringBatches={expiringBatches}
+                onNavigate={handleNavigate}
+                onClose={() => setIsNotificationOpen(false)}
+              />
+            </div>
+          )}
+
+          {/* User profile dropdown */}
           <div className={HEADER_STYLES.userProfile} ref={dropdownRef}>
             <div
               className={HEADER_STYLES.userButton}
               onClick={handleDropdownToggle}
             >
               <div className={HEADER_STYLES.userAvatar}>
-                <span className="text-sm font-medium text-white">
+                <span className="font-nunito-500 text-sm text-white">
                   {currentUser.initials}
                 </span>
               </div>
@@ -220,103 +274,24 @@ export default function Header() {
               />
             </div>
 
-            {/* Dropdown Menu */}
-            {isDropdownOpen && (
-              <div className={HEADER_STYLES.dropdown}>
-                {/* User Info Section */}
-                <div className="border-b border-gray-200 p-4">
-                  <div className="font-inter-600 text-sm text-gray-900">
-                    {currentUser.name}
-                  </div>
-                  <div className="font-nunito-400 text-xs text-gray-500">
-                    {currentUser.email}
-                  </div>
-                  <div className="font-nunito-400 text-primary text-xs">
-                    {currentUser.role}
-                  </div>
-                </div>
-
-                {/* Actions Section */}
-                <div className="py-2">
-                  <button
-                    onClick={handleViewProfile}
-                    className={HEADER_STYLES.dropdownItem}
-                  >
-                    <icons.User size={16} />
-                    <span>Xem hồ sơ</span>
-                  </button>
-
-                  <button
-                    onClick={handleSettings}
-                    className={HEADER_STYLES.dropdownItem}
-                  >
-                    <icons.Settings size={16} />
-                    <span>Cài đặt</span>
-                  </button>
-                </div>
-
-                {/* Logout Section */}
-                <div className={HEADER_STYLES.dropdownSeparator}></div>
-                <div className="py-2">
-                  <LogoutButton
-                    variant="ghost"
-                    className={`${HEADER_STYLES.dropdownItem} w-full justify-start text-red-600 hover:bg-red-50`}
-                    showIcon={true}
-                    showText={true}
-                  />
-                </div>
-              </div>
-            )}
+            <UserProfileDropdown
+              isOpen={isDropdownOpen}
+              user={currentUser}
+              onViewProfile={handleViewProfile}
+              onSettings={handleSettings}
+            />
           </div>
         </div>
       </div>
 
-      {/* Microchip Scanner Modal */}
-      <Dialog open={isScanModalOpen} onOpenChange={setIsScanModalOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Scan className="text-primary h-5 w-5" />
-              Tra cứu microchip
-            </DialogTitle>
-            <DialogDescription>
-              Nhập mã microchip để tìm kiếm thông tin thú cưng
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6">
-            {/* Manual Input Mode */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Mã microchip</label>
-                <div className="flex gap-2">
-                  <Input
-                    value={scannedCode}
-                    onChange={(e) => setScannedCode(e.target.value)}
-                    placeholder="Nhập mã microchip..."
-                    className="flex-1"
-                    autoFocus
-                  />
-                  <Button
-                    onClick={handleScanSubmit}
-                    disabled={!scannedCode.trim()}
-                    className="bg-primary hover:bg-secondary"
-                  >
-                    Tìm kiếm
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex justify-end space-x-2 border-t pt-4">
-              <Button variant="outline" onClick={handleScanModalClose}>
-                Đóng
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Microchip scanner modal */}
+      <ScanModal
+        isOpen={isScanModalOpen}
+        scannedCode={scannedCode}
+        onCodeChange={setScannedCode}
+        onSubmit={handleScanSubmit}
+        onClose={handleScanModalClose}
+      />
     </header>
   );
 }

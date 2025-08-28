@@ -1,8 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "../services/auth.service";
 import { toast } from "sonner";
-import { extractErrorMessage } from "@/shared/utils/error.utils";
-import type { AxiosError } from "axios";
 
 export function useSendOTP() {
   return useMutation({
@@ -10,8 +8,10 @@ export function useSendOTP() {
     onSuccess: (data) => {
       toast.success(data?.message);
     },
-    onError: (error) => {
-      toast.error(extractErrorMessage(error as AxiosError));
+    onError: () => {
+      toast.error("Gửi mã OTP thất bại", {
+        description: "Vui lòng kiểm tra lại mã OTP",
+      });
     },
   });
 }

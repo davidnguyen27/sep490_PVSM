@@ -9,6 +9,7 @@ export { TimeSlotCard } from "./TimeSlotCard";
 // Form & Interactive Components
 export { VetScheduleForm } from "./VetScheduleForm";
 export { SimpleVetScheduleForm } from "./SimpleVetScheduleForm";
+export { StaffScheduleModal } from "./StaffScheduleModal";
 
 // UI Components
 export { WeeklyStatsCards } from "./WeeklyStatsCards";
@@ -31,6 +32,7 @@ export * from "./VetScheduleWeekView";
 export * from "./VetScheduleMonthView";
 export * from "./VetScheduleForm";
 export * from "./SimpleVetScheduleForm";
+export * from "./StaffScheduleModal";
 export * from "./VetScheduleHeader";
 export * from "./VetScheduleStats";
 export * from "./VetScheduleStatusLegend";

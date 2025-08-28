@@ -13,8 +13,7 @@ export const microchipSchema = z.object({
   notes: z.string().min(1, "Ghi chú không được để trống"),
   // Microchip Item fields
   petId: z.number(),
-  itemName: z.string().min(1, "Tên item không được để trống"),
-  itemDescription: z.string().min(1, "Mô tả item không được để trống"),
+  // itemName và itemDescription đã bị loại bỏ khỏi schema
   location: z.string().min(1, "Vị trí không được để trống"),
   installationDate: z.string().min(1, "Ngày cài đặt không được để trống"),
 });

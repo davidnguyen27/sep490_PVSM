@@ -14,6 +14,7 @@ export { useStaffRecentActivities } from "./useStaffRecentActivities";
 
 // Types
 export type { StatItem } from "./useDashboardStats";
+export type { VetStatItem } from "./useDashboardVetStats";
 export type { AppointmentStats } from "./useAppointmentStats";
-export type { ActivityData } from "./useRecentActivities";
+export type { ActivityData } from "../types/dashboard.type";
 export type { VetActivityData } from "./useVetRecentActivities";

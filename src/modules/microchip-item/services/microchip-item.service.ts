@@ -1,5 +1,5 @@
 import axiosInstance from "@/lib/axios";
-import type { BaseListResponse } from "@/shared/types/api.type";
+import type { BaseListResponse, BaseResponse } from "@/shared/types/api.type";
 import type { MicrochipItem } from "../types/microchip-item.type";
 import type { MicrochipItemByCode } from "../types/microchip-item-by-code.type";
 import type { AppointmentDetail } from "../types/appointment-detail.type";
@@ -46,5 +46,13 @@ export const microchipItemService = {
     return await axiosInstance
       .get(`/api/Appointment/get-appointment-by-id/${appointmentId}`)
       .then((res) => (res.data.success ? res.data.data : null));
+  },
+
+  async deleteMicrochipItem(
+    microchipItemId: number | null,
+  ): Promise<BaseResponse<MicrochipItem>> {
+    return await axiosInstance
+      .delete(`/api/MicrochipItems/delete-microchip-item/${microchipItemId}`)
+      .then((res) => res.data);
   },
 };

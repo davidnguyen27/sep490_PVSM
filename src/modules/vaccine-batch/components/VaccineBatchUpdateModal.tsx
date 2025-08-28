@@ -22,9 +22,9 @@ export function VaccineBatchUpdateModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto rounded-none">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-gray-800">
+          <DialogTitle className="font-nunito-700 text-primary text-xl">
             Cập nhật lô vaccine: {vaccineBatch.batchNumber}
           </DialogTitle>
         </DialogHeader>

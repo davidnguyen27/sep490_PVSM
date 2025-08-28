@@ -291,7 +291,6 @@ export default function SettingPage() {
         </CardContent>
       </Card>
 
-      {/* Render child routes here */}
       <Outlet />
     </div>
   );

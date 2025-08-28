@@ -1,15 +1,21 @@
 // Types
-export type { VaccineSchedule } from "./types/vaccine-schedule.type";
+export type {
+  VaccineSchedule,
+  VaccineScheduleByDisease,
+} from "./types/vaccine-schedule.type";
+export type { VaccineSchedulePayload } from "./types/vaccine-schedule.payload.type";
 
 // Services
 export { vaccineScheduleService } from "./services/vaccine-schedule.service";
 
 // Hooks
-export { useVaccineSchedules } from "./hooks/useVaccineSchedules";
+export * from "./hooks";
 
 // Components
-export { VaccineScheduleTable } from "./components/VaccineScheduleTable";
-export { VaccineScheduleFilter } from "./components/VaccineScheduleFilter";
+export * from "./components";
 
 // Pages
-export { default as VaccineScheduleListPage } from "./pages/VaccineScheduleListPage";
+export { default as VaccineScheduleByDiseasePage } from "./pages/VaccineScheduleByDiseasePage";
+
+// Routes
+export { vaccineScheduleRoutes } from "./routes/vaccine-schedule.route";

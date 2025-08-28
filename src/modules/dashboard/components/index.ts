@@ -9,7 +9,6 @@ export { default as DashboardLoading } from "./DashboardLoading";
 export { default as DashboardError } from "./DashboardError";
 
 // Layout Components
-export { default as DashboardLayout } from "./DashboardLayout";
 export { default as StatsGrid } from "./StatsGrid";
 export { default as ActivitiesGrid } from "./ActivitiesGrid";
 export { default as ChartsGrid } from "./ChartsGrid";

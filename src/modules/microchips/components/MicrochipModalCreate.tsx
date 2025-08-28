@@ -43,8 +43,7 @@ export function MicrochipModalCreate({
       price: 0,
       notes: "",
       petId: 0, // Mặc định petId = 0
-      itemName: "",
-      itemDescription: "",
+      // itemName và itemDescription đã bị loại bỏ khỏi form
       location: "",
       installationDate: new Date().toISOString().split("T")[0], // Ngày hiện tại
     },
@@ -65,9 +64,9 @@ export function MicrochipModalCreate({
         }
       }}
     >
-      <DialogContent className="max-h-[90vh] max-w-4xl space-y-4 overflow-y-auto px-6 py-4">
+      <DialogContent className="max-h-[90vh] max-w-4xl space-y-4 overflow-y-auto rounded-none px-6 py-4">
         <DialogHeader>
-          <DialogTitle className="text-primary font-nunito-700 text-2xl">
+          <DialogTitle className="text-primary font-nunito-700 mb-4 text-xl">
             Thêm mới microchip
           </DialogTitle>
         </DialogHeader>
@@ -141,21 +140,6 @@ export function MicrochipModalCreate({
               )}
             />
 
-            {/* Microchip Item Info */}
-            <FormField
-              control={form.control}
-              name="itemName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tên item</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Nhập tên item" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="location"
@@ -182,20 +166,6 @@ export function MicrochipModalCreate({
                       {...field}
                       placeholder="Chọn ngày cài đặt"
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="itemDescription"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Mô tả item</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} rows={2} placeholder="Mô tả item" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

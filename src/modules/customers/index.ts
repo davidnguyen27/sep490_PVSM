@@ -14,3 +14,6 @@ export { CustomerEditModal } from "./components/CustomerEditModal";
 
 // Pages
 export { default as CustomerDetailPage } from "./pages/CustomerDetailPage";
+
+// Routes
+export { customerRoutes } from "./routes/customer.route";

@@ -48,6 +48,16 @@ export interface DashboardAdminData {
   lastUpdated: string;
 }
 
+// Shared interfaces
+export interface ActivityData {
+  id: number;
+  title: string;
+  description: string;
+  time: string;
+  iconName: import("@/shared/constants/icons.constants").IconName;
+  color: string;
+}
+
 export interface DashboardVetData {
   totalVaccines: number;
   totalVaccineBatches: number;

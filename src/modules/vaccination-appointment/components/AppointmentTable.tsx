@@ -14,8 +14,10 @@ import TableSkeleton from "@/components/shared/TableSkeleton";
 import EmptyTable from "@/components/shared/EmptyTable";
 import { BadgeInfo, SquarePen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import type { VaccinationApp } from "../types/vaccination.type";
 import { useAuth } from "@/modules/auth";
+import { UpdateAppointmentModal } from "./UpdateAppointmentModal";
 
 interface Props {
   appointmentData: VaccinationApp[];
@@ -44,11 +46,35 @@ export function AppointmentTable({
 }: Props) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<VaccinationApp | null>(null);
 
   const basePath =
     user?.role === 2
       ? "/staff/vaccination-appointments"
       : "/vet/vaccination-appointments";
+
+  const handleUpdateClick = (appointment: VaccinationApp) => {
+    setSelectedAppointment(appointment);
+    setIsUpdateModalOpen(true);
+    // Update URL with appointmentId
+    const url = new URL(window.location.href);
+    url.searchParams.set(
+      "appointmentId",
+      appointment.appointment.appointmentId.toString(),
+    );
+    window.history.pushState({}, "", url.toString());
+  };
+
+  const handleModalClose = () => {
+    setIsUpdateModalOpen(false);
+    setSelectedAppointment(null);
+    // Remove appointmentId from URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete("appointmentId");
+    window.history.pushState({}, "", url.toString());
+  };
 
   return (
     <div className="bg-linen shadow-md">
@@ -139,6 +165,7 @@ export function AppointmentTable({
                     <SquarePen
                       size={16}
                       className="text-purple cursor-pointer transition-transform hover:scale-110"
+                      onClick={() => handleUpdateClick(item)}
                     />
                   </div>
                 </TableCell>
@@ -149,6 +176,13 @@ export function AppointmentTable({
       </Table>
 
       {!isPending && appointmentData.length === 0 && <EmptyTable />}
+
+      {/* Update Appointment Modal */}
+      <UpdateAppointmentModal
+        isOpen={isUpdateModalOpen}
+        onClose={handleModalClose}
+        appointment={selectedAppointment}
+      />
     </div>
   );
 }

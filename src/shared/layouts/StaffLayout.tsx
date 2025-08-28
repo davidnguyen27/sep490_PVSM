@@ -60,6 +60,11 @@ const staffSidebarItems = [
     icon: <TicketSlash size={20} />,
     path: "/staff/vouchers",
   },
+  {
+    label: "Lịch làm việc",
+    icon: <icons.CalendarCheck size={20} />,
+    path: "/staff/vet-schedules",
+  },
 ];
 
 export default function StaffLayout() {
@@ -71,8 +76,8 @@ export default function StaffLayout() {
         <Sidebar items={staffSidebarItems} />
 
         <main className="flex min-h-0 flex-1 flex-col bg-gray-50">
-          <div className="flex-1 overflow-y-auto">
-            <div className="mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex flex-1 flex-col overflow-y-auto">
+            <div className="flex-1 px-4 py-4 sm:px-6 lg:px-8">
               <Suspense fallback={<Spinner />}>
                 <Outlet />
               </Suspense>

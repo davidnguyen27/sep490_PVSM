@@ -6,3 +6,4 @@ export * from "./useVaccineBatchAdd";
 export * from "./useVaccineBatchUpdate";
 export * from "./useVaccinesForSelect";
 export * from "./useAllVaccineBatches";
+export { default as useExpiringVaccineBatches } from "./useExpiringVaccineBatches";

@@ -123,10 +123,10 @@ export default function PetCreatePage() {
         {/* Form Section */}
         <div className="space-y-6">
           {/* Main Form Card */}
-          <Card className="rounded-none border-0 bg-white shadow-lg">
-            <CardHeader className="from-linen to-primary/5 border-b-0 bg-gradient-to-r py-6">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
+          <Card className="border-0 bg-white shadow-lg">
+            <CardHeader className="from-linen to-primary/5 flex items-center border-b-0 bg-gradient-to-r py-6">
+              <CardTitle className="flex w-full items-center justify-between">
+                <div className="flex items-center gap-3">
                   <div className="bg-primary/10 rounded-lg p-2">
                     <PawPrint className="text-primary h-5 w-5" />
                   </div>
@@ -146,7 +146,7 @@ export default function PetCreatePage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8">
-              <div className="mx-auto max-w-4xl">
+              <div className="mx-auto">
                 <PetFormUpdate form={form} onSubmit={onSubmit} mode="create" />
               </div>
             </CardContent>

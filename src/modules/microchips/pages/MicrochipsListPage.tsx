@@ -1,5 +1,6 @@
 import { Cpu, PlusCircle } from "lucide-react";
 import type { MicrochipSchema } from "../schemas/microchip.schema";
+import type { MicrochipItem } from "../../microchip-item/types/microchip-item.type";
 
 // components
 import { Button } from "@/components/ui";
@@ -19,7 +20,8 @@ import {
 
 // hooks
 import { useEffect, useState } from "react";
-import { useMicrochipCreation, useMicrochips } from "../hooks";
+import { useMicrochipCreation } from "../hooks";
+import { useMicrochipItems } from "../../microchip-item/hooks/useMicrochipItems";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 
 export default function MicrochipsListPage() {
@@ -27,17 +29,17 @@ export default function MicrochipsListPage() {
   const [openCreate, setOpenCreate] = useState(false);
   const [page, setPage] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
+  const [status, setStatus] = useState<string>("active");
 
   const debouncedSearch = useDebounce(search, 500, { leading: true });
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, status]);
 
   // Set document title for Microchip Management page
   useEffect(() => {
     document.title = "PVMS | Quản lý microchip";
-
     return () => {
       document.title = "PVMS | Quản lý microchip";
     };
@@ -45,13 +47,23 @@ export default function MicrochipsListPage() {
 
   const { mutate: createMicrochip, isPending: isCreatingMicrochip } =
     useMicrochipCreation();
-  const { data, isPending, isFetching } = useMicrochips({
+  const { data, isPending, isFetching } = useMicrochipItems({
     pageNumber: page,
     pageSize: 10,
     keyWord: debouncedSearch,
+    isUsed: false,
   });
 
-  const pageData = data?.data.pageData ?? [];
+  let pageData: MicrochipItem[] = data?.data.pageData ?? [];
+  if (status === "active") {
+    pageData = pageData.filter(
+      (item) => item.microchipResponse.isDeleted === false,
+    );
+  } else if (status === "deleted") {
+    pageData = pageData.filter(
+      (item) => item.microchipResponse.isDeleted === true,
+    );
+  }
   const totalPages = data?.data.pageInfo.totalPage ?? 1;
 
   const handleCreate = (payload: MicrochipSchema) => {
@@ -88,7 +100,7 @@ export default function MicrochipsListPage() {
         <div className="flex items-end justify-between p-4">
           <div className="flex items-end justify-between gap-4">
             <SearchLabel value={search} onChange={setSearch} />
-            <MicrochipFilter />
+            <MicrochipFilter status={status} setStatus={setStatus} />
           </div>
 
           {/* Search loading indicator */}
