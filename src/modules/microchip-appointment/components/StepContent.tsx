@@ -164,6 +164,8 @@ export function StepContent({
         customerId={data.microchip.appointment?.customerResponseDTO?.customerId}
         microchipItemId={formData.microchipItemId!}
         invoiceData={data}
+        appointmentId={data.microchip.appointment?.appointmentId || 0}
+        appointmentAddress={data.microchip.appointment?.address}
         onPaymentSuccess={(paymentId, method) => {
           setPaymentId(paymentId);
           setPaymentMethod(method);

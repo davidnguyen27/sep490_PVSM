@@ -195,6 +195,8 @@ export function StepContent({
           customerId={data.appointment.customerResponseDTO.customerId}
           vaccineBatchId={formData.selectedVaccineBatchId!}
           invoiceData={data}
+          appointmentId={data.appointment.appointmentId || 0}
+          appointmentAddress={data.appointment.address}
           onPaymentSuccess={(paymentId, method) => {
             setPaymentId(paymentId);
             setPaymentMethod(method);
