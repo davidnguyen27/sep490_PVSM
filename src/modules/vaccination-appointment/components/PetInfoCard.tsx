@@ -3,6 +3,7 @@ import { useState } from "react";
 import { icons } from "@/shared/constants/icons.constants";
 import { Utils } from "@/shared/utils/utils.utils";
 import type { VaccinationDetail } from "../types/detail.type";
+import { formatData } from "@/shared/utils/format.utils";
 
 interface Props {
   data: VaccinationDetail;
@@ -84,7 +85,7 @@ export function PetInfoCard({ data }: Props) {
             <InfoItem
               icon={<icons.Calendar size={16} />}
               label="Ngày sinh"
-              value={pet.dateOfBirth}
+              value={formatData.formatDateMDY(pet.dateOfBirth)}
             />
             <InfoItem
               icon={<icons.Ruler size={16} />}
