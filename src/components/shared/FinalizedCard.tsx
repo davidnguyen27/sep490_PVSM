@@ -54,7 +54,7 @@ export default function FinalizedCard({
   return (
     <Card
       className={cn(
-        "group relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-lg",
+        "relative overflow-hidden py-4",
         config.cardClass,
         className,
       )}

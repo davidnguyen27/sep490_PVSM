@@ -28,7 +28,7 @@ export default function ConditionPaymentCancelPage() {
         if (!orderCode || cancel !== "true") {
           console.error("Invalid payment cancel parameters");
           toast.error("Thông tin hủy thanh toán không hợp lệ");
-          navigate("/condition-appointments");
+          navigate("/staff/condition-appointments");
           return;
         }
 
@@ -42,7 +42,7 @@ export default function ConditionPaymentCancelPage() {
             orderCode,
           );
           toast.error("Mã đơn hàng không hợp lệ");
-          navigate("/condition-appointments");
+          navigate("/staff/condition-appointments");
           return;
         }
 
@@ -62,11 +62,11 @@ export default function ConditionPaymentCancelPage() {
         toast.success("Thanh toán đã được hủy thành công");
 
         // Redirect to appointment detail page
-        navigate(`/condition-appointments/${appointmentDetailId}`);
+        navigate(`/staff/condition-appointments/${appointmentDetailId}`);
       } catch (error) {
         console.error("Error handling payment cancellation:", error);
         toast.error("Có lỗi xảy ra khi hủy thanh toán");
-        navigate("/condition-appointments");
+        navigate("/staff/condition-appointments");
       } finally {
         setIsProcessing(false);
       }
