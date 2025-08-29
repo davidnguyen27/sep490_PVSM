@@ -46,6 +46,11 @@ const ScanModal: React.FC<ScanModalProps> = ({
                 <Input
                   value={scannedCode}
                   onChange={(e) => onCodeChange(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" && scannedCode.trim()) {
+                      onSubmit();
+                    }
+                  }}
                   placeholder="Nhập mã microchip..."
                   className="flex-1"
                   autoFocus

@@ -115,7 +115,12 @@ export default function Header() {
       } else if (user?.role === 3) {
         basePath = "/vet";
       }
-      navigate(`${basePath}/scan-microchip/${scannedCode.trim()}`);
+
+      const targetPath = `${basePath}/scan-microchip/${scannedCode.trim()}`;
+
+      // Navigate tới trang scan với code mới
+      navigate(targetPath);
+
       setScannedCode("");
     }
   }, [scannedCode, navigate, user?.role]);

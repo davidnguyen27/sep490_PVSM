@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { useMicrochipByCode } from "../hooks/useMicrochipByCode";
@@ -13,6 +13,14 @@ export default function ScanMicrochipPage() {
   }>();
   const [microchipCode, setMicrochipCode] = useState(paramMicrochipCode || "");
   const [searchCode, setSearchCode] = useState(paramMicrochipCode || "");
+
+  // Effect để handle khi có param từ URL (từ header scan)
+  useEffect(() => {
+    if (paramMicrochipCode) {
+      setMicrochipCode(paramMicrochipCode);
+      setSearchCode(paramMicrochipCode);
+    }
+  }, [paramMicrochipCode]);
 
   const {
     data: petInfo,
@@ -30,12 +38,6 @@ export default function ScanMicrochipPage() {
   const handleManualSearch = () => {
     if (microchipCode.trim()) {
       setSearchCode(microchipCode.trim());
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleManualSearch();
     }
   };
 
@@ -57,7 +59,6 @@ export default function ScanMicrochipPage() {
           microchipCode={microchipCode}
           onChangeCode={setMicrochipCode}
           onSearch={handleManualSearch}
-          onKeyPress={handleKeyPress}
           isLoading={isLoading}
         />
 

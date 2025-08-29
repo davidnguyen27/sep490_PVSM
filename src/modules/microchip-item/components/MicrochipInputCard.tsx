@@ -8,13 +8,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Search, Loader2 } from "lucide-react";
-import React from "react";
 
 type Props = {
   microchipCode: string;
   onChangeCode: (value: string) => void;
   onSearch: () => void;
-  onKeyPress: (e: React.KeyboardEvent) => void;
   isLoading: boolean;
 };
 
@@ -22,7 +20,6 @@ export function MicrochipInputCard({
   microchipCode,
   onChangeCode,
   onSearch,
-  onKeyPress,
   isLoading,
 }: Props) {
   return (
@@ -43,7 +40,11 @@ export function MicrochipInputCard({
               value={microchipCode}
               onChange={(e) => onChangeCode(e.target.value)}
               placeholder="Nhập mã microchip..."
-              onKeyPress={onKeyPress}
+              onKeyPress={(e) => {
+                if (e.key === "Enter" && microchipCode.trim()) {
+                  onSearch();
+                }
+              }}
               className="pl-10"
             />
           </div>

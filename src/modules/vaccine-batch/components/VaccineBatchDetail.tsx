@@ -163,7 +163,7 @@ export function VaccineBatchDetail({ vaccineBatch }: Props) {
                 </p>
                 <p>
                   <span className="font-nunito-500">Thời gian:</span>{" "}
-                  {formatData.formatDateTime(vaccineBatch?.createdAt)}
+                  {formatData.formatDateTime(vaccineBatch?.createAt)}
                 </p>
               </div>
             </div>
