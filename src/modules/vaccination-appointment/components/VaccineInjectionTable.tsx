@@ -185,6 +185,11 @@ export function VaccineInjectionTable({ disabled, canEdit, diseaseId }: Props) {
                         >
                           {batch.vaccineResponseDTO.name} –{" "}
                           {batch.quantity ?? 0} liều
+                          {batch.expiryDate && (
+                            <span className="text-xs text-gray-500 ml-2">
+                              (HSD: {new Date(batch.expiryDate).toLocaleDateString('vi-VN')})
+                            </span>
+                          )}
                         </SelectItem>
                       ))
                   ) : (
@@ -196,6 +201,11 @@ export function VaccineInjectionTable({ disabled, canEdit, diseaseId }: Props) {
                   <SelectItem value={vaccineBatches.vaccineBatchId.toString()}>
                     {vaccineBatches.vaccineResponseDTO.name} –{" "}
                     {vaccineBatches.quantity ?? 0} liều
+                    {vaccineBatches.expiryDate && (
+                      <span className="text-xs text-gray-500 ml-2">
+                        (HSD: {new Date(vaccineBatches.expiryDate).toLocaleDateString('vi-VN')})
+                      </span>
+                    )}
                   </SelectItem>
                 ) : (
                   <SelectItem value="none" disabled>
