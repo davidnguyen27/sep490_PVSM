@@ -45,6 +45,8 @@ interface StaffScheduleModalProps {
   mode: "add" | "edit";
   existingSchedule?: VetSchedule | null;
   selectedDate?: Date;
+  selectedVetId?: string;
+  onSuccess?: () => void;
 }
 
 interface FormData {
@@ -68,8 +70,6 @@ const timeSlots = [
 
 const statusOptions = [
   { value: "1", label: "Trống", color: "bg-green-100 text-green-800" },
-  { value: "2", label: "Trễ hẹn", color: "bg-orange-100 text-orange-800" },
-  { value: "3", label: "Đã đặt", color: "bg-blue-100 text-blue-800" },
 ];
 
 export function StaffScheduleModal({
@@ -78,6 +78,8 @@ export function StaffScheduleModal({
   mode,
   existingSchedule,
   selectedDate,
+  selectedVetId,
+  onSuccess,
 }: StaffScheduleModalProps) {
   const [selectedSlots, setSelectedSlots] = useState<number[]>(
     existingSchedule ? [existingSchedule.slotNumber] : [],
@@ -111,7 +113,7 @@ export function StaffScheduleModal({
 
   const form = useForm<FormData>({
     defaultValues: {
-      vetId: existingSchedule?.vetId?.toString() || "",
+      vetId: existingSchedule?.vetId?.toString() || selectedVetId || "",
       scheduleDate: defaultScheduleDate,
       slotNumbers: existingSchedule ? [existingSchedule.slotNumber] : [],
       status: existingSchedule?.status?.toString() || "1",
@@ -127,16 +129,16 @@ export function StaffScheduleModal({
       form.setValue("status", existingSchedule.status?.toString() || "1");
       setSelectedSlots([existingSchedule.slotNumber]);
     } else {
-      // Khi tạo mới, sử dụng defaultScheduleDate thay vì new Date()
+      // Khi tạo mới, sử dụng selectedVetId nếu có
       form.reset({
-        vetId: "",
+        vetId: selectedVetId || "",
         scheduleDate: defaultScheduleDate,
         slotNumbers: [],
         status: "1",
       });
       setSelectedSlots([]);
     }
-  }, [existingSchedule, form, defaultScheduleDate]);
+  }, [existingSchedule, form, defaultScheduleDate, selectedVetId]);
 
   // Hooks
   const { data: vetsResponse, isLoading: isLoadingVets } = useVets({
@@ -187,6 +189,9 @@ export function StaffScheduleModal({
       }
     }
 
+    // Call onSuccess callback to refetch data
+    onSuccess?.();
+
     // Reset form và đóng modal
     form.reset();
     setSelectedSlots([]);
@@ -203,7 +208,7 @@ export function StaffScheduleModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="text-primary font-inter-600 mb-4 flex items-center gap-2">
             <Clock className="text-primary h-5 w-5" />
             {mode === "add"
               ? "Tạo lịch làm việc mới"
@@ -228,9 +233,16 @@ export function StaffScheduleModal({
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      disabled={mode === "add" && !!selectedVetId}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger
+                          className={
+                            mode === "add" && selectedVetId
+                              ? "cursor-not-allowed opacity-60"
+                              : ""
+                          }
+                        >
                           <SelectValue placeholder="Chọn bác sĩ thú y" />
                         </SelectTrigger>
                       </FormControl>
@@ -251,7 +263,9 @@ export function StaffScheduleModal({
                               value={vet.vetId.toString()}
                             >
                               <div className="flex flex-col">
-                                <span className="font-medium">{vet.name}</span>
+                                <span className="font-nunito-500">
+                                  {vet.name}
+                                </span>
                                 <span className="text-sm text-gray-500">
                                   {vet.specialization} - {vet.vetCode}
                                 </span>
@@ -392,7 +406,7 @@ export function StaffScheduleModal({
                             : "border-gray-200 hover:bg-gray-50",
                         )}
                       >
-                        <div className="font-medium">{slot.label}</div>
+                        <div className="font-nunito-500">{slot.label}</div>
                         <div className="text-sm text-gray-500">{slot.time}</div>
                       </div>
                     ))}
@@ -415,7 +429,7 @@ export function StaffScheduleModal({
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose}>
+              <Button type="button" variant="destructive" onClick={handleClose}>
                 Hủy
               </Button>
               <Button

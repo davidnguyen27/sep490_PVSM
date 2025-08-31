@@ -12,6 +12,8 @@ export const usePaymentStore = create<PaymentState>()(
       paymentError: null,
       qrCode: null,
       paymentType: null,
+      hasNewPendingPayment: false,
+      isPaymentMethodSelected: false,
       setPaymentMethod: (method) =>
         set((state) => {
           state.paymentMethod = method;
@@ -27,6 +29,14 @@ export const usePaymentStore = create<PaymentState>()(
       setPaymentError: (error) =>
         set((state) => {
           state.paymentError = error;
+        }),
+      setHasNewPendingPayment: (hasNew) =>
+        set((state) => {
+          state.hasNewPendingPayment = hasNew;
+        }),
+      setIsPaymentMethodSelected: (selected) =>
+        set((state) => {
+          state.isPaymentMethodSelected = selected;
         }),
       setPaymentState: (partial) =>
         set((state) => {
@@ -48,6 +58,8 @@ export const usePaymentStore = create<PaymentState>()(
           state.qrCode = null;
           state.isPaymentLoading = false;
           state.paymentError = null;
+          state.hasNewPendingPayment = false;
+          state.isPaymentMethodSelected = false;
         }),
     })),
     { name: "payment-store" },

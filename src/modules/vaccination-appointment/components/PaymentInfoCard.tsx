@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   User,
   Dog,
@@ -21,7 +22,6 @@ import type { Membership } from "@/modules/membership/types/membership.type";
 import { membershipService } from "@/modules/membership/service/membership.service";
 import { VoucherSelection } from "./VoucherSelection";
 import { useDistanceCalculation } from "@/shared/hooks/useDistanceCalculation";
-import { appointmentService } from "@/modules/appointment/services/appointment.service";
 
 interface Props {
   ownerName: string;
@@ -41,9 +41,11 @@ interface Props {
   ) => void;
   invoiceData?: VaccinationDetail;
   onExportInvoice?: () => void;
+  onRefreshData?: () => void; // Add callback to refresh data
+  onCompleteVaccination?: () => void; // Add callback for completing vaccination
   // Add new props for home service
-  appointmentId: number;
   appointmentAddress?: string;
+  appointmentLocation?: number; // Add location as prop instead of fetching from API
 }
 
 export function PaymentInfoCard({
@@ -60,15 +62,37 @@ export function PaymentInfoCard({
   disabled = false,
   onPaymentSuccess,
   onExportInvoice,
+  onRefreshData,
+  onCompleteVaccination,
   invoiceData,
-  appointmentId,
   appointmentAddress,
+  appointmentLocation,
 }: Props) {
   const { paymentMethod, setPaymentMethod, setPaymentId } = usePaymentStore();
-  const { setQrCode } = usePaymentStore.getState();
+  const hasNewPendingPayment = usePaymentStore(
+    (state) => state.hasNewPendingPayment,
+  );
+  const isPaymentMethodSelected = usePaymentStore(
+    (state) => state.isPaymentMethodSelected,
+  );
+  const setQrCode = usePaymentStore((state) => state.setQrCode);
+  const setHasNewPendingPayment = usePaymentStore(
+    (state) => state.setHasNewPendingPayment,
+  );
+  const setIsPaymentMethodSelected = usePaymentStore(
+    (state) => state.setIsPaymentMethodSelected,
+  );
   const { createPaymentWithUrls } = useCreatePaymentWithUrls();
   const { mutateAsync: retryPayment } = useRetryPayment();
   const [isLoading, setIsLoading] = useState(false);
+
+  // State for API message display
+  const [apiMessage, setApiMessage] = useState<string | null>(null);
+
+  // State to store the selected payment method when user clicks "Chọn thanh toán"
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
+    "Cash" | "BankTransfer" | null
+  >(null);
 
   // State for voucher management
   const [selectedVoucher, setSelectedVoucher] =
@@ -77,29 +101,6 @@ export function PaymentInfoCard({
   // State for membership management
   const [membershipData, setMembershipData] = useState<Membership | null>(null);
   const [loadingMembership, setLoadingMembership] = useState(false);
-
-  // Fetch appointment data to get location
-  const [appointmentLocation, setAppointmentLocation] = useState<number | null>(
-    null,
-  );
-
-  // Fetch appointment data when appointmentId changes
-  useEffect(() => {
-    const fetchAppointment = async () => {
-      if (!appointmentId) return;
-
-      try {
-        const appointment =
-          await appointmentService.getAppointmentById(appointmentId);
-        setAppointmentLocation(appointment.location);
-      } catch (error) {
-        console.error("Error fetching appointment:", error);
-        setAppointmentLocation(null);
-      }
-    };
-
-    fetchAppointment();
-  }, [appointmentId]);
 
   // Check if this is a home service appointment (location = 2)
   const isHomeService = appointmentLocation === 2;
@@ -111,6 +112,7 @@ export function PaymentInfoCard({
     centerLocation,
     loading: loadingDistance,
     error: distanceError,
+    retryCount,
   } = useDistanceCalculation({
     address: appointmentAddress,
     isHomeService,
@@ -170,15 +172,34 @@ export function PaymentInfoCard({
   const subtotalWithTransport = totalPrice + (isHomeService ? transportFee : 0);
   const finalAmount = Math.max(0, subtotalWithTransport - totalDiscountAmount);
 
-  // Lấy paymentId từ cả store và invoiceData, ưu tiên lấy từ invoiceData nếu có
-  const storePaymentId = usePaymentStore((state) => state.paymentId);
-  const paymentId = invoiceData?.payment?.paymentId || storePaymentId;
-  const { setPaymentType } = usePaymentStore.getState();
+  // Store helpers
+  const setPaymentType = usePaymentStore((state) => state.setPaymentType);
 
   // Lấy payment status để xử lý các trạng thái khác nhau
   const paymentStatus = invoiceData?.payment?.paymentStatus;
   const isPaymentCancelled = paymentStatus === 3;
-  const isPaymentCompleted = paymentId === 2 && !isPaymentCancelled;
+
+  // Reset states when payment status changes
+  useEffect(() => {
+    if (paymentStatus === 2) {
+      // Payment completed successfully - reset all states
+      setIsPaymentMethodSelected(false);
+      setSelectedPaymentMethod(null);
+      setApiMessage(null);
+    } else if (paymentStatus === 3) {
+      // Payment was cancelled - reset payment selection to allow new selection
+      setIsPaymentMethodSelected(false);
+      setSelectedPaymentMethod(null);
+      setApiMessage(null);
+    }
+  }, [paymentStatus, setIsPaymentMethodSelected]);
+
+  // Tự động set payment method về Cash khi payment bị hủy
+  useEffect(() => {
+    if (isPaymentCancelled) {
+      setPaymentMethod("Cash");
+    }
+  }, [isPaymentCancelled, setPaymentMethod]);
 
   // Lấy phương thức thanh toán từ invoiceData nếu có
   const savedPaymentMethod = invoiceData?.payment?.paymentMethod;
@@ -201,7 +222,7 @@ export function PaymentInfoCard({
     [setPaymentMethod],
   );
 
-  const handlePaymentComplete = useCallback(async () => {
+  const handleSelectPaymentMethod = useCallback(async () => {
     const payload: PaymentPayload = {
       appointmentDetailId,
       customerId,
@@ -213,6 +234,13 @@ export function PaymentInfoCard({
     try {
       setIsLoading(true);
       const response = await createPaymentWithUrls(payload);
+
+      // Display API message using toast
+      if (response.message) {
+        toast.success(response.message);
+        setApiMessage(response.message);
+      }
+
       const data = response.data;
       const id = data?.paymentId;
 
@@ -222,8 +250,17 @@ export function PaymentInfoCard({
       setPaymentId(id);
       setQrCode(data.qrCode ?? null);
 
+      // Mark payment method as selected and save the selected method
+      setIsPaymentMethodSelected(true);
+      setSelectedPaymentMethod(paymentMethod);
+
       if (paymentMethod === "Cash") {
         onPaymentSuccess?.(id, "Cash");
+        setHasNewPendingPayment(true); // Set flag for new pending payment
+        // Refresh data to update payment status
+        setTimeout(() => {
+          onRefreshData?.();
+        }, 500);
       } else if (
         paymentMethod === "BankTransfer" &&
         data.checkoutUrl &&
@@ -231,13 +268,13 @@ export function PaymentInfoCard({
       ) {
         const url = new URL(data.checkoutUrl);
         url.searchParams.set("paymentId", String(data.paymentId));
-        // The orderCode parameter will already contain the appointmentDetailId
-        // No need to add an extra parameter
-
         window.location.href = url.toString();
       }
     } catch (error) {
-      console.error("Payment failed:", error);
+      console.error("Payment selection failed:", error);
+      const errorMessage = "Có lỗi xảy ra khi chọn phương thức thanh toán";
+      toast.error(errorMessage);
+      setApiMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -252,14 +289,50 @@ export function PaymentInfoCard({
     setQrCode,
     setPaymentType,
     onPaymentSuccess,
+    setHasNewPendingPayment,
+    setIsPaymentMethodSelected,
+    setSelectedPaymentMethod,
+    onRefreshData,
   ]);
 
+  const handlePaymentComplete = useCallback(async () => {
+    // This function now only handles payment confirmation (for Cash payments)
+    try {
+      setIsLoading(true);
+
+      // Call the complete vaccination function
+      if (onCompleteVaccination) {
+        onCompleteVaccination();
+      }
+      setHasNewPendingPayment(false); // Reset flag after confirmation
+
+      const successMessage = "Thanh toán đã được xác nhận thành công!";
+      toast.success(successMessage);
+      setApiMessage(successMessage);
+
+      // Refresh data to update payment status
+      setTimeout(() => {
+        onRefreshData?.();
+      }, 500);
+    } catch (error) {
+      console.error("Payment confirmation failed:", error);
+      const errorMessage = "Có lỗi xảy ra khi xác nhận thanh toán";
+      toast.error(errorMessage);
+      setApiMessage(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [onCompleteVaccination, setHasNewPendingPayment, onRefreshData]);
+
   const handleRetryPayment = useCallback(async () => {
+    // Khi thanh toán lại từ trạng thái hủy, luôn sử dụng Cash
+    const retryPaymentMethod = isPaymentCancelled ? "Cash" : paymentMethod;
+
     const payload: PaymentPayload = {
       appointmentDetailId,
       customerId,
       vaccineBatchId,
-      paymentMethod: paymentMethod === "Cash" ? 1 : 2,
+      paymentMethod: retryPaymentMethod === "Cash" ? 1 : 2,
       voucherCode: selectedVoucher ? selectedVoucher.voucher.voucherCode : null,
     };
 
@@ -275,10 +348,15 @@ export function PaymentInfoCard({
       setPaymentId(id);
       setQrCode(data.qrCode ?? null);
 
-      if (paymentMethod === "Cash") {
+      if (retryPaymentMethod === "Cash") {
         onPaymentSuccess?.(id, "Cash");
+        setHasNewPendingPayment(true); // Set flag for new pending payment
+        // Refresh data to update payment status
+        setTimeout(() => {
+          onRefreshData?.();
+        }, 500);
       } else if (
-        paymentMethod === "BankTransfer" &&
+        retryPaymentMethod === "BankTransfer" &&
         data.checkoutUrl &&
         data.paymentId
       ) {
@@ -296,12 +374,15 @@ export function PaymentInfoCard({
     customerId,
     vaccineBatchId,
     paymentMethod,
+    isPaymentCancelled,
     selectedVoucher,
     retryPayment,
     setPaymentId,
     setQrCode,
     setPaymentType,
     onPaymentSuccess,
+    setHasNewPendingPayment,
+    onRefreshData,
   ]);
 
   return (
@@ -344,10 +425,10 @@ export function PaymentInfoCard({
 
           {/* Display home service info */}
           {isHomeService && (
-            <div className="space-y-2 rounded-md border border-blue-200 bg-blue-50 p-3">
+            <div className="space-y-2 rounded-none border border-blue-200 bg-blue-50 p-3">
               <div className="flex items-center gap-2 font-medium text-blue-700">
                 <MapPin size={16} />
-                <span>🏠 Dịch vụ tại nhà</span>
+                <span>Dịch vụ tại nhà</span>
               </div>
 
               <div className="ml-6 text-sm text-gray-600">
@@ -367,9 +448,13 @@ export function PaymentInfoCard({
                   <Truck size={14} />
                   <span className="font-medium">Khoảng cách:</span>
                   {loadingDistance ? (
-                    <span className="text-blue-500">Đang tính toán...</span>
+                    <span className="text-blue-500">
+                      {retryCount > 0
+                        ? `Đang thử lại (${retryCount}/3)...`
+                        : "Đang tính toán..."}
+                    </span>
                   ) : distanceError ? (
-                    <span className="text-red-500">Không thể tính toán</span>
+                    <span className="text-red-500">{distanceError}</span>
                   ) : distance ? (
                     <span className="font-medium text-blue-600">
                       {distance.toFixed(1)} km
@@ -392,7 +477,7 @@ export function PaymentInfoCard({
           )}
         </div>
 
-        <div className="overflow-hidden rounded-md border">
+        <div className="overflow-hidden rounded-none border">
           <div className="bg-muted grid grid-cols-4 p-2 text-sm font-medium">
             <span>Sản phẩm</span>
             <span className="text-center">Đơn giá</span>
@@ -490,6 +575,28 @@ export function PaymentInfoCard({
           </div>
         </div>
 
+        {/* API Message Display */}
+        {apiMessage && (
+          <div className="rounded-md border border-green-200 bg-green-50 p-3">
+            <div className="flex items-center">
+              <svg
+                className="mr-3 h-5 w-5 text-green-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span className="text-sm font-medium text-green-800">
+                {apiMessage}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Payment Method Selection */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -497,8 +604,8 @@ export function PaymentInfoCard({
             <p className="text-sm font-medium">Phương thức thanh toán:</p>
           </div>
 
-          {isPaymentCompleted ? (
-            // Đã thanh toán thành công - chỉ hiển thị phương thức đã chọn
+          {paymentStatus === 2 ? (
+            // Đã thanh toán thành công - hiển thị phương thức đã chọn
             <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
               {displayPaymentMethod === "Cash" ||
               invoiceData?.payment?.paymentMethod === "Cash" ||
@@ -528,8 +635,8 @@ export function PaymentInfoCard({
                 </span>
               )}
             </div>
-          ) : isPaymentCancelled ? (
-            // Thanh toán đã bị hủy - hiển thị trạng thái hủy và cho phép chọn lại
+          ) : paymentStatus === 3 ? (
+            // Thanh toán đã bị hủy - chỉ hiển thị phương thức Tiền mặt
             <>
               <div className="text-danger mb-3 flex items-center gap-2 rounded-md border-2 border-red-300 bg-red-50 p-3">
                 <span className="text-sm font-medium">
@@ -548,33 +655,35 @@ export function PaymentInfoCard({
                     })}
                 </span>
               </div>
-              {/* Cho phép chọn phương thức thanh toán mới */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => handlePaymentMethodChange("Cash")}
-                  disabled={disabled || isLoading}
-                  className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                    paymentMethod === "Cash"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-gray-200 hover:border-gray-300"
-                  } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-                >
+              {/* Chỉ hiển thị phương thức Tiền mặt */}
+              <div className="flex justify-center">
+                <div className="border-primary bg-primary/10 text-primary flex w-full max-w-xs items-center gap-2 rounded-md border-2 p-3">
                   <Banknote size={18} />
                   <span className="text-sm font-medium">Tiền mặt</span>
-                </button>
-
-                <button
-                  onClick={() => handlePaymentMethodChange("BankTransfer")}
-                  disabled={disabled}
-                  className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                    paymentMethod === "BankTransfer"
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-gray-200 hover:border-gray-300"
-                  } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-                >
-                  <Building2 size={18} />
-                  <span className="text-sm font-medium">Chuyển khoản</span>
-                </button>
+                </div>
+              </div>
+            </>
+          ) : isPaymentMethodSelected ? (
+            // Đã chọn phương thức thanh toán - hiển thị phương thức đã chọn và thông báo
+            <>
+              <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 p-2">
+                <p className="text-xs text-blue-700">
+                  ✓ Phương thức thanh toán đã được chọn và không thể thay đổi
+                </p>
+              </div>
+              <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
+                {selectedPaymentMethod === "Cash" ? (
+                  <>
+                    <Banknote size={18} />
+                    <span className="text-sm font-medium">Tiền mặt</span>
+                  </>
+                ) : (
+                  <>
+                    <Building2 size={18} />
+                    <span className="text-sm font-medium">Chuyển khoản</span>
+                  </>
+                )}
+                <span className="ml-auto text-xs text-gray-500">Đã chọn</span>
               </div>
             </>
           ) : (
@@ -582,12 +691,12 @@ export function PaymentInfoCard({
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handlePaymentMethodChange("Cash")}
-                disabled={disabled || isLoading}
+                disabled={disabled || isLoading || isPaymentMethodSelected}
                 className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
                   paymentMethod === "Cash"
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-gray-200 hover:border-gray-300"
-                } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                } ${disabled || isLoading || isPaymentMethodSelected ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Banknote size={18} />
                 <span className="text-sm font-medium">Tiền mặt</span>
@@ -595,12 +704,12 @@ export function PaymentInfoCard({
 
               <button
                 onClick={() => handlePaymentMethodChange("BankTransfer")}
-                disabled={disabled}
+                disabled={disabled || isLoading || isPaymentMethodSelected}
                 className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
                   paymentMethod === "BankTransfer"
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-gray-200 hover:border-gray-300"
-                } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                } ${disabled || isLoading || isPaymentMethodSelected ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Building2 size={18} />
                 <span className="text-sm font-medium">Chuyển khoản</span>
@@ -612,35 +721,55 @@ export function PaymentInfoCard({
         {/* Payment Action and Payment Status */}
         <div className="flex items-center justify-end gap-4 pt-4">
           {/* Payment Status */}
-          {isPaymentCompleted && (
+          {paymentStatus === 2 && (
             <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
               Đã thanh toán
             </span>
           )}
-          {isPaymentCancelled && (
+          {paymentStatus === 3 && (
             <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
               Thanh toán đã hủy
             </span>
           )}
 
           {/* Action Button */}
-          {isPaymentCompleted ? (
+          {paymentStatus === 2 ? (
+            // paymentStatus = 2 => hiển thị nút "In hóa đơn"
             <Button
               className="bg-secondary hover:bg-secondary/90 px-8 py-2 text-white"
               onClick={onExportInvoice}
             >
               In hóa đơn
             </Button>
-          ) : (
+          ) : paymentStatus === 3 && !hasNewPendingPayment ? (
+            // paymentStatus = 3 và chưa có payment mới => hiển thị nút "Thanh toán lại"
             <Button
-              onClick={
-                isPaymentCancelled ? handleRetryPayment : handlePaymentComplete
-              }
+              onClick={handleRetryPayment}
               disabled={disabled || isLoading}
               className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
             >
               {isLoading && <Loader2 className="mr-2 animate-spin" size={16} />}
-              {isPaymentCancelled ? "Thanh toán lại" : "Chọn thanh toán"}
+              Thanh toán lại
+            </Button>
+          ) : isPaymentMethodSelected && selectedPaymentMethod === "Cash" ? (
+            // Đã chọn phương thức Tiền mặt - hiển thị nút "Xác nhận thanh toán"
+            <Button
+              onClick={handlePaymentComplete}
+              disabled={disabled || isLoading}
+              className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
+            >
+              {isLoading && <Loader2 className="mr-2 animate-spin" size={16} />}
+              Xác nhận thanh toán
+            </Button>
+          ) : (
+            // Các trường hợp khác: chưa chọn phương thức hoặc đã chọn BankTransfer => hiển thị nút "Chọn thanh toán"
+            <Button
+              onClick={handleSelectPaymentMethod}
+              disabled={disabled || isLoading}
+              className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
+            >
+              {isLoading && <Loader2 className="mr-2 animate-spin" size={16} />}
+              Chọn thanh toán
             </Button>
           )}
         </div>

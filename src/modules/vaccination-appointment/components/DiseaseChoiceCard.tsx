@@ -33,6 +33,7 @@ export function DiseaseChoiceCard({
 }: Props) {
   const [open, setOpen] = useState(true);
   const [search, setSearch] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   // Normalize species to 'Dog' or 'Cat' (supports both English and Vietnamese, case-insensitive)
   const normalizeSpecies = (value?: string) => {
@@ -45,11 +46,24 @@ export function DiseaseChoiceCard({
   const species = normalizeSpecies(appointment?.petResponseDTO?.species);
 
   const debouncedSearch = useDebounce(search, 400);
+
+  // Track if we're currently searching (when search input differs from debounced value)
+  React.useEffect(() => {
+    if (search !== debouncedSearch && search.trim() !== "") {
+      // Add a small delay to avoid skeleton flashing for very short searches
+      const timer = setTimeout(() => setIsSearching(true), 100);
+      return () => clearTimeout(timer);
+    } else {
+      setIsSearching(false);
+    }
+  }, [search, debouncedSearch]);
+
   const {
     data: diseasesData,
     isLoading,
     isFetching,
   } = useDiseaseBySpecies(species || "");
+
   const diseases = React.useMemo(() => {
     if (!species || !diseasesData) return [];
     const keyword = debouncedSearch.trim().toLowerCase();
@@ -100,9 +114,9 @@ export function DiseaseChoiceCard({
             {/* Show species badge or warning if species is missing */}
             {species ? (
               <div className="flex items-center justify-end">
-                <Badge className="border-blue-200 bg-blue-100 text-blue-800">
+                <Badge className="font-nunito border-blue-200 bg-blue-100 text-blue-800">
                   <PawPrint size={12} className="mr-1" />
-                  Registered pet: {species === "Dog" ? "Dog" : "Cat"}
+                  Loài: {species === "Dog" ? "Chó" : "Mèo"}
                 </Badge>
               </div>
             ) : (
@@ -117,13 +131,18 @@ export function DiseaseChoiceCard({
             )}
 
             {/* List */}
-            {!species ? null : isLoading || isFetching ? (
+            {!species ? null : isLoading || isFetching || isSearching ? (
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                {Array.from({ length: 4 }).map((_, idx) => (
-                  <Skeleton
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div
                     key={idx}
-                    className="h-24 rounded-xl bg-[#FFFDFB]"
-                  />
+                    className="animate-pulse rounded-xl border border-[#E3E3E3] bg-[#FFFDFB] p-4 shadow-sm"
+                  >
+                    <Skeleton className="mb-2 h-5 w-3/4 bg-gray-200" />
+                    <Skeleton className="mb-2 h-4 w-full bg-gray-200" />
+                    <Skeleton className="mb-3 h-4 w-2/3 bg-gray-200" />
+                    <Skeleton className="h-6 w-16 rounded-full bg-gray-200" />
+                  </div>
                 ))}
               </div>
             ) : diseases.length === 0 ||

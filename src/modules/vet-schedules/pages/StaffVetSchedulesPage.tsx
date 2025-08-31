@@ -111,6 +111,7 @@ const StaffVetSchedulesPage = () => {
     data: vetSchedules,
     isLoading: isLoadingVetSchedules,
     error: vetSchedulesError,
+    refetch: refetchVetSchedules,
   } = useVetScheduleByVetId(selectedVetId ? parseInt(selectedVetId) : null);
 
   // Lọc và làm sạch dữ liệu vetSchedules
@@ -229,23 +230,23 @@ const StaffVetSchedulesPage = () => {
   }
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      <PageBreadcrumb items={["Trang chủ", "Quản lý lịch làm việc bác sĩ"]} />
-
+    <div className="mx-auto space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-gray-900">
+        <div className="font-nunito space-y-1">
+          <h1 className="font-inter-700 text-primary text-2xl">
             Quản lý lịch làm việc bác sĩ
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="ml-1 text-sm text-gray-400">
             Chọn bác sĩ để xem và quản lý lịch làm việc
           </p>
         </div>
       </div>
 
+      <PageBreadcrumb items={["Quản lý lịch làm việc bác sĩ"]} />
+
       {/* Filter chọn bác sĩ */}
-      <Card>
+      <Card className="py-4">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
@@ -276,7 +277,7 @@ const StaffVetSchedulesPage = () => {
                     vets.map((vet) => (
                       <SelectItem key={vet.vetId} value={vet.vetId.toString()}>
                         <div className="flex flex-col">
-                          <span className="font-medium">{vet.name}</span>
+                          <span className="font-nunito-600">{vet.name}</span>
                           <span className="text-sm text-gray-500">
                             {vet.specialization} - {vet.vetCode}
                           </span>
@@ -300,7 +301,7 @@ const StaffVetSchedulesPage = () => {
 
       {!selectedVetId ? (
         // Hiển thị thông báo khi chưa chọn bác sĩ
-        <Card>
+        <Card className="py-4">
           <CardContent className="py-12">
             <div className="text-center text-gray-500">
               <User className="mx-auto mb-4 h-16 w-16 opacity-50" />
@@ -355,6 +356,8 @@ const StaffVetSchedulesPage = () => {
         mode={modalMode}
         existingSchedule={existingSchedule}
         selectedDate={selectedDate}
+        selectedVetId={selectedVetId}
+        onSuccess={() => refetchVetSchedules()}
       />
     </div>
   );

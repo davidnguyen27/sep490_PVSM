@@ -43,6 +43,7 @@ interface Props {
   onCompleteVaccination: () => void;
   onFinalizeVaccination: () => void;
   onExportInvoice: () => void;
+  onRefreshData?: () => void;
 }
 
 export function StepContent({
@@ -63,6 +64,7 @@ export function StepContent({
   onCompleteVaccination,
   onFinalizeVaccination,
   onExportInvoice,
+  onRefreshData,
 }: Props) {
   const {
     setSelectedDiseaseId,
@@ -70,13 +72,18 @@ export function StepContent({
     setHealthData,
     setResultData,
   } = useVaccinationStore();
-  const paymentId = usePaymentStore((state) => state.paymentId);
   const paymentMethod = usePaymentStore((state) => state.paymentMethod);
+  const hasNewPendingPayment = usePaymentStore(
+    (state) => state.hasNewPendingPayment,
+  );
   const setPaymentId = usePaymentStore((state) => state.setPaymentId);
   const setPaymentMethod = usePaymentStore((state) => state.setPaymentMethod);
+  const setHasNewPendingPayment = usePaymentStore(
+    (state) => state.setHasNewPendingPayment,
+  );
 
   const appointmentStatus = data.appointment.appointmentStatus;
-  const isPaymentCompleted = Boolean(paymentId && paymentMethod);
+  const paymentStatus = data?.payment?.paymentStatus;
 
   const renderCommonCards = () => (
     <>
@@ -128,7 +135,7 @@ export function StepContent({
       {currentViewStatus === appointmentStatus && (
         <div className="flex justify-end gap-2">
           <Button variant="destructive" onClick={onShowReject}>
-            Từ chối
+            Hủy lịch
           </Button>
           <Button
             className="bg-primary text-white"
@@ -199,13 +206,16 @@ export function StepContent({
           customerId={data.appointment.customerResponseDTO.customerId}
           vaccineBatchId={formData.selectedVaccineBatchId!}
           invoiceData={data}
-          appointmentId={data.appointment.appointmentId || 0}
+          // appointmentId={data.appointment.appointmentId || 0}
           appointmentAddress={data.appointment.address}
+          appointmentLocation={data.appointment.location}
           onPaymentSuccess={(paymentId, method) => {
             setPaymentId(paymentId);
             setPaymentMethod(method);
           }}
           onExportInvoice={onExportInvoice}
+          onRefreshData={onRefreshData}
+          onCompleteVaccination={onCompleteVaccination}
         />
       ) : (
         <div className="bg-linen rounded-none border border-gray-200 p-6 shadow-md">
@@ -217,17 +227,22 @@ export function StepContent({
           </div>
         </div>
       )}
-      {isPaymentCompleted && paymentMethod !== "BankTransfer" && !isVet && (
-        <div className="flex justify-end">
-          <Button
-            className="bg-primary text-white"
-            onClick={onCompleteVaccination}
-            disabled={isPending}
-          >
-            Xác nhận thanh toán
-          </Button>
-        </div>
-      )}
+      {((paymentStatus === 1 && paymentMethod === "Cash") ||
+        (hasNewPendingPayment && paymentMethod === "Cash")) &&
+        !isVet && (
+          <div className="flex justify-end">
+            <Button
+              className="bg-primary text-white"
+              onClick={() => {
+                onCompleteVaccination();
+                setHasNewPendingPayment(false); // Reset flag after confirmation
+              }}
+              disabled={isPending}
+            >
+              Xác nhận thanh toán
+            </Button>
+          </div>
+        )}
     </div>
   );
 

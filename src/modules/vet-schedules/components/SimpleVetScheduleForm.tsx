@@ -158,7 +158,7 @@ export function SimpleVetScheduleForm({
             <div className="space-y-2">
               <Label
                 htmlFor="date"
-                className="flex items-center gap-2 text-sm font-medium"
+                className="font-nunito-500 flex items-center gap-2 text-sm"
               >
                 <CalendarIcon className="h-4 w-4" />
                 Ngày làm việc
@@ -179,7 +179,7 @@ export function SimpleVetScheduleForm({
             <div className="space-y-2">
               <Label
                 htmlFor="timeSlot"
-                className="flex items-center gap-2 text-sm font-medium"
+                className="font-nunito-500 flex items-center gap-2 text-sm"
               >
                 <Clock className="h-4 w-4" />
                 Ca làm việc
@@ -201,7 +201,7 @@ export function SimpleVetScheduleForm({
                       className="mr-3 text-blue-600"
                     />
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="font-nunito-500 text-sm text-gray-900">
                         {slot.label}
                       </div>
                       <div className="text-xs text-gray-500">{slot.period}</div>
@@ -213,7 +213,7 @@ export function SimpleVetScheduleForm({
 
             {/* Status Selection */}
             <div className="space-y-2">
-              <Label htmlFor="status" className="text-sm font-medium">
+              <Label htmlFor="status" className="font-nunito-500 text-sm">
                 Trạng thái
               </Label>
               <div className="grid grid-cols-2 gap-2">
@@ -239,7 +239,7 @@ export function SimpleVetScheduleForm({
                   />
                   <div className="text-center">
                     <div className="mx-auto mb-1 h-3 w-3 rounded-full bg-green-500"></div>
-                    <div className="text-xs font-medium">Trống</div>
+                    <div className="font-nunito-500 text-xs">Trống</div>
                   </div>
                 </label>
 
@@ -265,7 +265,7 @@ export function SimpleVetScheduleForm({
                   />
                   <div className="text-center">
                     <div className="mx-auto mb-1 h-3 w-3 rounded-full bg-gray-400"></div>
-                    <div className="text-xs font-medium">Không có lịch</div>
+                    <div className="font-nunito-500 text-xs">Không có lịch</div>
                   </div>
                 </label>
               </div>

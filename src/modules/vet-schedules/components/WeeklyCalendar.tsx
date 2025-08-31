@@ -51,7 +51,7 @@ export const WeeklyCalendar = ({
   onNextPeriod,
 }: WeeklyCalendarProps) => {
   return (
-    <Card>
+    <Card className="py-4">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">

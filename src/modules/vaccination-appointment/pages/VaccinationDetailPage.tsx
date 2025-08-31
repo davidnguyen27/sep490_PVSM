@@ -51,7 +51,7 @@ export default function VaccinationAppDetailPage() {
   } = useVaccinationStore();
   const { reset: resetPayment } = usePaymentStore();
 
-  const { data } = useVaccinationDetail(Number(appointmentId));
+  const { data, refetch } = useVaccinationDetail(Number(appointmentId));
 
   // Custom hooks for handlers and validation
   const {
@@ -161,6 +161,7 @@ export default function VaccinationAppDetailPage() {
         onCompleteVaccination={handlePayment}
         onFinalizeVaccination={handleFinalizeVaccination}
         onExportInvoice={() => handleExportInvoice()}
+        onRefreshData={refetch}
       />
 
       <RejectModal

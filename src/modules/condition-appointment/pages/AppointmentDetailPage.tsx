@@ -36,7 +36,7 @@ export default function AppointmentDetailPage() {
   } = useConditionStore();
   const { reset: resetPayment } = usePaymentStore();
 
-  const { data } = useConditionDetail(appointmentDetailId);
+  const { data, refetch } = useConditionDetail(appointmentDetailId);
   const appointmentId = data?.appointmentId ?? null;
 
   const {
@@ -136,6 +136,7 @@ export default function AppointmentDetailPage() {
         onCompleteCondition={handlePayment}
         onFinalizeCondition={handleFinalizeCondition}
         onExportInvoice={() => handleExportInvoice()}
+        onRefreshData={refetch}
       />
 
       <RejectModal

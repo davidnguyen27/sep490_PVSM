@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useSearchParams } from "react-router-dom";
 import { AppointmentTable } from "../components";
@@ -27,9 +27,23 @@ export default function VaccinationAppListPage() {
 
   const debouncedSearch = useDebounce(search, 500, { leading: true });
 
+  // Reset page to 1 when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    document.title = "PVMS | Danh sách lịch tiêm chủng";
+
+    return () => {
+      document.title = "PVMS | Danh sách lịch tiêm chủng";
+    };
+  }, []);
+
+  // Fetch with a large pageSize to get most data, then paginate on frontend
   const { data, isPending, isFetching, refetch } = useVaccinationApps({
-    pageNumber: page,
-    pageSize: 10,
+    pageNumber: 1,
+    pageSize: 1000, // Get a large amount of data
     keyWord: debouncedSearch,
     vetId,
   });
@@ -43,20 +57,29 @@ export default function VaccinationAppListPage() {
     return <VaccinationDetailPage />;
   }
 
-  const vaccinationApps = data?.data.pageData ?? [];
-  const totalPages = data?.data.pageInfo.totalPage ?? 1;
+  const allVaccinationApps = data?.data.pageData ?? [];
 
-  const filteredData = vaccinationApps.filter((item) => {
-    const matchLocation =
-      !filters.location ||
-      item.appointment.location === Number(filters.location);
+  // Sort by appointmentId in descending order (newest first) and then apply filters
+  const sortedAndFilteredData = allVaccinationApps
+    .sort((a, b) => b.appointment.appointmentId - a.appointment.appointmentId)
+    .filter((item) => {
+      const matchLocation =
+        !filters.location ||
+        item.appointment.location === Number(filters.location);
 
-    const matchStatus =
-      !filters.status ||
-      item.appointment.appointmentStatus === Number(filters.status);
+      const matchStatus =
+        !filters.status ||
+        item.appointment.appointmentStatus === Number(filters.status);
 
-    return matchLocation && matchStatus;
-  });
+      return matchLocation && matchStatus;
+    });
+
+  // Frontend pagination
+  const pageSize = 10;
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedData = sortedAndFilteredData.slice(startIndex, endIndex);
+  const frontendTotalPages = Math.ceil(sortedAndFilteredData.length / pageSize);
 
   return (
     <div className="space-y-6">
@@ -88,15 +111,15 @@ export default function VaccinationAppListPage() {
       </div>
 
       <AppointmentTable
-        appointmentData={filteredData}
+        appointmentData={paginatedData}
         isPending={isPending || isFetching}
         currentPage={page}
-        pageSize={10}
+        pageSize={pageSize}
       />
 
       <Pagination
         currentPage={page}
-        totalPages={totalPages}
+        totalPages={frontendTotalPages}
         onPageChange={(newPage) => setPage(newPage)}
       />
     </div>
