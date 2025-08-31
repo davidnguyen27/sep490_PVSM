@@ -42,7 +42,6 @@ interface Props {
   invoiceData?: VaccinationDetail;
   onExportInvoice?: () => void;
   onRefreshData?: () => void; // Add callback to refresh data
-  onCompleteVaccination?: () => void; // Add callback for completing vaccination
   // Add new props for home service
   appointmentAddress?: string;
   appointmentLocation?: number; // Add location as prop instead of fetching from API
@@ -63,7 +62,6 @@ export function PaymentInfoCard({
   onPaymentSuccess,
   onExportInvoice,
   onRefreshData,
-  onCompleteVaccination,
   invoiceData,
   appointmentAddress,
   appointmentLocation,
@@ -72,9 +70,9 @@ export function PaymentInfoCard({
   const hasNewPendingPayment = usePaymentStore(
     (state) => state.hasNewPendingPayment,
   );
-  const isPaymentMethodSelected = usePaymentStore(
-    (state) => state.isPaymentMethodSelected,
-  );
+  // const isPaymentMethodSelected = usePaymentStore(
+  //   (state) => state.isPaymentMethodSelected,
+  // );
   const setQrCode = usePaymentStore((state) => state.setQrCode);
   const setHasNewPendingPayment = usePaymentStore(
     (state) => state.setHasNewPendingPayment,
@@ -90,9 +88,9 @@ export function PaymentInfoCard({
   const [apiMessage, setApiMessage] = useState<string | null>(null);
 
   // State to store the selected payment method when user clicks "Chọn thanh toán"
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    "Cash" | "BankTransfer" | null
-  >(null);
+  // const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
+  //   "Cash" | "BankTransfer" | null
+  // >(null);
 
   // State for voucher management
   const [selectedVoucher, setSelectedVoucher] =
@@ -179,17 +177,22 @@ export function PaymentInfoCard({
   const paymentStatus = invoiceData?.payment?.paymentStatus;
   const isPaymentCancelled = paymentStatus === 3;
 
+  // Kiểm tra xem payment đã tồn tại và có paymentMethod chưa
+  const existingPayment = invoiceData?.payment;
+  const hasExistingPaymentMethod =
+    existingPayment && existingPayment.paymentMethod;
+
   // Reset states when payment status changes
   useEffect(() => {
     if (paymentStatus === 2) {
       // Payment completed successfully - reset all states
       setIsPaymentMethodSelected(false);
-      setSelectedPaymentMethod(null);
+      //setSelectedPaymentMethod(null);
       setApiMessage(null);
     } else if (paymentStatus === 3) {
       // Payment was cancelled - reset payment selection to allow new selection
       setIsPaymentMethodSelected(false);
-      setSelectedPaymentMethod(null);
+      //setSelectedPaymentMethod(null);
       setApiMessage(null);
     }
   }, [paymentStatus, setIsPaymentMethodSelected]);
@@ -205,9 +208,9 @@ export function PaymentInfoCard({
   const savedPaymentMethod = invoiceData?.payment?.paymentMethod;
   const displayPaymentMethod =
     savedPaymentMethod === "Cash" ||
-    savedPaymentMethod === "BankTransfer" ||
-    savedPaymentMethod === "CASH" ||
-    savedPaymentMethod === "BANK_TRANSFER"
+      savedPaymentMethod === "BankTransfer" ||
+      savedPaymentMethod === "CASH" ||
+      savedPaymentMethod === "BANK_TRANSFER"
       ? savedPaymentMethod === "CASH"
         ? "Cash"
         : savedPaymentMethod === "BANK_TRANSFER"
@@ -222,7 +225,7 @@ export function PaymentInfoCard({
     [setPaymentMethod],
   );
 
-  const handleSelectPaymentMethod = useCallback(async () => {
+  const handlePaymentComplete = useCallback(() => {
     const payload: PaymentPayload = {
       appointmentDetailId,
       customerId,
@@ -231,53 +234,42 @@ export function PaymentInfoCard({
       voucherCode: selectedVoucher ? selectedVoucher.voucher.voucherCode : null,
     };
 
-    try {
-      setIsLoading(true);
-      const response = await createPaymentWithUrls(payload);
+    console.log("Vaccination Payment payload with voucher:", payload);
 
-      // Display API message using toast
-      if (response.message) {
-        toast.success(response.message);
-        setApiMessage(response.message);
-      }
+    createPaymentWithUrls(payload)
+      .then((response) => {
+        const data = response.data;
+        const id = data?.paymentId;
 
-      const data = response.data;
-      const id = data?.paymentId;
+        if (!id) return;
 
-      if (!id) return;
+        setPaymentType("vaccination");
+        setPaymentId(id);
+        setQrCode(data.qrCode ?? null);
 
-      setPaymentType("vaccination");
-      setPaymentId(id);
-      setQrCode(data.qrCode ?? null);
-
-      // Mark payment method as selected and save the selected method
-      setIsPaymentMethodSelected(true);
-      setSelectedPaymentMethod(paymentMethod);
-
-      if (paymentMethod === "Cash") {
-        onPaymentSuccess?.(id, "Cash");
-        setHasNewPendingPayment(true); // Set flag for new pending payment
-        // Refresh data to update payment status
-        setTimeout(() => {
-          onRefreshData?.();
-        }, 500);
-      } else if (
-        paymentMethod === "BankTransfer" &&
-        data.checkoutUrl &&
-        data.paymentId
-      ) {
-        const url = new URL(data.checkoutUrl);
-        url.searchParams.set("paymentId", String(data.paymentId));
-        window.location.href = url.toString();
-      }
-    } catch (error) {
-      console.error("Payment selection failed:", error);
-      const errorMessage = "Có lỗi xảy ra khi chọn phương thức thanh toán";
-      toast.error(errorMessage);
-      setApiMessage(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+        if (paymentMethod === "Cash") {
+          onPaymentSuccess?.(id, "Cash");
+          setHasNewPendingPayment(true); // Set flag for new pending payment
+          // Refresh data to update payment status
+          setTimeout(() => {
+            onRefreshData?.();
+          }, 500);
+        } else if (
+          paymentMethod === "BankTransfer" &&
+          data.checkoutUrl &&
+          data.paymentId
+        ) {
+          const url = new URL(data.checkoutUrl);
+          url.searchParams.set("paymentId", String(data.paymentId));
+          window.location.href = url.toString();
+        }
+      })
+      .catch((error) => {
+        console.error("Payment creation failed:", error);
+        const errorMessage = "Có lỗi xảy ra khi tạo thanh toán";
+        toast.error(errorMessage);
+        setApiMessage(errorMessage);
+      });
   }, [
     appointmentDetailId,
     customerId,
@@ -290,39 +282,8 @@ export function PaymentInfoCard({
     setPaymentType,
     onPaymentSuccess,
     setHasNewPendingPayment,
-    setIsPaymentMethodSelected,
-    setSelectedPaymentMethod,
     onRefreshData,
   ]);
-
-  const handlePaymentComplete = useCallback(async () => {
-    // This function now only handles payment confirmation (for Cash payments)
-    try {
-      setIsLoading(true);
-
-      // Call the complete vaccination function
-      if (onCompleteVaccination) {
-        onCompleteVaccination();
-      }
-      setHasNewPendingPayment(false); // Reset flag after confirmation
-
-      const successMessage = "Thanh toán đã được xác nhận thành công!";
-      toast.success(successMessage);
-      setApiMessage(successMessage);
-
-      // Refresh data to update payment status
-      setTimeout(() => {
-        onRefreshData?.();
-      }, 500);
-    } catch (error) {
-      console.error("Payment confirmation failed:", error);
-      const errorMessage = "Có lỗi xảy ra khi xác nhận thanh toán";
-      toast.error(errorMessage);
-      setApiMessage(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onCompleteVaccination, setHasNewPendingPayment, onRefreshData]);
 
   const handleRetryPayment = useCallback(async () => {
     // Khi thanh toán lại từ trạng thái hủy, luôn sử dụng Cash
@@ -608,8 +569,8 @@ export function PaymentInfoCard({
             // Đã thanh toán thành công - hiển thị phương thức đã chọn
             <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
               {displayPaymentMethod === "Cash" ||
-              invoiceData?.payment?.paymentMethod === "Cash" ||
-              invoiceData?.payment?.paymentMethod === "CASH" ? (
+                invoiceData?.payment?.paymentMethod === "Cash" ||
+                invoiceData?.payment?.paymentMethod === "CASH" ? (
                 <>
                   <Banknote size={18} />
                   <span className="text-sm font-medium">Tiền mặt</span>
@@ -622,16 +583,15 @@ export function PaymentInfoCard({
               )}
               {invoiceData?.payment?.paymentDate && (
                 <span className="ml-auto text-xs text-gray-500">
-                  {new Date(invoiceData.payment.paymentDate).toLocaleDateString(
-                    "vi-VN",
-                    {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    },
-                  )}
+                  {new Date(
+                    invoiceData.payment.paymentDate,
+                  ).toLocaleDateString("vi-VN", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
               )}
             </div>
@@ -663,40 +623,37 @@ export function PaymentInfoCard({
                 </div>
               </div>
             </>
-          ) : isPaymentMethodSelected ? (
-            // Đã chọn phương thức thanh toán - hiển thị phương thức đã chọn và thông báo
-            <>
-              <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 p-2">
-                <p className="text-xs text-blue-700">
-                  ✓ Phương thức thanh toán đã được chọn và không thể thay đổi
-                </p>
-              </div>
-              <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
-                {selectedPaymentMethod === "Cash" ? (
-                  <>
-                    <Banknote size={18} />
-                    <span className="text-sm font-medium">Tiền mặt</span>
-                  </>
-                ) : (
-                  <>
-                    <Building2 size={18} />
-                    <span className="text-sm font-medium">Chuyển khoản</span>
-                  </>
-                )}
-                <span className="ml-auto text-xs text-gray-500">Đã chọn</span>
-              </div>
-            </>
+          ) : hasExistingPaymentMethod ? (
+            // Payment đã tồn tại với paymentMethod - không cho chọn lại, chỉ hiển thị
+            <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
+              {displayPaymentMethod === "Cash" ||
+                invoiceData?.payment?.paymentMethod === "Cash" ||
+                invoiceData?.payment?.paymentMethod === "CASH" ||
+                invoiceData?.payment?.paymentMethod === "1" ? (
+                <>
+                  <Banknote size={18} />
+                  <span className="text-sm font-medium">Tiền mặt</span>
+                </>
+              ) : (
+                <>
+                  <Building2 size={18} />
+                  <span className="text-sm font-medium">Chuyển khoản</span>
+                </>
+              )}
+              <span className="ml-auto text-xs text-gray-500">
+                Đã chọn phương thức thanh toán
+              </span>
+            </div>
           ) : (
             // Chưa thanh toán - cho phép chọn phương thức
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handlePaymentMethodChange("Cash")}
-                disabled={disabled || isLoading || isPaymentMethodSelected}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                  paymentMethod === "Cash"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${disabled || isLoading || isPaymentMethodSelected ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                disabled={disabled || isLoading}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "Cash"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-gray-200 hover:border-gray-300"
+                  } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Banknote size={18} />
                 <span className="text-sm font-medium">Tiền mặt</span>
@@ -704,12 +661,11 @@ export function PaymentInfoCard({
 
               <button
                 onClick={() => handlePaymentMethodChange("BankTransfer")}
-                disabled={disabled || isLoading || isPaymentMethodSelected}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                  paymentMethod === "BankTransfer"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${disabled || isLoading || isPaymentMethodSelected ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                disabled={disabled}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "BankTransfer"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-gray-200 hover:border-gray-300"
+                  } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Building2 size={18} />
                 <span className="text-sm font-medium">Chuyển khoản</span>
@@ -751,27 +707,17 @@ export function PaymentInfoCard({
               {isLoading && <Loader2 className="mr-2 animate-spin" size={16} />}
               Thanh toán lại
             </Button>
-          ) : isPaymentMethodSelected && selectedPaymentMethod === "Cash" ? (
-            // Đã chọn phương thức Tiền mặt - hiển thị nút "Xác nhận thanh toán"
+          ) : !existingPayment ? (
+            // Chỉ hiển thị nút "Chọn thanh toán" khi chưa có payment nào (lần đầu tiên)
             <Button
               onClick={handlePaymentComplete}
               disabled={disabled || isLoading}
               className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
             >
               {isLoading && <Loader2 className="mr-2 animate-spin" size={16} />}
-              Xác nhận thanh toán
-            </Button>
-          ) : (
-            // Các trường hợp khác: chưa chọn phương thức hoặc đã chọn BankTransfer => hiển thị nút "Chọn thanh toán"
-            <Button
-              onClick={handleSelectPaymentMethod}
-              disabled={disabled || isLoading}
-              className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
-            >
-              {isLoading && <Loader2 className="mr-2 animate-spin" size={16} />}
               Chọn thanh toán
             </Button>
-          )}
+          ) : null}
         </div>
       </CardContent>
     </Card>

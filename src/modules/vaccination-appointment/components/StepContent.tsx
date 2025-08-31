@@ -84,7 +84,17 @@ export function StepContent({
 
   const appointmentStatus = data.appointment.appointmentStatus;
   const paymentStatus = data?.payment?.paymentStatus;
-
+  const savedPaymentMethod = data?.payment?.paymentMethod;
+  const currentPaymentMethod =
+    savedPaymentMethod === "Cash" ||
+      savedPaymentMethod === "CASH" ||
+      savedPaymentMethod === "1"
+      ? "Cash"
+      : savedPaymentMethod === "BankTransfer" ||
+        savedPaymentMethod === "BANK_TRANSFER" ||
+        savedPaymentMethod === "2"
+        ? "BankTransfer"
+        : paymentMethod;
   const renderCommonCards = () => (
     <>
       <PetInfoCard data={data} />
@@ -215,7 +225,6 @@ export function StepContent({
           }}
           onExportInvoice={onExportInvoice}
           onRefreshData={onRefreshData}
-          onCompleteVaccination={onCompleteVaccination}
         />
       ) : (
         <div className="bg-linen rounded-none border border-gray-200 p-6 shadow-md">
@@ -227,15 +236,19 @@ export function StepContent({
           </div>
         </div>
       )}
-      {((paymentStatus === 1 && paymentMethod === "Cash") ||
-        (hasNewPendingPayment && paymentMethod === "Cash")) &&
-        !isVet && (
+      {/* Hiển thị button Xác nhận thanh toán khi payment method là Cash */}
+      {!isVet &&
+        ((paymentStatus === 1 && currentPaymentMethod === "Cash") ||
+          (hasNewPendingPayment && currentPaymentMethod === "Cash")) && (
           <div className="flex justify-end">
             <Button
               className="bg-primary text-white"
               onClick={() => {
                 onCompleteVaccination();
                 setHasNewPendingPayment(false); // Reset flag after confirmation
+                setTimeout(() => {
+                  onRefreshData?.();
+                }, 500);
               }}
               disabled={isPending}
             >

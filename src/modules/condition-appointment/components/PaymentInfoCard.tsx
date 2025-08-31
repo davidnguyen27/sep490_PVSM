@@ -236,6 +236,11 @@ export function PaymentInfoCard({
   const paymentStatus = invoiceData?.payment?.paymentStatus;
   const isPaymentCancelled = paymentStatus === 3;
 
+  // Kiểm tra xem payment đã tồn tại và có paymentMethod chưa
+  const existingPayment = invoiceData?.payment;
+  const hasExistingPaymentMethod =
+    existingPayment && existingPayment.paymentMethod;
+
   // Kiểm tra trạng thái thanh toán từ data thực tế
   const isActuallyPaid = invoiceData?.payment?.paymentStatus === 2;
   const { setPaymentType } = usePaymentStore.getState();
@@ -244,9 +249,9 @@ export function PaymentInfoCard({
   const savedPaymentMethod = invoiceData?.payment?.paymentMethod;
   const displayPaymentMethod =
     savedPaymentMethod === "Cash" ||
-    savedPaymentMethod === "BankTransfer" ||
-    savedPaymentMethod === "CASH" ||
-    savedPaymentMethod === "BANK_TRANSFER"
+      savedPaymentMethod === "BankTransfer" ||
+      savedPaymentMethod === "CASH" ||
+      savedPaymentMethod === "BANK_TRANSFER"
       ? savedPaymentMethod === "CASH"
         ? "Cash"
         : savedPaymentMethod === "BANK_TRANSFER"
@@ -516,12 +521,12 @@ export function PaymentInfoCard({
             <p className="text-sm font-medium">Phương thức thanh toán:</p>
           </div>
 
-          {paymentId || isActuallyPaid ? (
-            // Đã thanh toán - chỉ hiển thị phương thức đã chọn
+          {paymentStatus === 2 ? (
+            // Đã thanh toán thành công - hiển thị phương thức đã chọn
             <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
               {displayPaymentMethod === "Cash" ||
-              invoiceData?.payment?.paymentMethod === "Cash" ||
-              invoiceData?.payment?.paymentMethod === "CASH" ? (
+                invoiceData?.payment?.paymentMethod === "Cash" ||
+                invoiceData?.payment?.paymentMethod === "CASH" ? (
                 <>
                   <Banknote size={18} />
                   <span className="text-sm font-medium">Tiền mặt</span>
@@ -547,17 +552,62 @@ export function PaymentInfoCard({
                 </span>
               )}
             </div>
+          ) : paymentStatus === 3 ? (
+            // Thanh toán đã bị hủy - chỉ hiển thị phương thức Tiền mặt
+            <>
+              <div className="text-danger mb-3 flex items-center gap-2 rounded-md border-2 border-red-300 bg-red-50 p-3">
+                <span className="text-sm font-medium">
+                  Thanh toán đã bị hủy
+                </span>
+                <span className="ml-auto text-xs text-gray-500">
+                  {invoiceData?.payment?.paymentDate &&
+                    new Date(
+                      invoiceData.payment.paymentDate,
+                    ).toLocaleDateString("vi-VN", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                </span>
+              </div>
+              {/* Chỉ hiển thị phương thức Tiền mặt */}
+              <div className="flex justify-center">
+                <div className="border-primary bg-primary/10 text-primary flex w-full max-w-xs items-center gap-2 rounded-md border-2 p-3">
+                  <Banknote size={18} />
+                  <span className="text-sm font-medium">Tiền mặt</span>
+                </div>
+              </div>
+            </>
+          ) : hasExistingPaymentMethod ? (
+            // Payment đã tồn tại với paymentMethod - không cho chọn lại, chỉ hiển thị
+            <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
+              {displayPaymentMethod === "Cash" ||
+                invoiceData?.payment?.paymentMethod === "Cash" ||
+                invoiceData?.payment?.paymentMethod === "CASH" ? (
+                <>
+                  <Banknote size={18} />
+                  <span className="text-sm font-medium">Tiền mặt</span>
+                </>
+              ) : (
+                <>
+                  <Building2 size={18} />
+                  <span className="text-sm font-medium">Chuyển khoản</span>
+                </>
+              )}
+              <span className="ml-auto text-xs text-gray-500">Đã chọn phương thức thanh toán</span>
+            </div>
           ) : (
             // Chưa thanh toán - cho phép chọn phương thức
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handlePaymentMethodChange("Cash")}
                 disabled={disabled || isLoading}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                  paymentMethod === "Cash"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "Cash"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-gray-200 hover:border-gray-300"
+                  } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Banknote size={18} />
                 <span className="text-sm font-medium">Tiền mặt</span>
@@ -566,11 +616,10 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("BankTransfer")}
                 disabled={disabled}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                  paymentMethod === "BankTransfer"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "BankTransfer"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-gray-200 hover:border-gray-300"
+                  } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Building2 size={18} />
                 <span className="text-sm font-medium">Chuyển khoản</span>
@@ -595,51 +644,35 @@ export function PaymentInfoCard({
           )}
 
           {/* Action Button */}
-          {paymentId || isActuallyPaid ? (
-            !isPaymentCancelled ? (
-              // Thanh toán thành công - cho phép in hóa đơn
-              <Button
-                className="bg-secondary hover:bg-secondary/90 px-8 py-2 text-white"
-                onClick={onExportInvoice}
-              >
-                In hóa đơn
-              </Button>
-            ) : !hasNewPendingPayment ? (
-              // Thanh toán bị hủy và chưa có payment mới - cho phép thanh toán lại
-              <Button
-                onClick={handleRetryPayment}
-                disabled={isRetrying}
-                className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
-              >
-                {isRetrying && (
-                  <Loader2 className="mr-2 animate-spin" size={16} />
-                )}
-                Thanh toán lại
-              </Button>
-            ) : (
-              // Thanh toán bị hủy nhưng có payment mới - cho phép chọn thanh toán
-              <Button
-                onClick={handlePaymentComplete}
-                disabled={disabled || isLoading}
-                className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
-              >
-                {isLoading && (
-                  <Loader2 className="mr-2 animate-spin" size={16} />
-                )}
-                Chọn thanh toán
-              </Button>
-            )
-          ) : (
-            // Chưa thanh toán - thanh toán lần đầu
+          {paymentStatus === 2 ? (
+            // paymentStatus = 2 => hiển thị nút "In hóa đơn"
+            <Button
+              className="bg-secondary hover:bg-secondary/90 px-8 py-2 text-white"
+              onClick={onExportInvoice}
+            >
+              In hóa đơn
+            </Button>
+          ) : paymentStatus === 3 && !hasNewPendingPayment ? (
+            // paymentStatus = 3 và chưa có payment mới => hiển thị nút "Thanh toán lại"
+            <Button
+              onClick={handleRetryPayment}
+              disabled={disabled || isRetrying}
+              className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
+            >
+              {isRetrying && <Loader2 className="mr-2 animate-spin" size={16} />}
+              Thanh toán lại
+            </Button>
+          ) : !existingPayment ? (
+            // Chỉ hiển thị nút "Chọn thanh toán" khi chưa có payment nào (lần đầu tiên)
             <Button
               onClick={handlePaymentComplete}
               disabled={disabled || isLoading}
               className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
             >
               {isLoading && <Loader2 className="mr-2 animate-spin" size={16} />}
-              Thanh toán
+              Chọn thanh toán
             </Button>
-          )}
+          ) : null}
         </div>
       </CardContent>
     </Card>

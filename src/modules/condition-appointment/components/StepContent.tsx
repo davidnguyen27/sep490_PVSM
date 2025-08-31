@@ -53,7 +53,6 @@ export function StepContent({
   const { setVetSelection } = useConditionStore();
   const navigate = useNavigate();
 
-  const paymentId = usePaymentStore((state) => state.paymentId);
   const paymentMethod = usePaymentStore((state) => state.paymentMethod);
   const hasNewPendingPayment = usePaymentStore(
     (state) => state.hasNewPendingPayment,
@@ -67,7 +66,18 @@ export function StepContent({
   const setVitalSigns = useConditionStore((state) => state.setVitalSigns);
 
   const appointmentStatus = data.appointment.appointmentStatus;
-  const isPaymentCompleted = Boolean(paymentId && paymentMethod);
+  const paymentStatus = data?.payment?.paymentStatus;
+  const savedPaymentMethod = data?.payment?.paymentMethod;
+  const currentPaymentMethod =
+    savedPaymentMethod === "Cash" ||
+      savedPaymentMethod === "CASH" ||
+      savedPaymentMethod === "1"
+      ? "Cash"
+      : savedPaymentMethod === "BankTransfer" ||
+        savedPaymentMethod === "BANK_TRANSFER" ||
+        savedPaymentMethod === "2"
+        ? "BankTransfer"
+        : paymentMethod;
 
   const renderCommonInfo = () => (
     <>
@@ -204,20 +214,26 @@ export function StepContent({
           </div>
         </div>
       )}
-      {!isVet && (isPaymentCompleted || hasNewPendingPayment) && (
-        <div className="flex justify-end">
-          <Button
-            className="bg-primary text-white"
-            onClick={() => {
-              onCompleteCondition();
-              setHasNewPendingPayment(false); // Reset flag after confirmation
-            }}
-            disabled={isPending}
-          >
-            Xác nhận thanh toán
-          </Button>
-        </div>
-      )}
+      {!isVet &&
+        ((paymentStatus === 1 && currentPaymentMethod === "Cash") ||
+          (hasNewPendingPayment && currentPaymentMethod === "Cash")) && (
+          <div className="flex justify-end">
+            <Button
+              className="bg-primary text-white"
+              onClick={() => {
+                onCompleteCondition();
+                setHasNewPendingPayment(false); // Reset flag after confirmation
+                // Refresh data to update payment status
+                setTimeout(() => {
+                  onRefreshData?.();
+                }, 500);
+              }}
+              disabled={isPending}
+            >
+              Xác nhận thanh toán
+            </Button>
+          </div>
+        )}
     </div>
   );
 
