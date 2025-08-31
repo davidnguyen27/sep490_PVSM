@@ -1,4 +1,4 @@
-import type { BaseListResponse } from "@/shared/types/api.type";
+import type { BaseListResponse, BaseResponse } from "@/shared/types/api.type";
 import type { Disease } from "../types/disease.type";
 import axiosInstance from "@/lib/axios";
 import type { DiseasePayload } from "../types/disease.payload.type";
@@ -57,7 +57,9 @@ export const diseaseService = {
       .then((res) => (res.data.success ? res.data.data : null));
   },
 
-  async deleteDisease(diseaseId: number | null): Promise<Disease> {
+  async deleteDisease(
+    diseaseId: number | null,
+  ): Promise<BaseResponse<Disease>> {
     return axiosInstance
       .delete(`/api/Disease/delete-disease/${diseaseId}`)
       .then((res) => res.data);

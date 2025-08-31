@@ -34,6 +34,7 @@ interface Props {
   onCompleteMicrochip: () => void;
   onFinalizeMicrochip: () => void;
   onExportInvoice: () => void;
+  onRefreshData?: () => void;
 }
 
 export function StepContent({
@@ -52,16 +53,35 @@ export function StepContent({
   onCompleteMicrochip,
   onFinalizeMicrochip,
   onExportInvoice,
+  onRefreshData,
 }: Props) {
   const { setVetSelection, setFormData, setResult } = useMicrochipStore();
 
-  const paymentId = usePaymentStore((state) => state.paymentId);
   const paymentMethod = usePaymentStore((state) => state.paymentMethod);
+  const hasNewPendingPayment = usePaymentStore(
+    (state) => state.hasNewPendingPayment,
+  );
   const setPaymentId = usePaymentStore((state) => state.setPaymentId);
   const setPaymentMethod = usePaymentStore((state) => state.setPaymentMethod);
+  const setHasNewPendingPayment = usePaymentStore(
+    (state) => state.setHasNewPendingPayment,
+  );
 
   const appointmentStatus = data.microchip.appointmentStatus;
-  const isPaymentCompleted = Boolean(paymentId && paymentMethod);
+  const paymentStatus = data?.microchip?.payment?.paymentStatus;
+
+  // Lấy paymentMethod từ payment data nếu có, otherwise từ store
+  const savedPaymentMethod = data?.microchip?.payment?.paymentMethod;
+  const currentPaymentMethod =
+    savedPaymentMethod === "Cash" ||
+    savedPaymentMethod === "CASH" ||
+    savedPaymentMethod === "1"
+      ? "Cash"
+      : savedPaymentMethod === "BankTransfer" ||
+          savedPaymentMethod === "BANK_TRANSFER" ||
+          savedPaymentMethod === "2"
+        ? "BankTransfer"
+        : paymentMethod;
 
   const renderCommonInfo = () => (
     <>
@@ -193,6 +213,7 @@ export function StepContent({
             setPaymentMethod(method);
           }}
           onExportInvoice={onExportInvoice}
+          onRefreshData={onRefreshData}
         />
       ) : (
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
@@ -204,17 +225,23 @@ export function StepContent({
           </div>
         </div>
       )}
-      {isPaymentCompleted && paymentMethod !== "BankTransfer" && (
-        <div className="flex justify-end">
-          <Button
-            className="bg-primary text-white"
-            onClick={onCompleteMicrochip}
-            disabled={isPending}
-          >
-            Xác nhận thanh toán
-          </Button>
-        </div>
-      )}
+      {/* Hiển thị button Xác nhận thanh toán khi payment method là Cash */}
+      {!isVet &&
+        ((paymentStatus === 1 && currentPaymentMethod === "Cash") ||
+          (hasNewPendingPayment && currentPaymentMethod === "Cash")) && (
+          <div className="flex justify-end">
+            <Button
+              className="bg-primary text-white"
+              onClick={() => {
+                onCompleteMicrochip();
+                setHasNewPendingPayment(false); // Reset flag after confirmation
+              }}
+              disabled={isPending}
+            >
+              Xác nhận thanh toán
+            </Button>
+          </div>
+        )}
     </div>
   );
 

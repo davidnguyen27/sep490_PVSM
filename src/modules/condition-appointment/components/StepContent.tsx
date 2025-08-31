@@ -30,6 +30,7 @@ interface Props {
   onCompleteCondition: () => void;
   onFinalizeCondition: () => void;
   onExportInvoice: () => void;
+  onRefreshData?: () => void;
 }
 
 export function StepContent({
@@ -47,14 +48,21 @@ export function StepContent({
   onCompleteCondition,
   onFinalizeCondition,
   onExportInvoice,
+  onRefreshData,
 }: Props) {
   const { setVetSelection } = useConditionStore();
   const navigate = useNavigate();
 
   const paymentId = usePaymentStore((state) => state.paymentId);
   const paymentMethod = usePaymentStore((state) => state.paymentMethod);
+  const hasNewPendingPayment = usePaymentStore(
+    (state) => state.hasNewPendingPayment,
+  );
   const setPaymentId = usePaymentStore((state) => state.setPaymentId);
   const setPaymentMethod = usePaymentStore((state) => state.setPaymentMethod);
+  const setHasNewPendingPayment = usePaymentStore(
+    (state) => state.setHasNewPendingPayment,
+  );
   const setHealthCheck = useConditionStore((state) => state.setHealthCheck);
   const setVitalSigns = useConditionStore((state) => state.setVitalSigns);
 
@@ -184,6 +192,7 @@ export function StepContent({
             setPaymentMethod(method);
           }}
           onExportInvoice={onExportInvoice}
+          onRefreshData={onRefreshData}
         />
       ) : (
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
@@ -195,11 +204,14 @@ export function StepContent({
           </div>
         </div>
       )}
-      {!isVet && isPaymentCompleted && paymentMethod !== "BankTransfer" && (
+      {!isVet && (isPaymentCompleted || hasNewPendingPayment) && (
         <div className="flex justify-end">
           <Button
             className="bg-primary text-white"
-            onClick={onCompleteCondition}
+            onClick={() => {
+              onCompleteCondition();
+              setHasNewPendingPayment(false); // Reset flag after confirmation
+            }}
             disabled={isPending}
           >
             Xác nhận thanh toán

@@ -47,12 +47,12 @@ export const DayCard = ({
       onClick={() => onDayClick(day)}
     >
       <div className="mb-3 text-center">
-        <div className="text-sm font-medium text-gray-600">
+        <div className="font-nunito-600 text-sm text-gray-600">
           {getDayName(day)}
         </div>
         <div
-          className={`text-lg font-bold ${
-            isToday ? "text-blue-600" : "text-gray-900"
+          className={`font-nunito-700 text-lg ${
+            isToday ? "text-blue-500" : "text-gray-900"
           }`}
         >
           {day.getDate()}

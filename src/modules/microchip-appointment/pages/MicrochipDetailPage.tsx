@@ -42,7 +42,7 @@ export default function MicrochipAppDetailPage() {
   } = useMicrochipStore();
   const { reset: resetPayment } = usePaymentStore();
 
-  const { data } = useMicrochipAppDetail(appointmentId);
+  const { data, refetch } = useMicrochipAppDetail(appointmentId);
 
   const {
     isPending,
@@ -143,6 +143,7 @@ export default function MicrochipAppDetailPage() {
         onCompleteMicrochip={handlePayment}
         onFinalizeMicrochip={handleFinalize}
         onExportInvoice={() => handleExportInvoice()}
+        onRefreshData={refetch}
       />
 
       <RejectModal

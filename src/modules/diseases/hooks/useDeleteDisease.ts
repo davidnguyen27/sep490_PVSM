@@ -9,9 +9,9 @@ export function useDeleteDisease() {
 
   return useMutation({
     mutationFn: (diseaseId: number) => diseaseService.deleteDisease(diseaseId),
-    onSuccess: () => {
+    onSuccess: ({ message }) => {
       queryClient.invalidateQueries({ queryKey: ["diseases"] });
-      toast.success("Xóa bệnh thành công!");
+      toast.success(message);
     },
     onError: (error) => toast.error(extractErrorMessage(error as AxiosError)),
   });

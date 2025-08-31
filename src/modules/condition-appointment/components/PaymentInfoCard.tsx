@@ -44,6 +44,7 @@ interface Props {
   ) => void;
   invoiceData?: ConditionAppointments;
   onExportInvoice?: () => void;
+  onRefreshData?: () => void; // Add callback to refresh data
   // Add new props for home service
   appointmentId: number;
   appointmentAddress?: string;
@@ -63,12 +64,16 @@ export function PaymentInfoCard({
   disabled = false,
   onPaymentSuccess,
   onExportInvoice,
+  onRefreshData,
   invoiceData,
   appointmentId,
   appointmentAddress,
 }: Props) {
   const { paymentMethod, setPaymentMethod, setPaymentId } = usePaymentStore();
-  const { setQrCode } = usePaymentStore.getState();
+  const { setQrCode, setHasNewPendingPayment } = usePaymentStore.getState();
+  const hasNewPendingPayment = usePaymentStore(
+    (state) => state.hasNewPendingPayment,
+  );
   const { mutate, isPending: isLoading } = useCreatePayment();
   const retryPaymentMutation = useRetryPayment();
   const { mutateAsync: retryPayment, isPending: isRetrying } =
@@ -102,6 +107,15 @@ export function PaymentInfoCard({
       if (response.success && response.data?.checkoutUrl) {
         // Redirect đến trang thanh toán mới
         window.location.href = response.data.checkoutUrl;
+      } else if (response.success && response.data?.paymentId) {
+        // Set flag for new pending payment
+        setHasNewPendingPayment(true);
+        setPaymentId(response.data.paymentId);
+        onPaymentSuccess?.(response.data.paymentId, "Cash");
+        // Refresh data to update payment status
+        setTimeout(() => {
+          onRefreshData?.();
+        }, 500);
       } else {
         console.error("Retry payment thất bại:", response);
       }
@@ -117,7 +131,9 @@ export function PaymentInfoCard({
   const [loadingMembership, setLoadingMembership] = useState(false);
 
   // Fetch appointment data to get location
-  const [appointmentLocation, setAppointmentLocation] = useState<number | null>(null);
+  const [appointmentLocation, setAppointmentLocation] = useState<number | null>(
+    null,
+  );
 
   // Fetch appointment data when appointmentId changes
   useEffect(() => {
@@ -125,7 +141,8 @@ export function PaymentInfoCard({
       if (!appointmentId) return;
 
       try {
-        const appointment = await appointmentService.getAppointmentById(appointmentId);
+        const appointment =
+          await appointmentService.getAppointmentById(appointmentId);
         setAppointmentLocation(appointment.location);
       } catch (error) {
         console.error("Error fetching appointment:", error);
@@ -145,10 +162,10 @@ export function PaymentInfoCard({
     transportFee,
     centerLocation,
     loading: loadingDistance,
-    error: distanceError
+    error: distanceError,
   } = useDistanceCalculation({
     address: appointmentAddress,
-    isHomeService
+    isHomeService,
   });
 
   // Fetch membership data when customerId changes
@@ -227,9 +244,9 @@ export function PaymentInfoCard({
   const savedPaymentMethod = invoiceData?.payment?.paymentMethod;
   const displayPaymentMethod =
     savedPaymentMethod === "Cash" ||
-      savedPaymentMethod === "BankTransfer" ||
-      savedPaymentMethod === "CASH" ||
-      savedPaymentMethod === "BANK_TRANSFER"
+    savedPaymentMethod === "BankTransfer" ||
+    savedPaymentMethod === "CASH" ||
+    savedPaymentMethod === "BANK_TRANSFER"
       ? savedPaymentMethod === "CASH"
         ? "Cash"
         : savedPaymentMethod === "BANK_TRANSFER"
@@ -265,12 +282,17 @@ export function PaymentInfoCard({
 
         if (!id) return;
 
-        setPaymentType("vaccination");
+        setPaymentType("condition");
         setPaymentId(id);
         setQrCode(data.qrCode ?? null);
 
         if (paymentMethod === "Cash") {
           onPaymentSuccess?.(id, "Cash");
+          setHasNewPendingPayment(true); // Set flag for new pending payment
+          // Refresh data to update payment status
+          setTimeout(() => {
+            onRefreshData?.();
+          }, 500);
         } else if (
           paymentMethod === "BankTransfer" &&
           data.checkoutUrl &&
@@ -297,6 +319,8 @@ export function PaymentInfoCard({
     setQrCode,
     setPaymentType,
     onPaymentSuccess,
+    setHasNewPendingPayment,
+    onRefreshData,
   ]);
 
   return (
@@ -340,26 +364,26 @@ export function PaymentInfoCard({
 
           {/* Display home service info */}
           {isHomeService && (
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 space-y-2">
-              <div className="flex items-center gap-2 text-blue-700 font-medium">
+            <div className="space-y-2 rounded-md border border-blue-200 bg-blue-50 p-3">
+              <div className="flex items-center gap-2 font-medium text-blue-700">
                 <MapPin size={16} />
                 <span>🏠 Dịch vụ tại nhà</span>
               </div>
 
-              <div className="text-sm text-gray-600 ml-6">
+              <div className="ml-6 text-sm text-gray-600">
                 <div className="flex items-start gap-2">
                   <span className="font-medium">Địa chỉ:</span>
                   <span>{appointmentAddress}</span>
                 </div>
 
                 {centerLocation && (
-                  <div className="flex items-start gap-2 mt-1">
+                  <div className="mt-1 flex items-start gap-2">
                     <span className="font-medium">Từ trung tâm:</span>
                     <span>{centerLocation}</span>
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 mt-1">
+                <div className="mt-1 flex items-center gap-2">
                   <Truck size={14} />
                   <span className="font-medium">Khoảng cách:</span>
                   {loadingDistance ? (
@@ -367,16 +391,18 @@ export function PaymentInfoCard({
                   ) : distanceError ? (
                     <span className="text-red-500">Không thể tính toán</span>
                   ) : distance ? (
-                    <span className="text-blue-600 font-medium">{distance.toFixed(1)} km</span>
+                    <span className="font-medium text-blue-600">
+                      {distance.toFixed(1)} km
+                    </span>
                   ) : (
                     <span className="text-gray-400">--</span>
                   )}
                 </div>
 
                 {transportFee > 0 && (
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="mt-1 flex items-center gap-2">
                     <span className="font-medium">Phí di chuyển:</span>
-                    <span className="text-orange-600 font-semibold">
+                    <span className="font-semibold text-orange-600">
                       +{transportFee.toLocaleString()} VNĐ
                     </span>
                   </div>
@@ -409,13 +435,13 @@ export function PaymentInfoCard({
 
           {/* Add transport fee row for home service */}
           {isHomeService && transportFee > 0 && (
-            <div className="grid grid-cols-4 items-center p-2 text-sm border-t bg-orange-50">
+            <div className="grid grid-cols-4 items-center border-t bg-orange-50 p-2 text-sm">
               <span className="flex items-center gap-1">
                 <Truck size={14} className="text-orange-500" />
                 Phí di chuyển
               </span>
               <span className="text-center text-gray-600">
-                {distance ? `${distance.toFixed(1)} km` : '--'}
+                {distance ? `${distance.toFixed(1)} km` : "--"}
               </span>
               <span className="text-center">1</span>
               <span className="text-right font-medium text-orange-600">
@@ -441,7 +467,9 @@ export function PaymentInfoCard({
           {isHomeService && transportFee > 0 && (
             <p className="text-orange-600">
               Phí di chuyển ({distance?.toFixed(1)} km):{" "}
-              <span className="font-medium">+{transportFee.toLocaleString()} vnđ</span>
+              <span className="font-medium">
+                +{transportFee.toLocaleString()} vnđ
+              </span>
             </p>
           )}
           {actualDiscountPercent > 0 && (
@@ -469,12 +497,12 @@ export function PaymentInfoCard({
               </span>
             </p>
           )}
-          <div className="border-t pt-2 mt-2">
+          <div className="mt-2 border-t pt-2">
             <p className="text-base font-semibold">
               Tổng thanh toán: {finalAmount.toLocaleString()} vnđ
             </p>
             {isHomeService && transportFee > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="mt-1 text-xs text-gray-500">
                 (Bao gồm phí di chuyển tại nhà)
               </p>
             )}
@@ -492,8 +520,8 @@ export function PaymentInfoCard({
             // Đã thanh toán - chỉ hiển thị phương thức đã chọn
             <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
               {displayPaymentMethod === "Cash" ||
-                invoiceData?.payment?.paymentMethod === "Cash" ||
-                invoiceData?.payment?.paymentMethod === "CASH" ? (
+              invoiceData?.payment?.paymentMethod === "Cash" ||
+              invoiceData?.payment?.paymentMethod === "CASH" ? (
                 <>
                   <Banknote size={18} />
                   <span className="text-sm font-medium">Tiền mặt</span>
@@ -525,10 +553,11 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("Cash")}
                 disabled={disabled || isLoading}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "Cash"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-gray-200 hover:border-gray-300"
-                  } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
+                  paymentMethod === "Cash"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-gray-200 hover:border-gray-300"
+                } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Banknote size={18} />
                 <span className="text-sm font-medium">Tiền mặt</span>
@@ -537,10 +566,11 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("BankTransfer")}
                 disabled={disabled}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "BankTransfer"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-gray-200 hover:border-gray-300"
-                  } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
+                  paymentMethod === "BankTransfer"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-gray-200 hover:border-gray-300"
+                } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Building2 size={18} />
                 <span className="text-sm font-medium">Chuyển khoản</span>
@@ -574,8 +604,8 @@ export function PaymentInfoCard({
               >
                 In hóa đơn
               </Button>
-            ) : (
-              // Thanh toán bị hủy - cho phép thanh toán lại
+            ) : !hasNewPendingPayment ? (
+              // Thanh toán bị hủy và chưa có payment mới - cho phép thanh toán lại
               <Button
                 onClick={handleRetryPayment}
                 disabled={isRetrying}
@@ -585,6 +615,18 @@ export function PaymentInfoCard({
                   <Loader2 className="mr-2 animate-spin" size={16} />
                 )}
                 Thanh toán lại
+              </Button>
+            ) : (
+              // Thanh toán bị hủy nhưng có payment mới - cho phép chọn thanh toán
+              <Button
+                onClick={handlePaymentComplete}
+                disabled={disabled || isLoading}
+                className="bg-primary hover:bg-primary/90 px-8 py-2 text-white"
+              >
+                {isLoading && (
+                  <Loader2 className="mr-2 animate-spin" size={16} />
+                )}
+                Chọn thanh toán
               </Button>
             )
           ) : (
