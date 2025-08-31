@@ -201,9 +201,9 @@ export function PaymentInfoCard({
   const savedPaymentMethod = invoiceData?.microchip?.payment?.paymentMethod;
   const displayPaymentMethod =
     savedPaymentMethod === "Cash" ||
-    savedPaymentMethod === "BankTransfer" ||
-    savedPaymentMethod === "CASH" ||
-    savedPaymentMethod === "BANK_TRANSFER"
+      savedPaymentMethod === "BankTransfer" ||
+      savedPaymentMethod === "CASH" ||
+      savedPaymentMethod === "BANK_TRANSFER"
       ? savedPaymentMethod === "CASH"
         ? "Cash"
         : savedPaymentMethod === "BANK_TRANSFER"
@@ -535,8 +535,8 @@ export function PaymentInfoCard({
             // Đã thanh toán thành công - hiển thị phương thức đã chọn
             <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
               {displayPaymentMethod === "Cash" ||
-              invoiceData?.microchip?.payment?.paymentMethod === "Cash" ||
-              invoiceData?.microchip?.payment?.paymentMethod === "CASH" ? (
+                invoiceData?.microchip?.payment?.paymentMethod === "Cash" ||
+                invoiceData?.microchip?.payment?.paymentMethod === "CASH" ? (
                 <>
                   <Banknote size={18} />
                   <span className="text-sm font-medium">Tiền mặt</span>
@@ -593,9 +593,9 @@ export function PaymentInfoCard({
             // Payment đã tồn tại với paymentMethod - không cho chọn lại, chỉ hiển thị
             <div className="border-primary bg-primary/10 text-primary flex items-center gap-2 rounded-md border-2 p-3">
               {displayPaymentMethod === "Cash" ||
-              invoiceData?.microchip?.payment?.paymentMethod === "Cash" ||
-              invoiceData?.microchip?.payment?.paymentMethod === "CASH" ||
-              invoiceData?.microchip?.payment?.paymentMethod === "1" ? (
+                invoiceData?.microchip?.payment?.paymentMethod === "Cash" ||
+                invoiceData?.microchip?.payment?.paymentMethod === "CASH" ||
+                invoiceData?.microchip?.payment?.paymentMethod === "1" ? (
                 <>
                   <Banknote size={18} />
                   <span className="text-sm font-medium">Tiền mặt</span>
@@ -616,11 +616,10 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("Cash")}
                 disabled={disabled || isLoading}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                  paymentMethod === "Cash"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "Cash"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-gray-200 hover:border-gray-300"
+                  } ${disabled || isLoading ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Banknote size={18} />
                 <span className="text-sm font-medium">Tiền mặt</span>
@@ -629,11 +628,10 @@ export function PaymentInfoCard({
               <button
                 onClick={() => handlePaymentMethodChange("BankTransfer")}
                 disabled={disabled}
-                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${
-                  paymentMethod === "BankTransfer"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-gray-200 hover:border-gray-300"
-                } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                className={`flex items-center gap-2 rounded-md border-2 p-3 transition-all ${paymentMethod === "BankTransfer"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-gray-200 hover:border-gray-300"
+                  } ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <Building2 size={18} />
                 <span className="text-sm font-medium">Chuyển khoản</span>
@@ -675,9 +673,8 @@ export function PaymentInfoCard({
               {isLoading && <Loader2 className="mr-2 animate-spin" size={16} />}
               Thanh toán lại
             </Button>
-          ) : (
-            // Các trường hợp khác: paymentStatus = 1, paymentStatus = 3 có hasNewPendingPayment,
-            // hoặc hasNewPendingPayment và BankTransfer => hiển thị nút "Chọn thanh toán"
+          ) : !existingPayment ? (
+            // Chỉ hiển thị nút "Chọn thanh toán" khi chưa có payment nào (lần đầu tiên)
             <Button
               onClick={handlePaymentComplete}
               disabled={disabled || isLoading}
@@ -686,7 +683,7 @@ export function PaymentInfoCard({
               {isLoading && <Loader2 className="mr-2 animate-spin" size={16} />}
               Chọn thanh toán
             </Button>
-          )}
+          ) : null}
         </div>
       </CardContent>
     </Card>

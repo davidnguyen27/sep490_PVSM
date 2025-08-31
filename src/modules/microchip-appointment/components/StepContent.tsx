@@ -74,12 +74,12 @@ export function StepContent({
   const savedPaymentMethod = data?.microchip?.payment?.paymentMethod;
   const currentPaymentMethod =
     savedPaymentMethod === "Cash" ||
-    savedPaymentMethod === "CASH" ||
-    savedPaymentMethod === "1"
+      savedPaymentMethod === "CASH" ||
+      savedPaymentMethod === "1"
       ? "Cash"
       : savedPaymentMethod === "BankTransfer" ||
-          savedPaymentMethod === "BANK_TRANSFER" ||
-          savedPaymentMethod === "2"
+        savedPaymentMethod === "BANK_TRANSFER" ||
+        savedPaymentMethod === "2"
         ? "BankTransfer"
         : paymentMethod;
 
@@ -130,10 +130,10 @@ export function StepContent({
           assignedVet={
             data.microchip.vet
               ? {
-                  vetId: data.microchip.vet.vetId,
-                  vetCode: data.microchip.vet.vetCode,
-                  name: data.microchip.vet.name,
-                }
+                vetId: data.microchip.vet.vetId,
+                vetCode: data.microchip.vet.vetCode,
+                name: data.microchip.vet.name,
+              }
               : undefined
           }
         />
@@ -235,6 +235,10 @@ export function StepContent({
               onClick={() => {
                 onCompleteMicrochip();
                 setHasNewPendingPayment(false); // Reset flag after confirmation
+                // Refresh data to update payment status
+                setTimeout(() => {
+                  onRefreshData?.();
+                }, 500);
               }}
               disabled={isPending}
             >
