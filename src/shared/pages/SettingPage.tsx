@@ -177,17 +177,17 @@ export default function SettingPage() {
             {settingSections.map((section) => (
               <Card
                 key={section.id}
-                className="border-l-primary group cursor-pointer rounded-none border-l-4 transition-all duration-200 hover:shadow-lg"
+                className="border-l-primary group cursor-pointer rounded-none border-l-4 py-4 transition-all duration-200 hover:shadow-lg"
                 onClick={section.action}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="group-hover:bg-primary/10 rounded-lg bg-gray-50 p-2 transition-colors">
+                      <div className="group-hover:bg-primary/10 rounded-none bg-gray-50 p-2 transition-colors">
                         {section.icon}
                       </div>
                       <div>
-                        <CardTitle className="group-hover:text-primary text-lg font-semibold transition-colors">
+                        <CardTitle className="group-hover:text-primary text-none font-semibold transition-colors">
                           {section.title}
                         </CardTitle>
                         {section.status && (

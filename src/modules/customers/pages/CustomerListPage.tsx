@@ -28,6 +28,7 @@ export default function CustomerManagementPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<string>("all"); // all | active | deleted
+  const [sttSortOrder, setSttSortOrder] = useState<"asc" | "desc" | null>(null);
   const [searchParams] = useSearchParams();
   const { handleGoBack } = useCustomerDetailNavigation();
 
@@ -42,13 +43,67 @@ export default function CustomerManagementPage() {
     };
   }, []);
 
-  // Customer data for list view - frontend sorting handles newest first
+  // Customer data for list view - fetch with large pageSize to get most data
   const debouncedSearch = useDebounce(search, 500, { leading: true });
   const { data, isPending, isFetching } = useCustomers({
-    pageNumber: page,
-    pageSize: 10,
+    pageNumber: 1,
+    pageSize: 1000, // Get a large amount of data
     keyWord: debouncedSearch,
   });
+
+  // Reset page to 1 when search or status changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, status]);
+
+  const allCustomers = data?.data?.pageData ?? [];
+
+  // Apply status filter and sort by customerId in descending order (newest first)
+  const filteredData = allCustomers
+    .filter((customer) => {
+      if (status === "all") return true;
+      if (status === "active") return !customer.isDeleted;
+      if (status === "deleted") return customer.isDeleted;
+      return true;
+    })
+    .sort((a, b) => (b.customerId ?? 0) - (a.customerId ?? 0));
+
+  // Add STT numbers to all data first
+  const dataWithSTT = filteredData.map((customer, index) => ({
+    ...customer,
+    sttNumber: index + 1,
+  }));
+
+  // Apply STT sorting if order is set (sort all data, not just current page)
+  let sortedDataWithSTT = dataWithSTT;
+  if (sttSortOrder) {
+    sortedDataWithSTT = dataWithSTT.sort((a, b) => {
+      if (sttSortOrder === "asc") {
+        return a.sttNumber - b.sttNumber;
+      } else {
+        return b.sttNumber - a.sttNumber;
+      }
+    });
+
+    // Re-assign STT numbers after sorting to maintain sequential order
+    sortedDataWithSTT = sortedDataWithSTT.map((customer, index) => ({
+      ...customer,
+      sttNumber: index + 1,
+    }));
+  }
+
+  // Frontend pagination after sorting
+  const pageSize = 10;
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const pageData = sortedDataWithSTT.slice(startIndex, endIndex);
+
+  const totalPages = Math.ceil(sortedDataWithSTT.length / pageSize);
+
+  // Reset page to 1 when search or status changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, status]);
 
   // Get customer data for edit modal
   const { data: customerData, isPending: isCustomerPending } = useCustomerById(
@@ -58,13 +113,20 @@ export default function CustomerManagementPage() {
   // Update customer hook
   const { mutate: updateCustomer, isPending: isUpdating } = useCustomerUpdate();
 
+  // Handle STT sorting
+  const handleSttSort = () => {
+    if (sttSortOrder === null || sttSortOrder === "desc") {
+      setSttSortOrder("asc");
+    } else {
+      setSttSortOrder("desc");
+    }
+    setPage(1); // Always reset to first page when sorting to see the results
+  };
+
   // Check if we should show detail page
   if (customerId && action !== "edit") {
     return <CustomerDetailPage />;
   }
-
-  const pageData = data?.data?.pageData ?? [];
-  const totalPages = data?.data?.pageInfo?.totalPage ?? 1;
 
   // Use navigation hook to get correct route for both admin and staff
   const handleCloseModal = handleGoBack;
@@ -120,16 +182,12 @@ export default function CustomerManagementPage() {
         </div>
 
         <CustomerTable
-          customers={
-            status === "all"
-              ? pageData
-              : status === "active"
-                ? pageData.filter((c) => !c.isDeleted)
-                : pageData.filter((c) => c.isDeleted)
-          }
+          customers={pageData}
           isPending={isPending || isFetching}
           currentPage={page}
-          pageSize={10}
+          pageSize={pageSize}
+          sttSortOrder={sttSortOrder}
+          onSttSort={handleSttSort}
         />
 
         <Pagination

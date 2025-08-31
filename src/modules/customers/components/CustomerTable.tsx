@@ -48,20 +48,22 @@ const tableHeaders = [
 ];
 
 interface Props {
-  customers: Customer[];
+  customers: (Customer & { sttNumber: number })[];
   isPending: boolean;
   currentPage: number;
   pageSize: number;
+  sttSortOrder: "asc" | "desc" | null;
+  onSttSort: () => void;
 }
 
 export function CustomerTable({
   customers,
   isPending,
-  currentPage,
   pageSize,
+  sttSortOrder,
+  onSttSort,
 }: Props) {
   const navigate = useNavigate();
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(
     null,
@@ -94,48 +96,22 @@ export function CustomerTable({
 
   // Handle STT sorting
   const handleSortClick = () => {
-    if (sortOrder === null) {
-      setSortOrder("asc");
-    } else if (sortOrder === "asc") {
-      setSortOrder("desc");
-    } else {
-      setSortOrder(null);
-    }
+    onSttSort();
   };
 
-  // Sort customers: Default newest first (by customerId desc), with STT sorting option
+  // Sort customers: Data is already sorted by parent component
   const getSortedCustomers = () => {
-    // Do NOT filter isDeleted here; customers prop is already filtered by parent
-    const sorted = [...customers].sort((a, b) => {
-      const aId = a.customerId ?? 0;
-      const bId = b.customerId ?? 0;
-      return bId - aId;
-    });
-
-    if (sortOrder === null) return sorted;
-
-    // Apply STT sorting on already sorted data
-    const indexedCustomers = sorted.map((customer, index) => ({
-      ...customer,
-      originalIndex: (currentPage - 1) * pageSize + index + 1,
-    }));
-
-    return indexedCustomers.sort((a, b) => {
-      if (sortOrder === "asc") {
-        return a.originalIndex - b.originalIndex;
-      } else {
-        return b.originalIndex - a.originalIndex;
-      }
-    });
+    // Data is already filtered and sorted by parent, just return as-is
+    return customers;
   };
 
   const sortedCustomers = getSortedCustomers();
 
   // Get sort icon
   const getSortIcon = () => {
-    if (sortOrder === "asc") {
+    if (sttSortOrder === "asc") {
       return <ArrowUp size={16} className="text-white" />;
-    } else if (sortOrder === "desc") {
+    } else if (sttSortOrder === "desc") {
       return <ArrowDown size={16} className="text-white" />;
     } else {
       return <ArrowDownUp size={16} className="text-white/70" />;
@@ -153,7 +129,7 @@ export function CustomerTable({
                 className={`font-nunito px-4 py-2 text-center text-sm text-white ${
                   index === 0
                     ? `cursor-pointer transition-colors ${
-                        sortOrder !== null
+                        sttSortOrder !== null
                           ? "bg-green/20 hover:bg-green/30"
                           : "hover:bg-primary/80"
                       }`
@@ -179,15 +155,13 @@ export function CustomerTable({
         ) : sortedCustomers.length > 0 ? (
           <TableBody>
             {sortedCustomers.map((item, idx) => {
-              const sttValue = (currentPage - 1) * pageSize + idx + 1;
-
               return (
                 <TableRow
                   key={item.customerId || `customer-${idx}`}
                   className="hover:bg-accent/10 transition-colors duration-150"
                 >
                   <TableCell className="text-dark font-nunito-500 text-center text-sm">
-                    {sttValue}
+                    {item.sttNumber}
                   </TableCell>
                   <TableCell className="text-dark font-nunito-400 max-w-[140px] truncate text-center text-sm">
                     {item.customerCode}

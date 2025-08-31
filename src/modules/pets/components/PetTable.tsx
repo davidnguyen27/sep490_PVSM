@@ -3,13 +3,10 @@ import {
   BadgeInfo,
   SquarePen,
   Trash2,
+  ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  ArrowDownUp,
 } from "lucide-react";
-
-// Extended type for Pet with STT
-type PetWithSTT = Pet & { sttNumber?: number };
 
 // components
 import {
@@ -36,16 +33,16 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePetDetail, usePetDelete } from "../hooks";
 import { useAuth } from "@/modules/auth";
-import { useTableSorting } from "@/shared/hooks/useTableSorting";
 
 // utils
 import { getPetRoutePaths } from "../utils/pet-route.utils";
 
 interface Props {
-  pets: Pet[];
+  pets: (Pet & { sttNumber: number })[];
   isPending: boolean;
-  currentPage: number;
   pageSize: number;
+  sttSortOrder: "asc" | "desc" | null;
+  onSttSort: () => void;
 }
 
 const tableHeaders = [
@@ -60,26 +57,21 @@ const tableHeaders = [
   "Thao tác",
 ];
 
-export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
+export function PetTable({
+  pets,
+  isPending,
+  pageSize,
+  sttSortOrder,
+  onSttSort,
+}: Props) {
   const [openDetail, setOpenDetail] = useState(false);
   const [selectedPetId, setSelectedPetId] = useState<number | null>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Use shared table sorting hook
-  // Do NOT filter isDeleted here; pets prop is already filtered by parent
-  const {
-    sortOrder,
-    sortedData: sortedPets,
-    handleSortClick,
-    getSortIconName,
-  } = useTableSorting<Pet>({
-    data: pets,
-    idField: "petId",
-    currentPage,
-    pageSize,
-  });
+  // Data is already sorted and has STT numbers
+  const sortedPetsWithSTT = pets;
 
   const { data, isLoading: isPetDetailLoading } = usePetDetail(selectedPetId);
   const petId = searchParams.get("petId");
@@ -89,18 +81,6 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
 
   // Get role-based paths
   const paths = getPetRoutePaths(user?.role || 2); // Default to staff role
-
-  // Get sort icon component
-  const getSortIcon = () => {
-    const iconName = getSortIconName();
-    if (iconName === "ArrowUp") {
-      return <ArrowUp size={16} className="text-white" />;
-    } else if (iconName === "ArrowDown") {
-      return <ArrowDown size={16} className="text-white" />;
-    } else {
-      return <ArrowDownUp size={16} className="text-white/70" />;
-    }
-  };
 
   useEffect(() => {
     if (petId && action !== "update") {
@@ -114,24 +94,27 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
       <Table>
         <TableHeader className="bg-primary">
           <TableRow className="hover:bg-transparent">
-            {tableHeaders.map((header, index) => (
+            {tableHeaders.map((header) => (
               <TableHead
                 key={header}
-                className={`font-nunito px-4 py-2 text-center text-sm text-white ${
-                  index === 0
-                    ? `cursor-pointer transition-colors ${
-                        sortOrder !== null
-                          ? "bg-green/20 hover:bg-green/30"
-                          : "hover:bg-primary/80"
-                      }`
-                    : ""
-                }`}
-                onClick={index === 0 ? handleSortClick : undefined}
+                className="font-nunito px-4 py-2 text-center text-sm text-white"
               >
-                {index === 0 ? (
+                {header === "STT" ? (
                   <div className="flex items-center justify-center gap-1">
                     <span>{header}</span>
-                    {getSortIcon()}
+                    <button
+                      onClick={onSttSort}
+                      className="flex items-center justify-center rounded p-1 transition-colors hover:bg-white/10"
+                      title="Sắp xếp theo STT"
+                    >
+                      {sttSortOrder === "asc" ? (
+                        <ArrowUp size={14} className="text-white" />
+                      ) : sttSortOrder === "desc" ? (
+                        <ArrowDown size={14} className="text-white" />
+                      ) : (
+                        <ArrowUpDown size={14} className="text-white/70" />
+                      )}
+                    </button>
                   </div>
                 ) : (
                   header
@@ -145,17 +128,14 @@ export function PetTable({ pets, isPending, currentPage, pageSize }: Props) {
           <TableSkeleton columnCount={9} rowCount={pageSize} />
         ) : pets.length > 0 ? (
           <TableBody>
-            {sortedPets.map((item) => {
-              // Use STT number from hook (continuous across pages)
-              const sttValue = (item as PetWithSTT).sttNumber || 1;
-
+            {sortedPetsWithSTT.map((item) => {
               return (
                 <TableRow
                   key={item.petId}
                   className="hover:bg-accent/10 transition-colors duration-150"
                 >
                   <TableCell className="text-dark font-nunito-500 text-center text-sm">
-                    {sttValue}
+                    {item.sttNumber}
                   </TableCell>
                   <TableCell className="text-dark font-nunito-400 max-w-[140px] truncate text-center text-sm">
                     {item.petCode}

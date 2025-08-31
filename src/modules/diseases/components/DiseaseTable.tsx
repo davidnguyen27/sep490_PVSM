@@ -1,4 +1,11 @@
-import { Edit, Trash2, Eye } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Eye,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+} from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -29,19 +36,23 @@ import type { DiseasePayload } from "../types/disease.payload.type";
 import { formatData } from "@/shared/utils/format.utils";
 
 interface DiseaseTableProps {
-  diseases: Disease[];
+  diseases: (Disease & { sttNumber: number })[];
   isPending: boolean;
-  currentPage: number;
   pageSize: number;
   searchKeyword?: string;
+  sttSortOrder?: "asc" | "desc" | null;
+  onSttSort?: () => void;
+  onRefetch?: () => void;
 }
 
 export function DiseaseTable({
   diseases,
   isPending,
-  currentPage,
   pageSize,
   searchKeyword,
+  sttSortOrder,
+  onSttSort,
+  onRefetch,
 }: DiseaseTableProps) {
   const [editingDisease, setEditingDisease] = useState<Disease | null>(null);
   const [openUpdate, setOpenUpdate] = useState(false);
@@ -49,6 +60,13 @@ export function DiseaseTable({
 
   const { mutate: deleteDisease, isPending: isDeleting } = useDeleteDisease();
   const { mutate: updateDisease, isPending: isUpdating } = useUpdateDisease();
+
+  // Function to get sort icon based on current sort order
+  const getSortIcon = () => {
+    if (sttSortOrder === "asc") return <ArrowUp size={14} />;
+    if (sttSortOrder === "desc") return <ArrowDown size={14} />;
+    return <ArrowUpDown size={14} />;
+  };
 
   const handleView = (disease: Disease) => {
     navigate(`/admin/diseases?diseaseId=${disease.diseaseId}&action=detail`);
@@ -70,6 +88,10 @@ export function DiseaseTable({
           onSuccess: () => {
             setOpenUpdate(false);
             setEditingDisease(null);
+            // Refetch data after successful update
+            if (onRefetch) {
+              onRefetch();
+            }
           },
         },
       );
@@ -79,6 +101,17 @@ export function DiseaseTable({
   const handleCloseUpdate = () => {
     setOpenUpdate(false);
     setEditingDisease(null);
+  };
+
+  const handleDelete = (diseaseId: number) => {
+    deleteDisease(diseaseId, {
+      onSuccess: () => {
+        // Refetch data after successful deletion
+        if (onRefetch) {
+          onRefetch();
+        }
+      },
+    });
   };
 
   if (isPending) {
@@ -122,7 +155,14 @@ export function DiseaseTable({
         <TableHeader className="bg-primary">
           <TableRow className="hover:bg-transparent">
             <TableHead className="font-nunito px-4 py-2 text-center text-sm text-white">
-              STT
+              <button
+                onClick={onSttSort}
+                className="flex items-center justify-center gap-1 hover:text-gray-200"
+                disabled={!onSttSort}
+              >
+                STT
+                {onSttSort && getSortIcon()}
+              </button>
             </TableHead>
             <TableHead className="font-nunito px-4 py-2 text-center text-sm text-white">
               Tên bệnh
@@ -152,13 +192,13 @@ export function DiseaseTable({
               </TableCell>
             </TableRow>
           ) : (
-            diseases.map((disease, index) => (
+            diseases.map((disease) => (
               <TableRow
                 key={disease.diseaseId}
                 className="hover:bg-accent/10 transition-colors duration-150"
               >
                 <TableCell className="text-dark font-nunito text-center text-sm">
-                  {(currentPage - 1) * pageSize + index + 1}
+                  {disease.sttNumber}
                 </TableCell>
                 <TableCell className="text-dark font-nunito max-w-48 text-center text-sm">
                   <div className="truncate" title={disease.name}>
@@ -203,7 +243,7 @@ export function DiseaseTable({
                       onClick={() => handleEdit(disease)}
                     />
                     <ConfirmDelete
-                      onConfirm={() => deleteDisease(disease.diseaseId!)}
+                      onConfirm={() => handleDelete(disease.diseaseId!)}
                     >
                       <Trash2
                         size={16}

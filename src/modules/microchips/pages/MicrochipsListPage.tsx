@@ -1,4 +1,4 @@
-import { Cpu, PlusCircle } from "lucide-react";
+import { Cpu, PlusCircle, RefreshCw } from "lucide-react";
 import type { MicrochipSchema } from "../schemas/microchip.schema";
 import type { MicrochipItem } from "../../microchip-item/types/microchip-item.type";
 
@@ -47,7 +47,7 @@ export default function MicrochipsListPage() {
 
   const { mutate: createMicrochip, isPending: isCreatingMicrochip } =
     useMicrochipCreation();
-  const { data, isPending, isFetching } = useMicrochipItems({
+  const { data, isPending, isFetching, refetch } = useMicrochipItems({
     pageNumber: page,
     pageSize: 10,
     keyWord: debouncedSearch,
@@ -70,6 +70,7 @@ export default function MicrochipsListPage() {
     createMicrochip(payload, {
       onSuccess: () => {
         setOpenCreate(false);
+        refetch(); // Refetch list after successful creation
       },
     });
   };
@@ -108,15 +109,26 @@ export default function MicrochipsListPage() {
             <InlineLoading text="Đang tìm kiếm..." variant="muted" size="sm" />
           )}
 
-          <Button
-            onClick={handleCreateMicrochip}
-            disabled={isCreating}
-            className="font-nunito-600 bg-primary hover:bg-secondary text-white"
-          >
-            {isCreating && <ButtonSpinner variant="white" size="sm" />}
-            <PlusCircle className="mr-2 h-4 w-4" />
-            {isCreating ? "Đang tạo..." : "Thêm microchip"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => refetch()}
+              variant="outline"
+              className="font-nunito-600 flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Làm mới
+            </Button>
+
+            <Button
+              onClick={handleCreateMicrochip}
+              disabled={isCreating}
+              className="font-nunito-600 bg-primary hover:bg-secondary text-white"
+            >
+              {isCreating && <ButtonSpinner variant="white" size="sm" />}
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {isCreating ? "Đang tạo..." : "Thêm microchip"}
+            </Button>
+          </div>
         </div>
 
         <MicrochipTable

@@ -25,7 +25,6 @@ import {
   Plus,
 } from "lucide-react";
 import { useState } from "react";
-import { formatData } from "@/shared/utils/format.utils";
 import {
   VaccineDiseaseModalDetail,
   VaccineDiseaseModalUpdate,
@@ -39,6 +38,7 @@ import {
 import type { VaccineDisease } from "@/modules/vaccine-disease/types/vaccine-disease.type";
 import type { VaccineDiseasePayload } from "@/modules/vaccine-disease/types/vaccine-disease.payload.type";
 
+// Types
 interface VaccineListProps {
   vaccines: VaccineDisease[];
   isLoading: boolean;
@@ -153,11 +153,13 @@ export function VaccineList({
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="border-l-4 border-l-green-500 py-6">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Syringe className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="rounded-lg bg-green-100 p-2">
+                <Syringe className="h-5 w-5 text-green-600" />
+              </div>
               Danh sách vaccine phòng bệnh
             </CardTitle>
             {diseaseId && (
@@ -173,52 +175,10 @@ export function VaccineList({
             )}
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-primary">
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="font-nunito min-w-[60px] px-4 py-3 text-center text-sm text-white">
-                    STT
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[120px] px-4 py-3 text-center text-sm text-white">
-                    Mã vaccine
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[200px] px-4 py-3 text-center text-sm text-white">
-                    Tên vaccine
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[250px] px-4 py-3 text-center text-sm text-white">
-                    Mô tả
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[200px] px-4 py-3 text-center text-sm text-white">
-                    Ghi chú
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[120px] px-4 py-3 text-center text-sm text-white">
-                    Giá
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[120px] px-4 py-3 text-center text-sm text-white">
-                    Trạng thái
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[120px] px-4 py-3 text-center text-sm text-white">
-                    Thao tác
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell colSpan={10} className="p-0">
-                    <div className="flex h-32 items-center justify-center">
-                      <div className="text-center">
-                        <Loader2 className="text-primary mx-auto mb-2 h-6 w-6 animate-spin" />
-                        <p className="font-nunito text-sm text-gray-500">
-                          Đang tải danh sách vaccine...
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <span className="ml-2 text-gray-500">Đang tải...</span>
           </div>
         </CardContent>
         {modals}
@@ -228,71 +188,48 @@ export function VaccineList({
 
   if (!vaccines.length) {
     return (
-      <Card>
+      <Card className="border-l-4 border-l-green-500 py-6">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Syringe className="h-5 w-5" />
-              Danh sách vaccine phòng bệnh (0)
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="rounded-lg bg-green-100 p-2">
+                <Syringe className="h-5 w-5 text-green-600" />
+              </div>
+              Danh sách vaccine phòng bệnh
+              <Badge variant="secondary" className="font-nunito ml-2">
+                0 vaccine
+              </Badge>
             </CardTitle>
             {diseaseId && (
               <Button
                 onClick={handleOpenCreate}
-                size="sm"
-                className="flex items-center gap-2"
+                className="font-nunito-600 bg-primary hover:bg-secondary"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="mr-2 h-4 w-4" />
                 Thêm vaccine
               </Button>
             )}
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader className="bg-primary">
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="font-nunito min-w-[60px] px-4 py-3 text-center text-sm text-white">
-                    STT
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[120px] px-4 py-3 text-center text-sm text-white">
-                    Mã vaccine
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[200px] px-4 py-3 text-center text-sm text-white">
-                    Tên vaccine
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[250px] px-4 py-3 text-center text-sm text-white">
-                    Mô tả
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[200px] px-4 py-3 text-center text-sm text-white">
-                    Ghi chú
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[120px] px-4 py-3 text-center text-sm text-white">
-                    Giá
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[120px] px-4 py-3 text-center text-sm text-white">
-                    Trạng thái
-                  </TableHead>
-                  <TableHead className="font-nunito min-w-[120px] px-4 py-3 text-center text-sm text-white">
-                    Thao tác
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell colSpan={10} className="p-0">
-                    <div className="flex h-32 items-center justify-center">
-                      <div className="text-center">
-                        <Syringe className="mx-auto mb-2 h-8 w-8 text-gray-300" />
-                        <p className="font-nunito text-gray-500">
-                          Chưa có vaccine nào phòng bệnh này
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Syringe className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="font-nunito-600 mt-4 text-lg text-gray-900">
+              Chưa có vaccine nào
+            </h3>
+            <p className="font-nunito mt-2 text-gray-500">
+              Chưa có vaccine nào được liên kết với bệnh này.
+            </p>
+            {diseaseId && (
+              <Button
+                onClick={handleOpenCreate}
+                variant="outline"
+                className="mt-4"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Thêm vaccine đầu tiên
+              </Button>
+            )}
           </div>
         </CardContent>
         {modals}
@@ -301,20 +238,24 @@ export function VaccineList({
   }
 
   return (
-    <Card>
+    <Card className="border-l-4 border-l-green-500 p-6">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Syringe className="h-5 w-5" />
-            Danh sách vaccine phòng bệnh ({vaccines.length})
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <div className="rounded-lg bg-green-100 p-2">
+              <Syringe className="h-5 w-5 text-green-600" />
+            </div>
+            Danh sách vaccine phòng bệnh
+            <Badge variant="default" className="font-nunito ml-2">
+              {vaccines.length} vaccine
+            </Badge>
           </CardTitle>
           {diseaseId && (
             <Button
               onClick={handleOpenCreate}
-              size="sm"
-              className="flex items-center gap-2"
+              className="font-nunito-600 bg-primary hover:bg-secondary"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" />
               Thêm vaccine
             </Button>
           )}
@@ -322,7 +263,7 @@ export function VaccineList({
       </CardHeader>
       <CardContent className="p-0">
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="bg-linen shadow-md">
             <TableHeader className="bg-primary">
               <TableRow className="hover:bg-transparent">
                 <TableHead className="font-nunito min-w-[60px] px-4 py-3 text-center text-sm text-white">
@@ -339,9 +280,6 @@ export function VaccineList({
                 </TableHead>
                 <TableHead className="font-nunito min-w-[200px] px-4 py-3 text-center text-sm text-white">
                   Ghi chú
-                </TableHead>
-                <TableHead className="font-nunito min-w-[120px] px-4 py-3 text-center text-sm text-white">
-                  Giá
                 </TableHead>
                 <TableHead className="font-nunito min-w-[120px] px-4 py-3 text-center text-sm text-white">
                   Trạng thái
@@ -392,13 +330,6 @@ export function VaccineList({
                         title={vaccine.notes || "Không có ghi chú"}
                       >
                         {vaccine.notes || "Không có ghi chú"}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="font-nunito-600 text-primary text-sm">
-                        {vaccine.price
-                          ? formatData.formatCurrency(vaccine.price)
-                          : "Chưa có giá"}
                       </div>
                     </TableCell>
                     <TableCell className="text-center">

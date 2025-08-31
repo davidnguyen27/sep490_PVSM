@@ -1,3 +1,4 @@
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -5,101 +6,95 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Filter } from "lucide-react";
 
 interface Props {
-  gender?: string;
-  species?: string;
-  isDeleted?: string;
-  onGenderChange: (gender: string) => void;
-  onSpeciesChange: (species: string) => void;
-  onIsDeletedChange: (isDeleted: string) => void;
+  gender: string;
+  species: string;
+  isDeleted: string;
+  onChange: (filters: {
+    gender: string;
+    species: string;
+    isDeleted: string;
+  }) => void;
 }
 
-export function PetFilter({
-  gender,
-  species,
-  isDeleted,
-  onGenderChange,
-  onSpeciesChange,
-  onIsDeletedChange,
-}: Props) {
+export function PetFilter({ gender, species, isDeleted, onChange }: Props) {
   return (
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-4">
-          <Filter size={16} className="text-gray-500" />
-          <span className="font-nunito-600 text-sm text-gray-700">
-            Lọc kết quả:
-          </span>
-        </div>
-
+    <>
+      <div className="flex flex-col gap-1">
+        <Label htmlFor="gender" className="font-nunito-600 text-xs">
+          Giới tính
+        </Label>
         <Select
-          value={gender || "all"}
-          onValueChange={(value) =>
-            onGenderChange(value === "all" ? "" : value)
-          }
+          value={gender || "default"}
+          onValueChange={(val) => {
+            onChange({
+              gender: val === "default" ? "" : val,
+              species,
+              isDeleted,
+            });
+          }}
         >
-          <SelectTrigger className="font-nunito-500 h-9 w-[140px] text-sm">
-            <SelectValue placeholder="Giới tính" />
+          <SelectTrigger id="gender">
+            <SelectValue placeholder="Tất cả" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all" className="font-nunito-500">
-              Tất cả giới tính
-            </SelectItem>
-            <SelectItem value="Male" className="font-nunito-500">
-              Đực
-            </SelectItem>
-            <SelectItem value="Female" className="font-nunito-500">
-              Cái
-            </SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={species || "all"}
-          onValueChange={(value) =>
-            onSpeciesChange(value === "all" ? "" : value)
-          }
-        >
-          <SelectTrigger className="font-nunito-500 h-9 w-[140px] text-sm">
-            <SelectValue placeholder="Loài" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all" className="font-nunito-500">
-              Tất cả loài
-            </SelectItem>
-            <SelectItem value="Dog" className="font-nunito-500">
-              Chó
-            </SelectItem>
-            <SelectItem value="Cat" className="font-nunito-500">
-              Mèo
-            </SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={isDeleted || "all"}
-          onValueChange={(value) =>
-            onIsDeletedChange(value === "all" ? "" : value)
-          }
-        >
-          <SelectTrigger className="font-nunito-500 h-9 w-[160px] text-sm">
-            <SelectValue placeholder="Trạng thái" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all" className="font-nunito-500">
-              Tất cả trạng thái
-            </SelectItem>
-            <SelectItem value="false" className="font-nunito-500">
-              Đang hoạt động
-            </SelectItem>
-            <SelectItem value="true" className="font-nunito-500">
-              Đã xóa
-            </SelectItem>
+            <SelectItem value="default">Tất cả</SelectItem>
+            <SelectItem value="Male">Đực</SelectItem>
+            <SelectItem value="Female">Cái</SelectItem>
           </SelectContent>
         </Select>
       </div>
-    </div>
+
+      <div className="flex flex-col gap-1">
+        <Label htmlFor="species" className="font-nunito-600 text-xs">
+          Loài
+        </Label>
+        <Select
+          value={species || "default"}
+          onValueChange={(val) =>
+            onChange({
+              gender,
+              species: val === "default" ? "" : val,
+              isDeleted,
+            })
+          }
+        >
+          <SelectTrigger id="species">
+            <SelectValue placeholder="Tất cả" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="default">Tất cả</SelectItem>
+            <SelectItem value="Dog">Chó</SelectItem>
+            <SelectItem value="Cat">Mèo</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <Label htmlFor="isDeleted" className="font-nunito-600 text-xs">
+          Trạng thái
+        </Label>
+        <Select
+          value={isDeleted || "default"}
+          onValueChange={(val) =>
+            onChange({
+              gender,
+              species,
+              isDeleted: val === "default" ? "" : val,
+            })
+          }
+        >
+          <SelectTrigger id="isDeleted">
+            <SelectValue placeholder="Tất cả" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="default">Tất cả</SelectItem>
+            <SelectItem value="false">Đang hoạt động</SelectItem>
+            <SelectItem value="true">Đã xóa</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </>
   );
 }

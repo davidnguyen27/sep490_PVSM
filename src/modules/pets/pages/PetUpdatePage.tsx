@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePetDetail, usePetUpdate } from "../hooks";
 import { useEffect } from "react";
 import { formatData } from "@/shared/utils/format.utils";
-import { PageLoader, PageBreadcrumb } from "@/components/shared";
+import { PageLoader, PageBreadcrumb, ButtonSpinner } from "@/components/shared";
 import { useAuth } from "@/modules/auth";
 import { getPetRoutePaths } from "../utils/pet-route.utils";
 import { PawPrint, ArrowLeft, Save, Info } from "lucide-react";
@@ -98,7 +98,7 @@ export default function PetUpdatePage() {
       { payload, petId: Number(petId) },
       {
         onSuccess: () => {
-          navigate(`${paths.base}?petId=${petId}`);
+          navigate(paths.base);
         },
       },
     );
@@ -113,7 +113,7 @@ export default function PetUpdatePage() {
           <div className="mb-6 flex items-center justify-between">
             <Button
               variant="ghost"
-              onClick={() => navigate(`${paths.base}?petId=${petId}`)}
+              onClick={() => navigate(paths.base)}
               className="hover:text-primary font-nunito-500 text-muted-foreground flex items-center space-x-2 transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -218,6 +218,7 @@ export default function PetUpdatePage() {
                   disabled={isUpdating}
                   className="bg-primary hover:bg-primary/90 font-nunito-600 flex items-center space-x-2"
                 >
+                  {isUpdating && <ButtonSpinner variant="white" size="sm" />}
                   <Save className="h-4 w-4" />
                   <span>{isUpdating ? "Đang lưu..." : "Lưu thay đổi"}</span>
                 </Button>
