@@ -1,6 +1,22 @@
 import { forwardRef } from "react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import {
+  Star,
+  MapPin,
+  Phone,
+  Calendar,
+  Shield,
+  CheckCircle2,
+  Heart,
+  Stethoscope,
+  Award,
+  User,
+  PawPrint,
+} from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import type { ConditionAppointments } from "../types/condition.type";
 
 interface Props {
@@ -24,394 +40,282 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
       }
     };
 
-    const formatDateTime = (dateString: string) => {
-      try {
-        return format(new Date(dateString), "dd/MM/yyyy 'lúc' HH:mm", {
-          locale: vi,
-        });
-      } catch {
-        return dateString;
-      }
-    };
-
     return (
-      <div ref={ref} className="mx-auto bg-white p-8">
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-            @media print {
-              @page {
-                size: A4;
-                margin: 1cm;
-              }
-              body {
-                margin: 0 !important;
-                padding: 0 !important;
-                background: white !important;
-              }
-              .print\\:hidden {
-                display: none !important;
-              }
-            }
-          `,
-          }}
-        />
-
+      <div ref={ref} className="mx-auto bg-white p-8 print:m-0 print:p-4">
         {/* Certificate Content */}
-        <div
-          className="border-2 border-gray-800 bg-white shadow-lg print:shadow-none"
-          style={{ fontFamily: "'Times New Roman', serif" }}
-        >
+        <div className="font-nunito-400 print:font-nunito-400 relative mx-auto max-w-4xl border bg-white p-6 print:max-w-4xl print:border print:p-4 print:shadow-none">
+          {/* Watermark Background - Hidden in print */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-5 print:pointer-events-none print:absolute print:inset-0 print:flex print:items-center print:justify-center print:opacity-5">
+            <div className="font-nunito-700 text-primary print:font-nunito-700 print:text-primary rotate-12 transform text-8xl print:rotate-12 print:transform print:text-8xl">
+              VaxPet
+            </div>
+          </div>
+
           {/* Header */}
-          <div className="mb-8 text-center">
-            <div className="mb-4 flex items-center justify-center gap-4">
-              <img
-                src="/src/assets/images/vaxpet-logo.svg"
-                alt="VaxPet Logo"
-                className="h-16 w-16"
-              />
-              <div>
-                <h1 className="text-2xl font-bold text-blue-800">
-                  TRUNG TÂM CHĂM SÓC THÚ CƯNG VAXPET
-                </h1>
-                <p className="text-sm text-gray-600">
-                  Địa chỉ: 7 Phan Đăng Lưu, Phường 1, Quận Bình Thạnh, Hồ Chí
-                  Minh
-                </p>
-                <p className="text-sm text-gray-600">
-                  Điện thoại: (028) 1234-5678 | Email: info@vaxpet.com
-                </p>
-              </div>
-            </div>
-
-            <div className="border-t-2 border-blue-800 pt-4">
-              <h2 className="text-xl font-bold text-red-600">
-                GIẤY CHỨNG NHẬN SỨC KHỎE THÚ CƯNG
-              </h2>
-              <p className="mt-1 text-sm text-gray-600">
-                PET HEALTH CERTIFICATE
-              </p>
-            </div>
-          </div>
-
-          {/* Certificate Number and Date */}
-          <div className="mb-6 flex justify-between">
-            <div>
-              <p className="text-sm">
-                <strong>Số giấy chứng nhận:</strong>{" "}
-                {healthCondition?.conditionCode || "N/A"}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm">
-                <strong>Ngày cấp:</strong>{" "}
-                {formatDate(healthCondition?.checkDate || "")}
-              </p>
-            </div>
-          </div>
-
-          {/* Pet and Owner Information */}
-          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* Pet Information */}
-            <div className="rounded-lg border border-gray-300 p-4">
-              <h3 className="mb-3 text-lg font-semibold text-blue-700">
-                THÔNG TIN THÚ CƯNG
-              </h3>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <strong>Tên:</strong> {pet?.name || "N/A"}
-                </p>
-                <p>
-                  <strong>Mã số:</strong> {pet?.petCode || "N/A"}
-                </p>
-                <p>
-                  <strong>Loài:</strong> {pet?.species || "N/A"}
-                </p>
-                <p>
-                  <strong>Giống:</strong> {pet?.breed || "N/A"}
-                </p>
-                <p>
-                  <strong>Giới tính:</strong> {pet?.gender || "N/A"}
-                </p>
-                <p>
-                  <strong>Ngày sinh:</strong>{" "}
-                  {formatDate(pet?.dateOfBirth || "")}
-                </p>
-                <p>
-                  <strong>Màu sắc:</strong> {pet?.color || "N/A"}
-                </p>
-                <p>
-                  <strong>Cân nặng:</strong> {pet?.weight || "N/A"} kg
-                </p>
-                <p>
-                  <strong>Quê quán:</strong> {pet?.nationality || "N/A"}
-                </p>
-                <p>
-                  <strong>Triệt sản:</strong>{" "}
-                  {pet?.isSterilized ? "Có" : "Không"}
-                </p>
-              </div>
-            </div>
-
-            {/* Owner Information */}
-            <div className="rounded-lg border border-gray-300 p-4">
-              <h3 className="mb-3 text-lg font-semibold text-blue-700">
-                THÔNG TIN CHỦ SỞ HỮU
-              </h3>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <strong>Họ tên:</strong> {customer?.fullName || "N/A"}
-                </p>
-                <p>
-                  <strong>Mã khách hàng:</strong>{" "}
-                  {customer?.customerCode || "N/A"}
-                </p>
-                <p>
-                  <strong>Số điện thoại:</strong>{" "}
-                  {customer?.phoneNumber || "N/A"}
-                </p>
-                <p>
-                  <strong>Email:</strong>{" "}
-                  {customer?.accountResponseDTO?.email || "N/A"}
-                </p>
-                <p>
-                  <strong>Ngày sinh:</strong>{" "}
-                  {formatDate(customer?.dateOfBirth || "")}
-                </p>
-                <p>
-                  <strong>Giới tính:</strong> {customer?.gender || "N/A"}
-                </p>
-                <p>
-                  <strong>Địa chỉ:</strong> {customer?.address || "N/A"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Microchip Information */}
-          {microchip && (
-            <div className="mb-6 rounded-lg border border-gray-300 p-4">
-              <h3 className="mb-3 text-lg font-semibold text-green-700">
-                THÔNG TIN MICROCHIP
-              </h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2 text-sm">
-                  <p>
-                    <strong>Mã Microchip:</strong> {microchip.microchipCode}
-                  </p>
-                  <p>
-                    <strong>Tên sản phẩm:</strong> {microchip.name}
-                  </p>
-                  <p>
-                    <strong>Mô tả:</strong> {microchip.description}
-                  </p>
+          <Card className="border-primary/20 print:border-primary/20 mb-6 print:mb-6">
+            <CardHeader className="from-primary/5 to-secondary/5 space-y-4 bg-gradient-to-r py-6 text-center print:space-y-4 print:py-6 print:text-center">
+              <div className="flex items-center justify-center gap-3 print:gap-3">
+                <div className="bg-primary/10 rounded-full p-3 print:rounded-full print:p-3">
+                  <Heart className="text-primary h-8 w-8 print:h-8 print:w-8" />
                 </div>
-                <div className="space-y-2 text-sm">
-                  <p>
-                    <strong>Trạng thái:</strong>
-                    <span className="ml-2 rounded-full bg-green-100 px-2 py-1 text-xs text-green-800">
-                      {microchip.status}
-                    </span>
-                  </p>
-                  <p>
-                    <strong>Ghi chú:</strong> {microchip.notes || "Không có"}
-                  </p>
+                <div>
+                  <h1 className="font-inter-700 text-primary print:font-inter-700 text-2xl print:text-lg">
+                    TRUNG TÂM TIÊM CHỦNG THÚ CƯNG VAXPET
+                  </h1>
+                  <h2 className="font-inter-600 text-secondary text-lg print:text-sm">
+                    VAXPET PET HEALTH CENTRE
+                  </h2>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Vaccination Information */}
-          {vaccine && (
-            <div className="mb-6 rounded-lg border border-gray-300 p-4">
-              <h3 className="mb-3 text-lg font-semibold text-purple-700">
-                THÔNG TIN VACCINE ĐÃ TIÊM
-              </h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2 text-sm">
-                  <p>
-                    <strong>Tên vaccine:</strong>{" "}
-                    {vaccine.vaccineResponseDTO?.name}
-                  </p>
-                  <p>
-                    <strong>Mã vaccine:</strong> {vaccine.vaccineCode}
-                  </p>
-                  <p>
-                    <strong>Số lô:</strong> {vaccine.batchNumber}
-                  </p>
-                  <p>
-                    <strong>Mô tả:</strong>{" "}
-                    {vaccine.vaccineResponseDTO?.description}
-                  </p>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <p>
-                    <strong>Ngày sản xuất:</strong>{" "}
-                    {formatDate(vaccine.manufactureDate)}
-                  </p>
-                  <p>
-                    <strong>Ngày hết hạn:</strong>{" "}
-                    {formatDate(vaccine.expiryDate)}
-                  </p>
-                  <p>
-                    <strong>Ngày tiêm:</strong>{" "}
-                    {formatDateTime(data.appointmentDate)}
-                  </p>
-                  <p>
-                    <strong>Trạng thái:</strong>
-                    <span className="ml-2 rounded-full bg-green-100 px-2 py-1 text-xs text-green-800">
-                      Đã tiêm
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Health Examination Results */}
-          <div className="mb-8 rounded-lg border border-gray-300 p-4">
-            <h3 className="mb-3 text-lg font-semibold text-red-700">
-              KẾT QUẢ KHÁM SỨC KHỎE
-            </h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2 text-sm">
-                <p>
-                  <strong>Nhịp tim:</strong>{" "}
-                  {healthCondition?.heartRate || "N/A"} bpm
-                </p>
-                <p>
-                  <strong>Nhịp thở:</strong>{" "}
-                  {healthCondition?.breathingRate || "N/A"} lần/phút
-                </p>
-                <p>
-                  <strong>Cân nặng:</strong> {healthCondition?.weight || "N/A"}{" "}
-                  kg
-                </p>
-                <p>
-                  <strong>Nhiệt độ:</strong>{" "}
-                  {healthCondition?.temperature || "N/A"}°C
-                </p>
-                <p>
-                  <strong>Tai - Mắt - Mũi - Miệng:</strong>{" "}
-                  {healthCondition?.ehnm || "N/A"}
-                </p>
-              </div>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <strong>Da và lông:</strong>{" "}
-                  {healthCondition?.skinAFur || "N/A"}
-                </p>
-                <p>
-                  <strong>Tiêu hóa:</strong>{" "}
-                  {healthCondition?.digestion || "N/A"}
-                </p>
-                <p>
-                  <strong>Hô hấp:</strong>{" "}
-                  {healthCondition?.respiratory || "N/A"}
-                </p>
-                <p>
-                  <strong>Bài tiết:</strong> {healthCondition?.excrete || "N/A"}
-                </p>
-                <p>
-                  <strong>Hành vi:</strong> {healthCondition?.behavior || "N/A"}
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 space-y-2 text-sm">
-              <p>
-                <strong>Tâm lý:</strong> {healthCondition?.psycho || "N/A"}
-              </p>
-              <p>
-                <strong>Khác biệt:</strong>{" "}
-                {healthCondition?.different || "N/A"}
-              </p>
-              <div className="rounded-lg bg-blue-50 p-3">
-                <p className="font-semibold text-blue-800">KẾT LUẬN:</p>
-                <p className="mt-1 text-blue-700">
-                  {healthCondition?.conclusion || "N/A"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Veterinarian Information
-          <div className="mb-8 rounded-lg border border-gray-300 p-4">
-            <h3 className="mb-3 text-lg font-semibold text-indigo-700">
-              THÔNG TIN BÁC SĨ THƯỜNG
-            </h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2 text-sm">
-                <p>
-                  <strong>Họ tên:</strong> {vet?.name || "N/A"}
-                </p>
-                <p>
-                  <strong>Mã bác sĩ:</strong> {vet?.vetCode || "N/A"}
-                </p>
-                <p>
-                  <strong>Chuyên khoa:</strong> {vet?.specialization || "N/A"}
-                </p>
-              </div>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <strong>Số điện thoại:</strong> {vet?.phoneNumber || "N/A"}
-                </p>
-                <p>
-                  <strong>Ngày sinh:</strong>{" "}
-                  {formatDate(vet?.dateOfBirth || "")}
-                </p>
-                <p>
-                  <strong>Trạng thái:</strong>{" "}
-                  {vet?.isDeleted ? "Ngưng hoạt động" : "Đang hoạt động"}
-                </p>
-              </div>
-            </div>
-          </div> */}
-
-          {/* Certificate Footer */}
-          <div className="border-t-2 border-gray-300 pt-6">
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-              {/* Veterinarian Signature */}
-              <div className="text-center">
-                <p className="mb-2 text-sm font-semibold">BÁC SĨ THƯỜNG KHÁM</p>
-                <p className="mb-4 text-xs text-gray-600">
-                  (Ký và ghi rõ họ tên)
-                </p>
-                <div className="mb-2 h-16"></div>
-                <p className="text-sm font-medium">{vet?.name || "N/A"}</p>
-              </div>
-
-              {/* Official Stamp */}
-              <div className="text-center">
-                <p className="mb-2 text-sm font-semibold">TRUNG TÂM VAXPET</p>
-                <p className="mb-4 text-xs text-gray-600">(Dấu và chữ ký)</p>
-                <div className="relative mb-2 flex h-16 items-center justify-center">
-                  {/* Official Stamp Image */}
-                  <img
-                    src="/src/assets/images/stamp.svg"
-                    alt="VaxPet Official Stamp"
-                    className="h-16 w-16 opacity-80"
+              <div className="flex justify-center space-x-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="text-warning h-5 w-5 fill-current print:h-4 print:w-4"
                   />
-                </div>
-                <p className="text-sm font-medium">Giám đốc trung tâm</p>
+                ))}
               </div>
-            </div>
 
-            {/* Certificate Notice */}
-            <div className="mt-8 rounded-lg bg-yellow-50 p-4">
-              <p className="text-xs text-gray-700">
-                <strong>Lưu ý:</strong> Giấy chứng nhận này có giá trị trong
-                vòng 6 tháng kể từ ngày cấp. Thú cưng cần được tái khám định kỳ
-                theo lịch hẹn của bác sĩ thường. Mọi thắc mắc xin liên hệ trung
-                tâm VaxPet qua hotline: (028) 1234-5678.
-              </p>
-            </div>
+              <Separator className="mx-auto w-1/2" />
 
-            {/* Certificate ID */}
-            <div className="mt-4 text-center">
-              <p className="text-xs text-gray-500">
-                Mã chứng nhận: {healthCondition?.conditionCode || "N/A"} | Ngày
-                in: {format(new Date(), "dd/MM/yyyy HH:mm", { locale: vi })}
-              </p>
+              <div className="space-y-2 print:space-y-1">
+                <h3 className="font-nunito-700 text-primary text-3xl print:text-xl">
+                  GIẤY CHỨNG NHẬN SỨC KHỎE THÚ CƯNG
+                </h3>
+                <h4 className="font-inter-600 text-secondary text-xl print:text-base">
+                  CERTIFICATE OF VETERINARY INSPECTION
+                </h4>
+                <Badge variant="secondary" className="text-sm print:text-xs">
+                  <Award className="mr-1 h-5 w-5 print:h-3 print:w-3" />
+                  Chứng nhận chính thức
+                </Badge>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {/* Main Content - Two Columns */}
+          <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2 print:mb-3 print:grid-cols-2 print:gap-4">
+            {/* Left Column - Owner Information */}
+            <Card className="border-primary/20 py-4 print:border-gray-300 print:py-3">
+              <CardHeader className="print:py-2">
+                <h4 className="font-nunito-600 text-primary flex items-center gap-2 text-lg print:text-base">
+                  <User className="h-5 w-5 print:h-4 print:w-4" />
+                  Owner or Guardian of the pet animal
+                </h4>
+              </CardHeader>
+              <CardContent className="space-y-3 print:space-y-2">
+                <div className="flex items-center gap-2 text-sm print:text-xs">
+                  <User className="text-primary h-4 w-4 print:h-3 print:w-3" />
+                  <span className="font-nunito-600">Name:</span>
+                  <span className="font-nunito-500">
+                    {customer?.fullName || ""}
+                  </span>
+                </div>
+                <div className="flex items-start gap-2 text-sm print:text-xs">
+                  <MapPin className="text-primary mt-0.5 h-4 w-4 print:h-3 print:w-3" />
+                  <span className="font-nunito-600">Address:</span>
+                  <span className="font-nunito-500">
+                    {customer?.address || ""}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm print:text-xs">
+                  <Phone className="text-primary h-4 w-4 print:h-3 print:w-3" />
+                  <span className="font-nunito-600">Phone number:</span>
+                  <span className="font-nunito-500">
+                    {customer?.phoneNumber || ""}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Right Column - Pet Information */}
+            <Card className="border-primary/20 py-4 print:border-gray-300 print:py-3">
+              <CardHeader className="print:py-2">
+                <h4 className="font-nunito-600 text-primary flex items-center gap-2 text-lg print:text-base">
+                  <PawPrint className="h-5 w-5 print:h-4 print:w-4" />
+                  Pet animal information
+                </h4>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4 text-sm print:gap-3 print:text-xs">
+                  <div className="space-y-3 print:space-y-2">
+                    <div>
+                      <span className="font-nunito-600 text-primary">
+                        Species:
+                      </span>
+                      <p className="font-nunito-500">{pet?.species || ""}</p>
+                    </div>
+                    <div>
+                      <span className="font-nunito-600 text-primary">Sex:</span>
+                      <p className="font-nunito-500">{pet?.gender || ""}</p>
+                    </div>
+                    <div>
+                      <span className="font-nunito-600 text-primary">
+                        Date of birth:
+                      </span>
+                      <p className="font-nunito-500">
+                        {formatDate(pet?.dateOfBirth || "")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-3 print:space-y-2">
+                    <div>
+                      <span className="font-nunito-600 text-primary">
+                        Breed:
+                      </span>
+                      <p className="font-nunito-500">{pet?.breed || ""}</p>
+                    </div>
+                    <div>
+                      <span className="font-nunito-600 text-primary">
+                        Color:
+                      </span>
+                      <p className="font-nunito-500">{pet?.color || ""}</p>
+                    </div>
+                    <div>
+                      <span className="font-nunito-600 text-primary">
+                        Microchip ID:
+                      </span>
+                      <p className="bg-primary/10 print:bg-primary/5 rounded px-2 py-1 font-mono text-sm print:px-1 print:py-0.5 print:text-xs">
+                        {microchip?.microchipCode || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Certification Statement */}
+          <Card className="border-primary/20 mb-6 py-4 print:mb-3 print:border-gray-300 print:py-3">
+            <CardHeader className="print:py-2">
+              <h4 className="font-nunito-600 text-primary flex items-center justify-center gap-2 text-center text-lg print:text-base">
+                <Shield className="h-5 w-5 print:h-4 print:w-4" />
+                By my signature below I certify that:
+              </h4>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 text-sm print:space-y-2 print:text-xs">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                  <span className="font-nunito-500">
+                    The animal is healthy enough to travel.
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                  <span className="font-nunito-500">
+                    The animal is free of Fleas - Ticks - Parasites
+                  </span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                  <span className="font-nunito-500">
+                    The animal shows no evidence of diseases communicable to
+                    humans
+                  </span>
+                </div>
+                {vaccine && (
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                    <span className="font-nunito-500">
+                      The animal has been vaccinated with{" "}
+                      <Badge variant="outline" className="mx-1 print:text-xs">
+                        {vaccine.vaccineResponseDTO?.name}
+                      </Badge>{" "}
+                      on{" "}
+                      <span className="font-nunito-600">
+                        {formatDate(data.appointmentDate)}
+                      </span>
+                    </span>
+                  </div>
+                )}
+                {microchip && (
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                    <span className="font-nunito-500">
+                      The animal has been microchipped with ID:{" "}
+                      <Badge
+                        variant="outline"
+                        className="mx-1 font-mono print:text-xs"
+                      >
+                        {microchip.microchipCode}
+                      </Badge>
+                    </span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Signature Section */}
+          <Card className="border-primary/20 mb-6 print:mb-3 print:border-gray-300">
+            <CardContent className="py-4 print:py-3">
+              <div className="flex items-start justify-between print:gap-4">
+                <div className="space-y-4 text-center print:space-y-2">
+                  <h4 className="font-nunito-600 text-primary flex items-center gap-2 text-lg print:text-base">
+                    <Stethoscope className="h-5 w-5 print:h-4 print:w-4" />
+                    Licensed Veterinarian Signature
+                  </h4>
+                  <div className="space-y-2 text-sm print:space-y-1 print:text-xs">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="text-primary h-4 w-4 print:h-3 print:w-3" />
+                      <span className="font-nunito-600">Date:</span>
+                      <span className="font-nunito-500">
+                        {formatDate(healthCondition?.checkDate || "")}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="text-primary h-4 w-4 print:h-3 print:w-3" />
+                      <span className="font-nunito-600">Place:</span>
+                      <span className="font-nunito-500">
+                        VaxPet Health Centre
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex h-16 w-48 items-end border-b-2 border-gray-400 print:h-12 print:w-32">
+                    <span className="mb-1 text-xs text-gray-500">
+                      Signature
+                    </span>
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="font-nunito-600 print:text-xs"
+                  >
+                    {vet?.name || "Dr. Veterinarian"}
+                  </Badge>
+                </div>
+
+                <div className="text-center">
+                  <div className="border-primary/30 bg-primary/5 print:border-primary/30 print:bg-primary/5 flex h-24 w-24 items-center justify-center rounded-lg border-2 print:flex print:h-24 print:w-24 print:items-center print:justify-center print:rounded-lg print:border-2">
+                    <div className="text-center">
+                      <Award className="text-primary mx-auto mb-1 h-8 w-8 print:h-5 print:w-5" />
+                      <span className="font-nunito-600 text-primary text-xs print:text-xs">
+                        Official Seal
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Footer */}
+          <div className="space-y-4 text-center print:space-y-2">
+            <Separator />
+            <div className="text-primary flex items-center justify-center gap-2">
+              <Heart className="h-5 w-5 print:h-4 print:w-4" />
+              <span className="font-nunito-700 text-lg print:text-base">
+                VaxPet Health Centre
+              </span>
+              <Heart className="h-5 w-5 print:h-4 print:w-4" />
+            </div>
+            <p className="font-nunito-500 text-secondary text-sm italic print:text-xs">
+              Tận tâm - Chất lượng - Uy tín
+            </p>
+            <div className="font-nunito-400 text-xs text-gray-500 print:text-xs">
+              Certificate ID: {healthCondition?.conditionCode || "N/A"} |
+              Issued: {formatDate(healthCondition?.checkDate || "")}
             </div>
           </div>
         </div>

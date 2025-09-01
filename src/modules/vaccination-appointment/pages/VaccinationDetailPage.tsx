@@ -1,10 +1,11 @@
 // React & External Libraries
 import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { SendToBack } from "lucide-react";
+import { SendToBack, RotateCcw } from "lucide-react";
 
 // Shared Components
 import { PageBreadcrumb, StepProgress } from "@/components/shared";
+import { Button } from "@/components/ui";
 
 // Auth & External Modules
 import { useAuth } from "@/modules/auth";
@@ -51,7 +52,9 @@ export default function VaccinationAppDetailPage() {
   } = useVaccinationStore();
   const { reset: resetPayment } = usePaymentStore();
 
-  const { data, refetch } = useVaccinationDetail(Number(appointmentId));
+  const { data, refetch, isFetching } = useVaccinationDetail(
+    Number(appointmentId),
+  );
 
   // Custom hooks for handlers and validation
   const {
@@ -131,9 +134,24 @@ export default function VaccinationAppDetailPage() {
         <h1 className="text-primary font-inter-700 flex items-center gap-2 text-xl">
           <SendToBack /> Theo dõi quá trình tiêm
         </h1>
-        <PageBreadcrumb
-          items={[{ label: "Danh sách lịch hẹn", path: basePath }, "Chi tiết"]}
-        />
+        <div className="flex items-center justify-between">
+          <PageBreadcrumb
+            items={[
+              { label: "Danh sách lịch hẹn", path: basePath },
+              "Chi tiết",
+            ]}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="ml-auto flex items-center gap-2"
+            disabled={isFetching}
+          >
+            <RotateCcw size={16} className={isFetching ? "animate-spin" : ""} />
+            Làm mới
+          </Button>
+        </div>
       </div>
 
       <StepProgress

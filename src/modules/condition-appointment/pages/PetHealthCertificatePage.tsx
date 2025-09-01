@@ -58,7 +58,7 @@ export default function PetHealthCertificatePage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header và nút in */}
       <div className="mb-6 bg-white px-6 py-4 shadow-sm print:hidden">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
+        <div className="mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
@@ -73,7 +73,7 @@ export default function PetHealthCertificatePage() {
           </div>
           <div className="flex items-center gap-3">
             {isPrintSuccess && (
-              <div className="flex items-center gap-2 text-green-600">
+              <div className="text-primary flex items-center gap-2">
                 <Check size={16} />
                 <span className="text-sm">In thành công!</span>
               </div>
@@ -81,7 +81,7 @@ export default function PetHealthCertificatePage() {
             <Button
               onClick={handlePrint}
               disabled={isPrinting}
-              className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+              className="bg-primary hover:bg-secondary flex items-center gap-2 text-white disabled:opacity-50"
             >
               <Printer size={16} />
               {isPrinting ? "Đang in..." : "In giấy chứng nhận"}

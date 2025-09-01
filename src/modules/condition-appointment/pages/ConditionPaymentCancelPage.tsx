@@ -129,20 +129,9 @@ export default function ConditionPaymentCancelPage() {
     navigate("/staff/condition-appointments");
   };
 
-  const handleRetryPayment = () => {
-    if (appointmentDetailId) {
-      // Navigate back to the appointment detail with the payment step
-      navigate(
-        `/staff/condition-appointments/${appointmentDetailId}?step=payment`,
-      );
-    } else {
-      navigate("/staff/condition-appointments");
-    }
-  };
-
   return (
-    <div className="container mx-auto max-w-2xl py-8">
-      <Card className="shadow-lg">
+    <div className="container max-w-2xl py-8">
+      <Card className="py-4 shadow-lg">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
             <AlertCircle className="h-8 w-8 text-red-600" />
@@ -197,14 +186,6 @@ export default function ConditionPaymentCancelPage() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-                <Button
-                  onClick={handleRetryPayment}
-                  disabled={isUpdating}
-                  className="bg-primary hover:bg-primary/90 text-white disabled:opacity-50"
-                >
-                  Thử thanh toán lại
-                </Button>
-
                 <Button
                   onClick={handleBackToAppointments}
                   disabled={isUpdating}
