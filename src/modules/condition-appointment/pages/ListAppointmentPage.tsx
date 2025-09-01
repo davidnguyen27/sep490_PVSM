@@ -39,8 +39,8 @@ export default function ListAppointmentPage() {
     };
   }, []);
 
-  const conditionApps = data?.data.pageData ?? [];
-  const totalPages = data?.data.pageInfo.totalPage ?? 1;
+  const conditionApps = data?.data?.pageData ?? [];
+  const totalPages = data?.data?.pageInfo?.totalPage ?? 1;
 
   const filteredData = conditionApps.filter((item) => {
     const matchLocation =

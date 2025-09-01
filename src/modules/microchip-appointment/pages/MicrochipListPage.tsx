@@ -32,8 +32,8 @@ export default function MicrochipAppListPage() {
     vetId: vetId,
   });
 
-  const microchipApps = data?.data.pageData ?? [];
-  const totalPages = data?.data.pageInfo.totalPage ?? 1;
+  const microchipApps = data?.data?.pageData ?? [];
+  const totalPages = data?.data?.pageInfo?.totalPage ?? 1;
 
   const filteredData = microchipApps.filter((item) => {
     const matchLocation =

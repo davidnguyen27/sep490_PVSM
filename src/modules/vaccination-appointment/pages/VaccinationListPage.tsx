@@ -57,7 +57,7 @@ export default function VaccinationAppListPage() {
     return <VaccinationDetailPage />;
   }
 
-  const allVaccinationApps = data?.data.pageData ?? [];
+  const allVaccinationApps = data?.data?.pageData ?? [];
 
   // Sort by appointmentId in descending order (newest first) and then apply filters
   const sortedAndFilteredData = allVaccinationApps
