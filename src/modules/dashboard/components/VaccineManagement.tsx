@@ -3,7 +3,6 @@ interface VaccineManagementProps {
   totalVaccineBatches: number;
   totalVaccineExports: number;
   totalVaccineReceipts: number;
-  totalVaccineReceiptDetails: number;
 }
 
 export default function VaccineManagement({
@@ -11,7 +10,6 @@ export default function VaccineManagement({
   totalVaccineBatches,
   totalVaccineExports,
   totalVaccineReceipts,
-  totalVaccineReceiptDetails,
 }: VaccineManagementProps) {
   return (
     <div className="border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
@@ -40,7 +38,7 @@ export default function VaccineManagement({
           </div>
           <div className="flex items-center justify-between border-b border-gray-100 py-2">
             <span className="font-nunito-400 text-sm text-gray-600">
-              Xuất kho
+              Phiếu xuất kho
             </span>
             <span className="font-nunito-600 text-lg text-gray-900">
               {totalVaccineExports}
@@ -48,18 +46,10 @@ export default function VaccineManagement({
           </div>
           <div className="flex items-center justify-between border-b border-gray-100 py-2">
             <span className="font-nunito-400 text-sm text-gray-600">
-              Hóa đơn
+              Phiếu nhập kho
             </span>
             <span className="font-nunito-600 text-lg text-gray-900">
               {totalVaccineReceipts}
-            </span>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="font-nunito-400 text-sm text-gray-600">
-              Chi tiết hóa đơn
-            </span>
-            <span className="font-nunito-600 text-lg text-gray-900">
-              {totalVaccineReceiptDetails}
             </span>
           </div>
         </div>

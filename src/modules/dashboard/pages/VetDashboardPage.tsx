@@ -4,13 +4,10 @@ import {
   StatsCard,
   RecentActivities,
   QuickStatsActions,
-  SystemOverview,
-  VaccineManagement,
   DashboardLoading,
   DashboardError,
   StatsGrid,
   ActivitiesGrid,
-  ChartsGrid,
 } from "../components";
 
 // Hooks
@@ -45,7 +42,7 @@ export default function VetDashboardPage() {
       {/* Dashboard Content */}
       {/* Welcome Header */}
       <WelcomeHeader
-        pending={appointmentStats.pending}
+        pending={appointmentStats.processing}
         completed={appointmentStats.completed}
         lastUpdated={dashboardData?.lastUpdated}
         role={currentRole}
@@ -69,34 +66,15 @@ export default function VetDashboardPage() {
         <RecentActivities activities={recentActivitiesData} />
         <QuickStatsActions
           appointmentStats={appointmentStats}
-          totalVets={1} // Current vet only
+          processingAppointments={appointmentStats.processing}
+          confirmedAppointments={appointmentStats.confirmed}
+          checkedInAppointments={appointmentStats.checkedIn}
+          processedAppointments={appointmentStats.processed}
+          paidAppointments={appointmentStats.paid}
+          completedAppointments={appointmentStats.completed}
+          cancelledAppointments={appointmentStats.cancel}
         />
       </ActivitiesGrid>
-
-      {/* Charts Section */}
-      <ChartsGrid>
-        <SystemOverview
-          totalAccounts={0} // Not applicable for vet
-          totalActiveAccounts={0} // Not applicable for vet
-          totalMicrochips={
-            dashboardData?.totalProcessedAppointmentMicrochips || 0
-          }
-          totalDiseases={dashboardData?.totalVaccines || 0}
-        />
-        <VaccineManagement
-          totalVaccines={dashboardData?.totalVaccines || 0}
-          totalVaccineBatches={dashboardData?.totalVaccineBatches || 0}
-          totalVaccineExports={
-            dashboardData?.totalProcessedAppointmentVaccinations || 0
-          }
-          totalVaccineReceipts={
-            dashboardData?.totalCheckedInAppointmentVaccinations || 0
-          }
-          totalVaccineReceiptDetails={
-            dashboardData?.totalCheckedInAppointmentHealthConditions || 0
-          }
-        />
-      </ChartsGrid>
     </div>
   );
 }

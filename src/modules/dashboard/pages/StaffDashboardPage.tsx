@@ -4,14 +4,14 @@ import {
   StatsCard,
   RecentActivities,
   QuickStatsActions,
-  SystemOverview,
-  VaccineManagement,
   DashboardLoading,
   DashboardError,
   StatsGrid,
   ActivitiesGrid,
   ChartsGrid,
 } from "../components";
+import StaffSystemOverview from "../components/StaffSystemOverview";
+import VetWorkScheduleManagement from "../components/VetWorkScheduleManagement";
 
 // Hooks
 import {
@@ -51,7 +51,7 @@ export default function StaffDashboardPage() {
       {/* Dashboard Content */}
       {/* Welcome Header */}
       <WelcomeHeader
-        pending={appointmentStats.pending}
+        pending={appointmentStats.processing}
         completed={appointmentStats.completed}
         lastUpdated={dashboardData?.lastUpdated}
         role={currentRole}
@@ -75,28 +75,29 @@ export default function StaffDashboardPage() {
         <RecentActivities activities={recentActivitiesData} />
         <QuickStatsActions
           appointmentStats={appointmentStats}
-          totalVets={dashboardData?.totalVets || 0}
+          processingAppointments={appointmentStats.processing}
+          confirmedAppointments={appointmentStats.confirmed}
+          checkedInAppointments={appointmentStats.checkedIn}
+          processedAppointments={appointmentStats.processed}
+          paidAppointments={appointmentStats.paid}
+          completedAppointments={appointmentStats.completed}
+          cancelledAppointments={appointmentStats.cancel}
         />
       </ActivitiesGrid>
 
       {/* Charts Section */}
       <ChartsGrid>
-        <SystemOverview
-          totalAccounts={dashboardData?.totalCustomers || 0}
-          totalActiveAccounts={dashboardData?.totalPets || 0}
-          totalMicrochips={dashboardData?.totalAppointmentMicrochips || 0}
-          totalDiseases={dashboardData?.totalDiseases || 0}
+        <StaffSystemOverview
+          totalCustomers={dashboardData?.totalCustomers || 0}
+          totalPets={dashboardData?.totalPets || 0}
+          totalVouchers={dashboardData?.totalVouchers || 0}
+          totalPayments={dashboardData?.totalPayments || 0}
         />
-        <VaccineManagement
-          totalVaccines={dashboardData?.totalVaccines || 0}
-          totalVaccineBatches={dashboardData?.totalVaccineBatches || 0}
-          totalVaccineExports={dashboardData?.totalAppointmentVaccinations || 0}
-          totalVaccineReceipts={
-            dashboardData?.totalCompletedAppointmentVaccinations || 0
-          }
-          totalVaccineReceiptDetails={
-            dashboardData?.totalPaidAppointmentVaccinations || 0
-          }
+        <VetWorkScheduleManagement
+          totalSchedules={dashboardData?.totalVetSchedules || 0}
+          totalAvailableVetSchedules={dashboardData?.totalAvailableVetSchedules || 0}
+          totalScheduledVetSchedules={dashboardData?.totalScheduledVetSchedules || 0}
+          totalUnavailableVetSchedules={dashboardData?.totalUnavailableVetSchedules || 0}
         />
       </ChartsGrid>
     </div>

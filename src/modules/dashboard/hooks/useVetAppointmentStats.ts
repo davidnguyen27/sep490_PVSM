@@ -1,62 +1,62 @@
 import { useMemo } from "react";
 import type { DashboardVetData } from "../types/dashboard.type";
 
-export interface VetAppointmentStats {
+export interface AppointmentStats {
   total: number;
-  pending: number;
+  processing: number;
+  confirmed: number;
+  checkedIn: number;
+  processed: number;
+  paid: number;
   completed: number;
-  checkedInVaccination: number;
-  checkedInMicrochip: number;
-  checkedInHealthCondition: number;
-  processedVaccination: number;
-  processedMicrochip: number;
-  processedHealthCondition: number;
-  totalCheckedIn: number;
-  totalProcessed: number;
+  cancel: number;
 }
 
-export function useVetAppointmentStats(
-  data?: DashboardVetData,
-): VetAppointmentStats {
+export const useVetAppointmentStats = (
+  dashboardData: DashboardVetData | undefined,
+): AppointmentStats => {
   return useMemo(() => {
-    if (!data) {
+    if (!dashboardData) {
       return {
         total: 0,
-        pending: 0,
+        processing: 0,
+        confirmed: 0,
+        checkedIn: 0,
+        processed: 0,
+        paid: 0,
         completed: 0,
-        checkedInVaccination: 0,
-        checkedInMicrochip: 0,
-        checkedInHealthCondition: 0,
-        processedVaccination: 0,
-        processedMicrochip: 0,
-        processedHealthCondition: 0,
-        totalCheckedIn: 0,
-        totalProcessed: 0,
+        cancel: 0
       };
     }
 
-    const totalCheckedIn =
-      data.totalCheckedInAppointmentVaccinations +
-      data.totalCheckedInAppointmentMicrochips +
-      data.totalCheckedInAppointmentHealthConditions;
+    const totalCheckedInAppointments =
+      dashboardData.totalCheckedInAppointmentVaccinations +
+      dashboardData.totalCheckedInAppointmentMicrochips +
+      dashboardData.totalCheckedInAppointmentHealthConditions;
 
-    const totalProcessed =
-      data.totalProcessedAppointmentVaccinations +
-      data.totalProcessedAppointmentMicrochips +
-      data.totalProcessedAppointmentHealthConditions;
+    const totalProcessedAppointments =
+      dashboardData.totalProcessedAppointmentVaccinations +
+      dashboardData.totalProcessedAppointmentMicrochips +
+      dashboardData.totalProcessedAppointmentHealthConditions;
+
+    const totalAppointments =
+      (dashboardData.totalProcessingAppointments || 0) +
+      (dashboardData.totalConfirmedAppointments || 0) +
+      totalCheckedInAppointments +
+      totalProcessedAppointments +
+      (dashboardData.totalPaidAppointments || 0) +
+      (dashboardData.totalCompletedAppointments || 0) +
+      (dashboardData.totalCancelledAppointments || 0);
 
     return {
-      total: totalCheckedIn + totalProcessed,
-      pending: totalCheckedIn,
-      completed: totalProcessed,
-      checkedInVaccination: data.totalCheckedInAppointmentVaccinations,
-      checkedInMicrochip: data.totalCheckedInAppointmentMicrochips,
-      checkedInHealthCondition: data.totalCheckedInAppointmentHealthConditions,
-      processedVaccination: data.totalProcessedAppointmentVaccinations,
-      processedMicrochip: data.totalProcessedAppointmentMicrochips,
-      processedHealthCondition: data.totalProcessedAppointmentHealthConditions,
-      totalCheckedIn,
-      totalProcessed,
+      total: totalAppointments,
+      processing: dashboardData.totalProcessingAppointments || 0,
+      confirmed: dashboardData.totalConfirmedAppointments || 0,
+      checkedIn: totalCheckedInAppointments,
+      processed: totalProcessedAppointments,
+      paid: dashboardData.totalPaidAppointments || 0,
+      completed: dashboardData.totalCompletedAppointments || 0,
+      cancel: dashboardData.totalCancelledAppointments || 0,
     };
-  }, [data]);
-}
+  }, [dashboardData]);
+};

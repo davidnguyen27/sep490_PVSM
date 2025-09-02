@@ -51,7 +51,7 @@ export default function AdminDashboardPage() {
       {/* Dashboard Content */}
       {/* Welcome Header */}
       <WelcomeHeader
-        pending={appointmentStats.pending}
+        pending={appointmentStats.processing}
         completed={appointmentStats.completed}
         lastUpdated={dashboardData?.lastUpdated}
         role={user?.role}
@@ -75,7 +75,13 @@ export default function AdminDashboardPage() {
         <RecentActivities activities={recentActivitiesData} />
         <QuickStatsActions
           appointmentStats={appointmentStats}
-          totalVets={dashboardData?.totalVets || 0}
+          processingAppointments={appointmentStats.processing}
+          confirmedAppointments={appointmentStats.confirmed}
+          checkedInAppointments={appointmentStats.checkedIn}
+          processedAppointments={appointmentStats.processed}
+          paidAppointments={appointmentStats.paid}
+          completedAppointments={appointmentStats.completed}
+          cancelledAppointments={appointmentStats.cancel}
         />
       </ActivitiesGrid>
 
@@ -92,9 +98,6 @@ export default function AdminDashboardPage() {
           totalVaccineBatches={dashboardData?.totalVaccineBatches || 0}
           totalVaccineExports={dashboardData?.totalVaccineExports || 0}
           totalVaccineReceipts={dashboardData?.totalVaccineReceipts || 0}
-          totalVaccineReceiptDetails={
-            dashboardData?.totalVaccineReceiptDetails || 0
-          }
         />
       </ChartsGrid>
     </div>

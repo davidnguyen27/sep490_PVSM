@@ -1,14 +1,26 @@
-import { icons } from "@/shared/constants/icons.constants";
+//import { icons } from "@/shared/constants/icons.constants";
 import type { AppointmentStats } from "../hooks/useAppointmentStats";
 
 interface QuickStatsActionsProps {
   appointmentStats: AppointmentStats;
-  totalVets: number;
+  processingAppointments: number;
+  confirmedAppointments: number;
+  checkedInAppointments: number;
+  processedAppointments: number;
+  paidAppointments: number;
+  completedAppointments: number;
+  cancelledAppointments: number;
 }
 
 export default function QuickStatsActions({
   appointmentStats,
-  totalVets,
+  processingAppointments,
+  confirmedAppointments,
+  checkedInAppointments,
+  processedAppointments,
+  paidAppointments,
+  completedAppointments,
+  cancelledAppointments,
 }: QuickStatsActionsProps) {
   return (
     <div className="border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
@@ -27,31 +39,63 @@ export default function QuickStatsActions({
           </div>
           <div className="flex items-center justify-between">
             <span className="font-nunito-400 text-sm text-gray-600">
-              Đang xử lý
+              Chờ xác nhận
             </span>
-            <span className="font-nunito-600 text-lg text-orange-600">
-              {appointmentStats.pending}
+            <span className="font-nunito-600 text-lg text-orange-500">
+              {processingAppointments}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-nunito-400 text-sm text-gray-600">
+              Đã xác nhận
+            </span>
+            <span className="font-nunito-600 text-lg text-blue-500">
+              {confirmedAppointments}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-nunito-400 text-sm text-gray-600">
+              Đã check in
+            </span>
+            <span className="font-nunito-600 text-lg text-purple-500">
+              {checkedInAppointments}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-nunito-400 text-sm text-gray-600">
+              Đã xử lý
+            </span>
+            <span className="font-nunito-600 text-lg text-cyan-500">
+              {processedAppointments}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-nunito-400 text-sm text-gray-600">
+              Đã thanh toán
+            </span>
+            <span className="font-nunito-600 text-lg text-emerald-500">
+              {paidAppointments}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="font-nunito-400 text-sm text-gray-600">
               Đã hoàn thành
             </span>
-            <span className="font-nunito-600 text-lg text-green-600">
-              {appointmentStats.completed}
+            <span className="font-nunito-600 text-lg text-green-500">
+              {completedAppointments}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="font-nunito-400 text-sm text-gray-600">
-              Tổng bác sĩ
+              Đã hủy
             </span>
-            <span className="font-nunito-600 text-lg text-gray-900">
-              {totalVets}
+            <span className="font-nunito-600 text-lg text-red-500">
+              {cancelledAppointments}
             </span>
           </div>
         </div>
 
-        <div className="space-y-3 border-t border-gray-200 pt-4">
+        {/* <div className="space-y-3 border-t border-gray-200 pt-4">
           <h3 className="font-inter-600 mb-3 text-sm text-gray-900">
             Thao tác nhanh
           </h3>
@@ -63,7 +107,7 @@ export default function QuickStatsActions({
             <icons.Syringe className="h-5 w-5" />
             <span>Nhập vaccine</span>
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

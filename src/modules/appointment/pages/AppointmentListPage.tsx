@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar, RotateCcw } from "lucide-react";
 import {
   AppointmentFilter,
@@ -33,9 +33,23 @@ export default function AppointmentListPage() {
 
   const debouncedSearch = useDebounce(search, 500, { leading: true });
 
+  // Reset page to 1 when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    document.title = "PVMS | Quản lý lịch hẹn";
+
+    return () => {
+      document.title = "PVMS | Quản lý lịch hẹn";
+    };
+  }, []);
+
+  // Fetch with a large pageSize to get most data, then paginate on frontend
   const { data, isPending, isFetching, refetch } = useAppointments({
-    pageNumber: page,
-    pageSize: 10,
+    pageNumber: 1,
+    pageSize: 1000, // Get a large amount of data
     keyword: debouncedSearch,
   });
 
@@ -48,24 +62,32 @@ export default function AppointmentListPage() {
     return <AppointmentDetailPage />;
   }
 
-  const pageData = data?.data?.pageData ?? [];
-  const totalPages = data?.data?.pageInfo?.totalPage ?? 1;
+  const allAppointments = data?.data?.pageData ?? [];
 
-  // Filter data on frontend like vaccination-appointment module
-  const filteredData = pageData.filter((item) => {
-    const matchLocation =
-      !filters.location || item.location === Number(filters.location);
+  // Sort by appointmentId in descending order (newest first) and then apply filters
+  const sortedAndFilteredData = allAppointments
+    .sort((a, b) => (b.appointmentId || 0) - (a.appointmentId || 0))
+    .filter((item) => {
+      const matchLocation =
+        !filters.location || item.location === Number(filters.location);
 
-    const matchStatus =
-      !filters.status || item.appointmentStatus === Number(filters.status);
+      const matchStatus =
+        !filters.status || item.appointmentStatus === Number(filters.status);
 
-    let matchDeleted = true;
-    if (filters.deleted === "active") matchDeleted = !item.isDeleted;
-    else if (filters.deleted === "deleted") matchDeleted = !!item.isDeleted;
-    // if "all" then show all
+      let matchDeleted = true;
+      if (filters.deleted === "active") matchDeleted = !item.isDeleted;
+      else if (filters.deleted === "deleted") matchDeleted = !!item.isDeleted;
+      // if "all" then show all
 
-    return matchLocation && matchStatus && matchDeleted;
-  });
+      return matchLocation && matchStatus && matchDeleted;
+    });
+
+  // Frontend pagination
+  const pageSize = 10;
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedData = sortedAndFilteredData.slice(startIndex, endIndex);
+  const frontendTotalPages = Math.ceil(sortedAndFilteredData.length / pageSize);
 
   return (
     <PageLoader
@@ -123,15 +145,15 @@ export default function AppointmentListPage() {
         </div>
 
         <AppointmentTable
-          appointments={filteredData}
+          appointments={paginatedData}
           isPending={isPending || isFetching}
           currentPage={page}
-          pageSize={10}
+          pageSize={pageSize}
         />
 
         <Pagination
           currentPage={page}
-          totalPages={totalPages}
+          totalPages={frontendTotalPages}
           onPageChange={setPage}
         />
       </div>

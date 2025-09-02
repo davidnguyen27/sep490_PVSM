@@ -45,6 +45,14 @@ export interface DashboardAdminData {
   totalCompletedAppointmentHealthConditions: number;
   totalCancelledAppointmentHealthConditions: number;
   totalRejectedAppointmentHealthConditions: number;
+  totalProcessingAppointments: number;
+  totalConfirmedAppointments: number;
+  totalCheckedInAppointments: number;
+  totalProcessedAppointments: number;
+  totalPaidAppointments: number;
+  totalCompletedAppointments: number;
+  totalCancelledAppointments: number;
+  totalRejectedAppointments: number;
   lastUpdated: string;
 }
 
@@ -67,6 +75,14 @@ export interface DashboardVetData {
   totalProcessedAppointmentVaccinations: number;
   totalProcessedAppointmentMicrochips: number;
   totalProcessedAppointmentHealthConditions: number;
+  totalProcessingAppointments: number;
+  totalConfirmedAppointments: number;
+  totalCheckedInAppointments: number;
+  totalProcessedAppointments: number;
+  totalPaidAppointments: number;
+  totalCompletedAppointments: number;
+  totalCancelledAppointments: number;
+  totalRejectedAppointments: number;
   lastUpdated: string;
 }
 
@@ -77,6 +93,8 @@ export interface DashboardStaffData {
   totalVaccines: number;
   totalVaccineBatches: number;
   totalVets: number;
+  totalVouchers: number;
+  totalPayments: number;
   totalAppointmentVaccinations: number;
   totalProcessingAppointmentVaccinations: number;
   totalConfirmedAppointmentVaccinations: number;
@@ -108,5 +126,17 @@ export interface DashboardStaffData {
   totalAppointmentsThisWeek: number;
   totalAppointmentsThisMonth: number;
   totalAppointmentsThisYear: number;
+  totalVetSchedules: number;
+  totalAvailableVetSchedules: number;
+  totalScheduledVetSchedules: number;
+  totalUnavailableVetSchedules: number;
+  totalProcessingAppointments: number;
+  totalConfirmedAppointments: number;
+  totalCheckedInAppointments: number;
+  totalProcessedAppointments: number;
+  totalPaidAppointments: number;
+  totalCompletedAppointments: number;
+  totalCancelledAppointments: number;
+  totalRejectedAppointments: number;
   lastUpdated: string;
 }
