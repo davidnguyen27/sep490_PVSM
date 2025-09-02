@@ -1,5 +1,5 @@
 import axiosInstance from "@/lib/axios";
-import type { BaseListResponse } from "@/shared/types/api.type";
+import type { BaseListResponse, BaseResponse } from "@/shared/types/api.type";
 import type { VaccineBatch } from "../types/vaccine-batch.type";
 import type { VaccineBatchPayload } from "../types/vaccine-batch.payload.type";
 
@@ -28,7 +28,7 @@ export const vaccineBatchService = {
 
   async createVaccineBatch(
     vaccineBatchPayload: VaccineBatchPayload,
-  ): Promise<VaccineBatch> {
+  ): Promise<BaseResponse<VaccineBatch>> {
     return axiosInstance
       .post("/api/VaccineBatch/create-vaccine-batch", vaccineBatchPayload)
       .then((res) => res.data);
@@ -37,7 +37,7 @@ export const vaccineBatchService = {
   async updateVaccineBatch(
     vaccineBatchId: number,
     vaccineBatchPayload: VaccineBatchPayload,
-  ): Promise<VaccineBatch> {
+  ): Promise<BaseResponse<VaccineBatch>> {
     return axiosInstance
       .put(
         `/api/VaccineBatch/update-vaccine-batch/${vaccineBatchId}`,
@@ -46,7 +46,9 @@ export const vaccineBatchService = {
       .then((res) => res.data);
   },
 
-  async deleteVaccineBatch(vaccineBatchId: number): Promise<VaccineBatch> {
+  async deleteVaccineBatch(
+    vaccineBatchId: number,
+  ): Promise<BaseResponse<VaccineBatch>> {
     return axiosInstance
       .delete(`/api/VaccineBatch/delete-vaccine-batch/${vaccineBatchId}`)
       .then((res) => res.data);

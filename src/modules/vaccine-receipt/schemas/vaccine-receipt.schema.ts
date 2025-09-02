@@ -2,9 +2,11 @@ import { z } from "zod";
 
 // Schema for vaccine receipt detail
 const vaccineReceiptDetailSchema = z.object({
-  vaccineBatchId: z.number({
-    required_error: "Lô vaccine là bắt buộc",
-  }).min(1, "Vui lòng chọn lô vaccine"),
+  vaccineBatchId: z
+    .number({
+      required_error: "Lô vaccine là bắt buộc",
+    })
+    .min(1, "Vui lòng chọn lô vaccine"),
   suppiler: z.string().min(1, "Nhà cung cấp là bắt buộc"),
   quantity: z
     .number({
@@ -26,7 +28,36 @@ const vaccineReceiptDetailSchema = z.object({
   }),
 });
 
-export { vaccineReceiptDetailSchema };
+// Schema for vaccine receipt detail in update form (includes ID)
+const vaccineReceiptDetailUpdateSchema = z.object({
+  vaccineReceiptDetailId: z.number().optional(), // ID for existing details, undefined for new ones
+  vaccineBatchId: z
+    .number({
+      required_error: "Lô vaccine là bắt buộc",
+    })
+    .min(1, "Vui lòng chọn lô vaccine"),
+  suppiler: z.string().min(1, "Nhà cung cấp là bắt buộc"),
+  quantity: z
+    .number({
+      required_error: "Số lượng là bắt buộc",
+    })
+    .min(1, "Số lượng phải lớn hơn 0"),
+  vaccineStatus: z.string().min(1, "Trạng thái vaccine là bắt buộc"),
+  notes: z.string().optional(),
+  coldChainLog: z.object({
+    logTime: z.string().min(1, "Thời gian log là bắt buộc"),
+    temperature: z.number({
+      required_error: "Nhiệt độ là bắt buộc",
+    }),
+    humidity: z.number({
+      required_error: "Độ ẩm là bắt buộc",
+    }),
+    event: z.string().min(1, "Sự kiện là bắt buộc"),
+    notes: z.string().optional(),
+  }),
+});
+
+export { vaccineReceiptDetailSchema, vaccineReceiptDetailUpdateSchema };
 
 export const vaccineReceiptCreateSchema = z.object({
   receiptDate: z
@@ -66,7 +97,7 @@ export const vaccineReceiptUpdateSchema = z.object({
       },
     ),
   details: z
-    .array(vaccineReceiptDetailSchema)
+    .array(vaccineReceiptDetailUpdateSchema)
     .min(1, "Phải có ít nhất một vaccine detail"),
 });
 

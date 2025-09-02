@@ -58,10 +58,9 @@ export function VaccineExportModalCreateNew({
         {
           vaccineBatchId: 0,
           quantity: 1,
-          purpose: "hủy",
+          purpose: "hủy lô",
           notes: "",
           coldChainLog: {
-            logTime: new Date().toISOString(),
             temperature: 2,
             humidity: 60,
             event: "xuất kho",
@@ -96,10 +95,9 @@ export function VaccineExportModalCreateNew({
     append({
       vaccineBatchId: 0,
       quantity: 1,
-      purpose: "hủy",
+      purpose: "hủy lô",
       notes: "",
       coldChainLog: {
-        logTime: new Date().toISOString(),
         temperature: 2,
         humidity: 60,
         event: "xuất kho",
@@ -247,10 +245,12 @@ export function VaccineExportModalCreateNew({
                               <SelectValue placeholder="Chọn mục đích" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="hủy">Hủy</SelectItem>
-                              <SelectItem value="bán">Bán</SelectItem>
-                              <SelectItem value="chuyển kho">
-                                Chuyển kho
+                              <SelectItem value="hủy lô">Hủy lô</SelectItem>
+                              <SelectItem value="điều phối">
+                                Điều phối
+                              </SelectItem>
+                              <SelectItem value="tiêm phòng">
+                                Tiêm phòng
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -279,21 +279,6 @@ export function VaccineExportModalCreateNew({
                   <div className="border-t pt-4">
                     <h4 className="mb-3 font-medium">Nhật ký chuỗi lạnh</h4>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      {/* Log Time */}
-                      <FormField
-                        control={form.control}
-                        name={`details.${index}.coldChainLog.logTime`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Thời gian log</FormLabel>
-                            <FormControl>
-                              <Input type="datetime-local" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
                       {/* Temperature */}
                       <FormField
                         control={form.control}

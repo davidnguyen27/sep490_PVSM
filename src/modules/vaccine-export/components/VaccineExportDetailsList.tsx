@@ -1,6 +1,6 @@
 import type { Control, FieldArrayWithId } from "react-hook-form";
-import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { VaccineExportDetailItem } from "./VaccineExportDetailItem";
 import type { CreateVaccineExportFormData } from "../schemas/vaccine-export.schema";
 import type { VaccineBatch } from "@/modules/vaccine-batch/types/vaccine-batch.type";
@@ -49,17 +49,20 @@ export function VaccineExportDetailsList({
           />
         ))}
 
-        <div className="flex justify-center pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onAddDetail}
-            className="font-nunito-600 flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Thêm chi tiết vaccine
-          </Button>
-        </div>
+        {/* Chỉ hiển thị nút thêm chi tiết khi không ở chế độ edit */}
+        {!isEditMode && (
+          <div className="flex justify-center pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onAddDetail}
+              className="font-nunito-600 flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Thêm chi tiết vaccine
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

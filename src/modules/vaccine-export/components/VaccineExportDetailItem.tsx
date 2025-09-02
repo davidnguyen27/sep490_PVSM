@@ -143,17 +143,30 @@ export function VaccineExportDetailItem({
               <FormItem>
                 <FormLabel className="font-nunito-600 text-gray-700">
                   Mục đích xuất <span className="text-red-500">*</span>
+                  {isEditMode && (
+                    <span className="ml-2 text-xs text-gray-500">
+                      (Không thể thay đổi khi cập nhật)
+                    </span>
+                  )}
                 </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={isEditMode}
+                >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger
+                      className={
+                        isEditMode ? "cursor-not-allowed opacity-60" : ""
+                      }
+                    >
                       <SelectValue placeholder="Chọn mục đích" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="hủy">Hủy</SelectItem>
-                    <SelectItem value="bán">Bán</SelectItem>
-                    <SelectItem value="chuyển kho">Chuyển kho</SelectItem>
+                    <SelectItem value="hủy lô">Hủy lô</SelectItem>
+                    <SelectItem value="điều phối">Điều phối</SelectItem>
+                    <SelectItem value="tiêm phòng">Tiêm phòng</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

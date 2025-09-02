@@ -20,7 +20,7 @@ export function useVaccineExportAdd(options?: UseVaccineExportAddOptions) {
           ...detail,
           coldChainLog: {
             ...detail.coldChainLog,
-            logTime: detail.coldChainLog.logTime || new Date().toISOString(),
+            logTime: new Date().toISOString(), // Generate logTime on submit
           },
         })),
       };

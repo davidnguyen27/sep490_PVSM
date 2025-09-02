@@ -5,6 +5,9 @@ export interface VaccineBatch {
   batchNumber: string;
   manufactureDate: string;
   expiryDate: string;
+  manufacturer?: string;
+  source?: string;
+  storageCondition?: string;
   quantity: number;
   createAt: string;
   createdBy: string;

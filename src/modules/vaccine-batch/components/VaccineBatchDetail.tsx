@@ -89,7 +89,7 @@ export function VaccineBatchDetail({ vaccineBatch }: Props) {
       </div>
 
       {/* Thông tin vaccine */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="bg-linen rounded-none py-4 shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -139,6 +139,45 @@ export function VaccineBatchDetail({ vaccineBatch }: Props) {
                 <p className="mt-1 text-sm text-gray-700">{vaccine.notes}</p>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Thông tin sản xuất & bảo quản */}
+        <Card className="bg-linen rounded-none py-4 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Package className="text-primary h-5 w-5" />
+              Sản xuất & Bảo quản
+            </CardTitle>
+            <CardDescription>
+              Thông tin nhà sản xuất và điều kiện
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="font-nunito-500 text-sm text-gray-500">
+                Nhà sản xuất
+              </label>
+              <p className="mt-1 text-sm text-gray-700">
+                {vaccineBatch.manufacturer || "Chưa cập nhật"}
+              </p>
+            </div>
+            <div>
+              <label className="font-nunito-500 text-sm text-gray-500">
+                Nguồn gốc
+              </label>
+              <p className="mt-1 text-sm text-gray-700">
+                {vaccineBatch.source || "Chưa cập nhật"}
+              </p>
+            </div>
+            <div>
+              <label className="font-nunito-500 text-sm text-gray-500">
+                Điều kiện bảo quản
+              </label>
+              <p className="mt-1 text-sm text-gray-700">
+                {vaccineBatch.storageCondition || "Chưa cập nhật"}
+              </p>
+            </div>
           </CardContent>
         </Card>
 

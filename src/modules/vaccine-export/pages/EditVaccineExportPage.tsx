@@ -67,10 +67,9 @@ export default function EditVaccineExportPage() {
         {
           vaccineBatchId: 0,
           quantity: 1,
-          purpose: "hủy" as const,
+          purpose: "hủy lô" as const,
           notes: "",
           coldChainLog: {
-            logTime: new Date().toISOString(),
             temperature: 2,
             humidity: 60,
             event: "xuất kho",
@@ -101,10 +100,12 @@ export default function EditVaccineExportPage() {
           (detail: VaccineExportDetail) => ({
             vaccineBatchId: detail.vaccineBatch?.vaccineBatchId || 0,
             quantity: detail.quantity || 1,
-            purpose: (detail.purpose || "hủy") as "hủy" | "bán" | "chuyển kho",
+            purpose: (detail.purpose || "hủy lô") as
+              | "hủy lô"
+              | "điều phối"
+              | "tiêm phòng",
             notes: detail.notes || "",
             coldChainLog: {
-              logTime: new Date().toISOString(),
               temperature: 2,
               humidity: 60,
               event: "xuất kho",
@@ -162,10 +163,9 @@ export default function EditVaccineExportPage() {
     append({
       vaccineBatchId: 0,
       quantity: 1,
-      purpose: "hủy" as const,
+      purpose: "hủy lô" as const,
       notes: "",
       coldChainLog: {
-        logTime: new Date().toISOString(),
         temperature: 2,
         humidity: 60,
         event: "xuất kho",

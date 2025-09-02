@@ -40,10 +40,9 @@ export default function VaccineExportCreatePage() {
         {
           vaccineBatchId: 0,
           quantity: 1,
-          purpose: "hủy" as const,
+          purpose: "hủy lô" as const,
           notes: "",
           coldChainLog: {
-            logTime: new Date().toISOString(),
             temperature: 2,
             humidity: 60,
             event: "xuất kho",
@@ -98,10 +97,9 @@ export default function VaccineExportCreatePage() {
     append({
       vaccineBatchId: 0,
       quantity: 1,
-      purpose: "hủy" as const,
+      purpose: "hủy lô" as const,
       notes: "",
       coldChainLog: {
-        logTime: new Date().toISOString(),
         temperature: 2,
         humidity: 60,
         event: "xuất kho",

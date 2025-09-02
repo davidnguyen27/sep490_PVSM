@@ -10,14 +10,13 @@ const vaccineExportDetailSchema = z.object({
       required_error: "Số lượng là bắt buộc",
     })
     .min(1, "Số lượng phải lớn hơn 0"),
-  purpose: z.enum(["hủy", "bán", "chuyển kho"], {
+  purpose: z.enum(["hủy lô", "điều phối", "tiêm phòng"], {
     required_error: "Mục đích là bắt buộc",
     invalid_type_error:
       "Mục đích phải là một trong các giá trị: hủy, bán, chuyển kho",
   }),
   notes: z.string().optional(),
   coldChainLog: z.object({
-    logTime: z.string().min(1, "Thời gian log là bắt buộc"),
     temperature: z.number({
       required_error: "Nhiệt độ là bắt buộc",
     }),

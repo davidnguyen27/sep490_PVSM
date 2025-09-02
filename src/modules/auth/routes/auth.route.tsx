@@ -10,6 +10,7 @@ const ResetPasswordPage = lazy(
   () => import("@/shared/pages/ResetPasswordPage"),
 );
 const NotFoundPage = lazy(() => import("@/shared/pages/NotFoundPage"));
+const DevelopingPage = lazy(() => import("@/shared/pages/DevelopingPage"));
 
 export const authRoutes: RouteObject[] = [
   {
@@ -39,5 +40,9 @@ export const authRoutes: RouteObject[] = [
   {
     path: "*",
     element: <NotFoundPage />,
+  },
+  {
+    path: "/developing",
+    element: <DevelopingPage />,
   },
 ];

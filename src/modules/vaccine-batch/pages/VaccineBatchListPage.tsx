@@ -20,7 +20,7 @@ import {
 import { useVaccineBatches } from "../hooks/useVaccineBatches";
 import { useVaccineBatchById } from "../hooks/useVaccineBatchById";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, PackageOpen } from "lucide-react";
+import { ArrowLeft, Plus, PackageOpen, RefreshCw } from "lucide-react";
 import Spinner from "@/components/shared/Spinner";
 import { VaccineBatchHistoryPage } from "./VaccineBatchHistoryPage";
 
@@ -96,7 +96,7 @@ export default function VaccineBatchListPage() {
     });
   };
 
-  const { data, isPending, isFetching } = useVaccineBatches({
+  const { data, isPending, isFetching, refetch } = useVaccineBatches({
     pageNumber: page,
     pageSize: 10,
     keyWord: debouncedSearch,
@@ -235,15 +235,25 @@ export default function VaccineBatchListPage() {
                 />
               )}
 
-              <Button
-                onClick={handleCreateVaccineBatch}
-                disabled={isCreating}
-                className="font-nunito-600 bg-primary hover:bg-secondary text-white"
-              >
-                {isCreating && <ButtonSpinner variant="white" size="sm" />}
-                <Plus className="mr-2 h-4 w-4" />
-                {isCreating ? "Đang tạo..." : "Thêm lô vắc-xin"}
-              </Button>
+              <div className="ml-auto flex gap-2">
+                <button
+                  type="button"
+                  className="bg-primary hover:bg-secondary font-nunito flex items-center gap-1 rounded px-3 py-2 text-sm text-white"
+                  onClick={() => refetch()}
+                >
+                  <RefreshCw size={16} />
+                  Làm mới
+                </button>
+                <Button
+                  onClick={handleCreateVaccineBatch}
+                  disabled={isCreating}
+                  className="font-nunito-600 bg-primary hover:bg-secondary text-white"
+                >
+                  {isCreating && <ButtonSpinner variant="white" size="sm" />}
+                  <Plus className="mr-2 h-4 w-4" />
+                  {isCreating ? "Đang tạo..." : "Thêm lô vắc-xin"}
+                </Button>
+              </div>
             </div>
 
             <VaccineBatchTable

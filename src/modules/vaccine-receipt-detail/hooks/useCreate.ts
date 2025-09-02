@@ -13,7 +13,14 @@ import type { VaccineReceiptDetail } from "../types/vaccine-receipt-detal.type";
 // utils
 import { extractErrorMessage } from "@/shared/utils/error.utils";
 
-export function useCreateVaccineReceiptDetail() {
+interface UseCreateVaccineReceiptDetailOptions {
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
+}
+
+export function useCreateVaccineReceiptDetail(
+  options?: UseCreateVaccineReceiptDetailOptions,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -30,6 +37,8 @@ export function useCreateVaccineReceiptDetail() {
       toast.success(successMessage, {
         description: `Đã thêm ${variables.quantity} vaccine từ lô ${variables.vaccineBatchId}`,
       });
+
+      options?.onSuccess?.();
     },
     onError: (error: AxiosError) => {
       console.error("API Error:", error);
@@ -38,6 +47,8 @@ export function useCreateVaccineReceiptDetail() {
       toast.error("Lỗi thêm vaccine!", {
         description: errorMessage,
       });
+
+      options?.onError?.(errorMessage);
     },
   });
 }

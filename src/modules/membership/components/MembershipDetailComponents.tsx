@@ -47,7 +47,9 @@ export function StatsCard({
     >
       <div className="flex items-center space-x-3">
         <div className={cn("h-5 w-5", valueColorClasses[color])}>{icon}</div>
-        <span className={cn("text-sm font-medium", textColorClasses[color])}>
+        <span
+          className={cn("font-nunito-500 text-sm", textColorClasses[color])}
+        >
           {title}
         </span>
       </div>
@@ -66,9 +68,11 @@ interface InfoCardProps {
 
 export function InfoCard({ title, children, className }: InfoCardProps) {
   return (
-    <Card className={cn("rounded-none border-gray-200 shadow-sm", className)}>
+    <Card
+      className={cn("rounded-none border-gray-200 py-4 shadow-sm", className)}
+    >
       <CardHeader className="pb-4">
-        <CardTitle className="text-xl font-semibold text-gray-900">
+        <CardTitle className="font-nunito-600 text-xl text-gray-900">
           {title}
         </CardTitle>
       </CardHeader>
@@ -86,10 +90,10 @@ interface FieldProps {
 export function Field({ label, value, className }: FieldProps) {
   return (
     <div className={className}>
-      <label className="text-sm font-medium tracking-wide text-gray-500 uppercase">
+      <label className="font-nunito-500 text-sm tracking-wide text-gray-500 uppercase">
         {label}
       </label>
-      <div className="mt-1 text-lg font-medium text-gray-900">{value}</div>
+      <div className="font-nunito-500 mt-1 text-lg text-gray-900">{value}</div>
     </div>
   );
 }

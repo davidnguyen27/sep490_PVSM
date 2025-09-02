@@ -49,7 +49,7 @@ export default function MembershipDetailPage() {
     return (
       <div className="flex h-96 flex-col items-center justify-center space-y-4">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-900">
+          <h2 className="font-nunito-600 text-2xl text-gray-900">
             Không tìm thấy thông tin thành viên
           </h2>
           <p className="mt-2 text-gray-600">
@@ -104,7 +104,9 @@ export default function MembershipDetailPage() {
           Quản lý thành viên
         </Link>
         <ChevronRight className="h-4 w-4" />
-        <span className="font-medium text-gray-900">Chi tiết thành viên</span>
+        <span className="font-nunito-500 text-primary">
+          Chi tiết thành viên
+        </span>
       </nav>
 
       {/* Header Section */}
@@ -120,36 +122,23 @@ export default function MembershipDetailPage() {
             Quay lại
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+            <h1 className="font-inter-700 text-primary text-2xl sm:text-3xl">
               Chi tiết thành viên
             </h1>
             <p className="mt-1 text-sm text-gray-600 sm:text-base">
               Mã thành viên:{" "}
-              <span className="font-mono">{membership.membershipCode}</span>
+              <span className="font-nunito">{membership.membershipCode}</span>
             </p>
           </div>
         </div>
         <div className="flex items-center space-x-3">
           <Badge
             variant="outline"
-            className={`rounded-none px-4 py-2 text-sm font-medium ${getRankColor(membership.rank)}`}
+            className={`font-nunito-500 rounded-none px-4 py-2 text-sm ${getRankColor(membership.rank)}`}
           >
             <Trophy className="mr-2 h-4 w-4" />
-            {membership.rank}
+            {membership.name}
           </Badge>
-          {!membership.isDeleted && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-none"
-              onClick={() => {
-                // TODO: Add edit functionality
-                console.log("Edit membership:", membership.membershipId);
-              }}
-            >
-              Chỉnh sửa
-            </Button>
-          )}
         </div>
       </div>
 
@@ -161,8 +150,7 @@ export default function MembershipDetailPage() {
           <InfoCard title="Thông tin cơ bản">
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <Field label="Tên thành viên" value={membership.name} />
-                <Field label="Hạng thành viên" value={membership.rank} />
+                <Field label="Hạng thành viên" value={membership.name} />
                 <Field
                   label="Điểm tối thiểu"
                   value={`${membership.minPoints.toLocaleString()} điểm`}
@@ -236,17 +224,17 @@ export default function MembershipDetailPage() {
                                 className="h-12 w-12 rounded-full object-cover"
                               />
                             ) : (
-                              <span className="text-lg font-bold text-white">
+                              <span className="font-inter-700 text-lg text-white">
                                 {customer.fullName?.charAt(0) || "?"}
                               </span>
                             )}
                           </div>
                           <div>
-                            <h4 className="font-semibold text-gray-900">
+                            <h4 className="font-nunito-600 text-gray-900">
                               {customer.fullName}
                             </h4>
                             <div className="mt-1 flex items-center space-x-2 text-sm text-gray-600">
-                              <span className="rounded border border-blue-200 bg-blue-50 px-2 py-1 font-mono text-xs text-blue-700">
+                              <span className="font-nunito rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700">
                                 {customer.customerCode}
                               </span>
                               <div className="flex items-center">
@@ -256,35 +244,35 @@ export default function MembershipDetailPage() {
                             </div>
                           </div>
                         </div>
-                        <span className="text-sm font-medium text-gray-500">
+                        <span className="font-nunito-500 text-sm text-gray-500">
                           #{index + 1}
                         </span>
                       </div>
 
                       <div className="mb-3 grid grid-cols-2 gap-3">
                         <div className="rounded border border-blue-200 bg-blue-50 p-2">
-                          <div className="text-xs font-medium tracking-wide text-blue-600 uppercase">
+                          <div className="font-nunito-500 text-xs tracking-wide text-blue-600 uppercase">
                             Điểm hiện tại
                           </div>
-                          <div className="font-semibold text-blue-700">
+                          <div className="font-nunito-600 text-blue-700">
                             {customer.currentPoints?.toLocaleString() || 0}
                           </div>
                         </div>
                         <div className="rounded border border-green-200 bg-green-50 p-2">
-                          <div className="text-xs font-medium tracking-wide text-green-600 uppercase">
+                          <div className="font-nunito-500 text-xs tracking-wide text-green-600 uppercase">
                             Điểm đổi được
                           </div>
-                          <div className="font-semibold text-green-700">
+                          <div className="font-nunito-600 text-green-700">
                             {customer.redeemablePoints?.toLocaleString() || 0}
                           </div>
                         </div>
                       </div>
 
                       <div className="mb-3 rounded border border-purple-200 bg-purple-50 p-2">
-                        <div className="text-xs font-medium tracking-wide text-purple-600 uppercase">
+                        <div className="font-nunito-500 text-xs tracking-wide text-purple-600 uppercase">
                           Tổng chi tiêu
                         </div>
-                        <div className="font-semibold text-purple-700">
+                        <div className="font-nunito-600 text-purple-700">
                           {customer.totalSpent?.toLocaleString() || 0} VNĐ
                         </div>
                       </div>
@@ -313,7 +301,7 @@ export default function MembershipDetailPage() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
                   <Users className="h-8 w-8 text-gray-400" />
                 </div>
-                <h3 className="mb-2 text-lg font-medium text-gray-900">
+                <h3 className="font-nunito-500 mb-2 text-lg text-gray-900">
                   Chưa có khách hàng
                 </h3>
                 <p className="text-gray-500">
@@ -369,7 +357,7 @@ export default function MembershipDetailPage() {
                   label="Ngày tạo"
                   value={
                     <div>
-                      <div className="text-lg font-medium text-gray-900">
+                      <div className="font-nunito-500 text-lg text-gray-900">
                         {formatDate(membership.createdAt)}
                       </div>
                       <div className="mt-1 text-xs text-gray-500">
@@ -387,7 +375,7 @@ export default function MembershipDetailPage() {
                   label="Cập nhật lần cuối"
                   value={
                     <div>
-                      <div className="text-lg font-medium text-gray-900">
+                      <div className="font-nunito-500 text-lg text-gray-900">
                         {formatDate(membership.modifiedAt)}
                       </div>
                       <div className="mt-1 text-xs text-gray-500">

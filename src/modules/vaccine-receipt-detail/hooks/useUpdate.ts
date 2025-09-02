@@ -13,7 +13,14 @@ import type { VaccineReceiptDetail } from "../types/vaccine-receipt-detal.type";
 // utils
 import { extractErrorMessage } from "@/shared/utils/error.utils";
 
-export function useUpdateVaccineReceiptDetail() {
+interface UseUpdateVaccineReceiptDetailOptions {
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
+}
+
+export function useUpdateVaccineReceiptDetail(
+  options?: UseUpdateVaccineReceiptDetailOptions,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -44,6 +51,8 @@ export function useUpdateVaccineReceiptDetail() {
       toast.success(successMessage, {
         description: "Thông tin vaccine đã được cập nhật",
       });
+
+      options?.onSuccess?.();
     },
     onError: (error: AxiosError) => {
       console.error("Update Error:", error);
@@ -52,6 +61,8 @@ export function useUpdateVaccineReceiptDetail() {
       toast.error("Lỗi cập nhật vaccine!", {
         description: errorMessage,
       });
+
+      options?.onError?.(errorMessage);
     },
   });
 }

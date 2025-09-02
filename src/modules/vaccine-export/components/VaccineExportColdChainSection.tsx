@@ -102,22 +102,6 @@ export function VaccineExportColdChainSection({
               </FormItem>
             )}
           />
-
-          <FormField
-            control={control}
-            name={`details.${index}.coldChainLog.logTime`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-nunito-600 text-gray-700">
-                  Thời gian ghi nhận <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input type="datetime-local" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         <FormField

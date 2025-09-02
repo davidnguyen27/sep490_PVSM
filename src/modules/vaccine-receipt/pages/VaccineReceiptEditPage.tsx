@@ -11,7 +11,12 @@ import { VaccineReceiptDateSection, VaccineDetailsList } from "../components";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useVaccineReceiptEdit, useVaccineReceiptDetail } from "../hooks";
-import { useVaccineReceiptDetailByReceipt } from "@/modules/vaccine-receipt-detail/hooks";
+import {
+  useVaccineReceiptDetailByReceipt,
+  useUpdateVaccineReceiptDetail,
+  useCreateVaccineReceiptDetail,
+  useDeleteVaccineReceiptDetail,
+} from "@/modules/vaccine-receipt-detail/hooks";
 import { useVaccineBatches } from "@/modules/vaccine-batch/hooks";
 
 // schemas
@@ -29,6 +34,9 @@ import { Form } from "@/components/ui/form";
 export default function VaccineReceiptEditPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Track original detail IDs to know which ones to delete
+  const [originalDetailIds, setOriginalDetailIds] = useState<number[]>([]);
 
   // Get vaccine receipt ID from URL params
   const vaccineReceiptIdParam = searchParams.get("vaccineReceiptId");
@@ -93,8 +101,15 @@ export default function VaccineReceiptEditPage() {
       form.setValue("receiptDate", new Date(vaccineReceipt.receiptDate));
 
       if (vaccineReceiptDetails.length > 0) {
+        // Store original detail IDs
+        const detailIds = vaccineReceiptDetails
+          .map((detail) => detail.vaccineReceiptDetailId)
+          .filter((id): id is number => id !== null);
+        setOriginalDetailIds(detailIds);
+
         // Set details from existing data
         const formDetails = vaccineReceiptDetails.map((detail) => ({
+          vaccineReceiptDetailId: detail.vaccineReceiptDetailId || undefined, // Convert null to undefined
           vaccineBatchId: detail.vaccineBatch?.vaccineBatchId || 1, // Changed from 0 to 1
           suppiler: detail.suppiler || "Nhà cung cấp",
           quantity: detail.quantity || 1, // Changed from 0 to 1
@@ -114,7 +129,20 @@ export default function VaccineReceiptEditPage() {
     }
   }, [vaccineReceipt, vaccineReceiptDetails, form]);
 
-  const { mutate: updateVaccineReceipt } = useVaccineReceiptEdit();
+  const { mutateAsync: updateVaccineReceipt } = useVaccineReceiptEdit();
+  const { mutateAsync: updateVaccineReceiptDetail } =
+    useUpdateVaccineReceiptDetail();
+  const { mutateAsync: createVaccineReceiptDetail } =
+    useCreateVaccineReceiptDetail();
+  const { mutateAsync: deleteVaccineReceiptDetail } =
+    useDeleteVaccineReceiptDetail();
+
+  const navigateToList = () => {
+    const currentParams = new URLSearchParams(searchParams);
+    currentParams.delete("action");
+    currentParams.delete("vaccineReceiptId");
+    setSearchParams(currentParams);
+  };
 
   const onSubmit = async (data: VaccineReceiptUpdateFormData) => {
     console.log("Edit form submission started with data:", data);
@@ -125,49 +153,165 @@ export default function VaccineReceiptEditPage() {
     }
 
     setIsSubmitting(true);
+
     try {
-      await new Promise((resolve) => {
-        updateVaccineReceipt(
-          {
+      // Prepare receipt update data
+      const receiptUpdateData = {
+        receiptDate: data.receiptDate.toISOString(),
+      };
+
+      // Separate details into create, update, and delete operations
+      const detailsToCreate = data.details.filter(
+        (detail) => !detail.vaccineReceiptDetailId,
+      );
+      const detailsToUpdate = data.details.filter(
+        (detail) => detail.vaccineReceiptDetailId,
+      );
+      const currentDetailIds = detailsToUpdate
+        .map((detail) => detail.vaccineReceiptDetailId)
+        .filter((id): id is number => id !== undefined);
+      const detailsToDelete = originalDetailIds.filter(
+        (id) => !currentDetailIds.includes(id),
+      );
+
+      console.log("Operations summary:", {
+        create: detailsToCreate.length,
+        update: detailsToUpdate.length,
+        delete: detailsToDelete.length,
+      });
+
+      // Build promises array for all operations
+      const promises: Promise<unknown>[] = [];
+
+      // 1. Update vaccine receipt
+      console.log("Adding receipt update promise");
+      promises.push(
+        updateVaccineReceipt({ vaccineReceiptId, data: receiptUpdateData })
+          .then((response) => {
+            console.log("Receipt update success:", response);
+            return response;
+          })
+          .catch((error) => {
+            console.error("Receipt update error:", error);
+            throw new Error("Receipt update failed");
+          }),
+      );
+
+      // 2. Create new details
+      detailsToCreate.forEach((detail, index) => {
+        console.log(`Adding create detail ${index} promise`);
+        promises.push(
+          createVaccineReceiptDetail({
             vaccineReceiptId,
-            data: {
-              receiptDate: data.receiptDate.toISOString(),
+            vaccineBatchId: detail.vaccineBatchId,
+            suppiler: detail.suppiler,
+            quantity: detail.quantity,
+            vaccineStatus: detail.vaccineStatus,
+            notes: detail.notes || "",
+            coldChainLog: {
+              ...detail.coldChainLog,
+              vaccineBatchId: detail.vaccineBatchId,
+              notes: detail.coldChainLog.notes || "",
             },
-          },
-          {
-            onSuccess: (response) => {
-              console.log("Edit success response:", response);
-              resolve(void 0);
-              // Remove edit params to go back to list
-              const currentParams = new URLSearchParams(searchParams);
-              currentParams.delete("action");
-              currentParams.delete("vaccineReceiptId");
-              setSearchParams(currentParams);
-            },
-            onError: (error) => {
-              console.error("Edit error:", error);
-              resolve(void 0);
-            },
-          },
+          })
+            .then((response) => {
+              console.log(`Create detail ${index} success:`, response);
+              return response;
+            })
+            .catch((error) => {
+              console.error(`Create detail ${index} error:`, error);
+              throw new Error(`Create detail ${index} failed`);
+            }),
         );
       });
+
+      // 3. Update existing details
+      detailsToUpdate.forEach((detail, index) => {
+        if (detail.vaccineReceiptDetailId !== undefined) {
+          console.log(`Adding update detail ${index} promise`);
+          promises.push(
+            updateVaccineReceiptDetail({
+              vaccineReceiptDetailId: detail.vaccineReceiptDetailId!,
+              payload: {
+                vaccineReceiptId,
+                vaccineBatchId: detail.vaccineBatchId,
+                suppiler: detail.suppiler,
+                quantity: detail.quantity,
+                vaccineStatus: detail.vaccineStatus,
+                notes: detail.notes || "",
+                coldChainLog: {
+                  ...detail.coldChainLog,
+                  vaccineBatchId: detail.vaccineBatchId,
+                  notes: detail.coldChainLog.notes || "",
+                },
+              },
+            })
+              .then((response) => {
+                console.log(`Update detail ${index} success:`, response);
+                return response;
+              })
+              .catch((error) => {
+                console.error(`Update detail ${index} error:`, error);
+                throw new Error(`Update detail ${index} failed`);
+              }),
+          );
+        } else {
+          console.warn(`Skipping detail ${index} - no vaccineReceiptDetailId`);
+        }
+      });
+
+      // 4. Delete removed details
+      detailsToDelete.forEach((detailId) => {
+        console.log(`Adding delete detail ${detailId} promise`);
+        promises.push(
+          deleteVaccineReceiptDetail(detailId)
+            .then((response) => {
+              console.log(`Delete detail ${detailId} success:`, response);
+              return response;
+            })
+            .catch((error) => {
+              console.error(`Delete detail ${detailId} error:`, error);
+              throw new Error(`Delete detail ${detailId} failed`);
+            }),
+        );
+      });
+
+      console.log(`Total promises to execute: ${promises.length}`);
+
+      // Wait for all operations to complete
+      const settledResults = await Promise.allSettled(promises);
+      console.log("All operations settled:", settledResults);
+
+      // Check if any operations failed
+      const failedOperations = settledResults.filter(
+        (result) => result.status === "rejected",
+      );
+      if (failedOperations.length > 0) {
+        console.error("Some operations failed:", failedOperations);
+        throw new Error(`${failedOperations.length} operations failed`);
+      }
+
+      console.log("All operations completed successfully, navigating to list");
+
+      // Navigate back to list on success
+      navigateToList();
     } catch (error) {
-      console.error("Edit outer catch error:", error);
+      console.error("Update error:", error);
+      // Error handling is already done by individual mutations via toast
     } finally {
+      console.log("Setting isSubmitting to false");
       setIsSubmitting(false);
     }
   };
 
   const handleCancel = () => {
     // Remove edit params to go back to list
-    const currentParams = new URLSearchParams(searchParams);
-    currentParams.delete("action");
-    currentParams.delete("vaccineReceiptId");
-    setSearchParams(currentParams);
+    navigateToList();
   };
 
   const handleAddDetail = () => {
     append({
+      // No vaccineReceiptDetailId for new details
       vaccineBatchId: 1, // Changed from 0
       suppiler: "Nhà cung cấp",
       quantity: 1, // Changed from 0
@@ -310,7 +454,7 @@ export default function VaccineReceiptEditPage() {
                 >
                   {isSubmitting && <ButtonSpinner variant="white" size="sm" />}
                   <Save className="mr-2 h-4 w-4" />
-                  {isSubmitting ? "Đang cập nhật..." : "Cập nhật phiếu"}
+                  {isSubmitting ? "Đang lưu..." : "Lưu phiếu nhập"}
                 </Button>
               </div>
             </form>

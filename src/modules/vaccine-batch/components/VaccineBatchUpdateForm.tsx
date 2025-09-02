@@ -61,9 +61,9 @@ export function VaccineBatchUpdateForm({
       vaccineId: vaccineBatch.vaccineId,
       manufactureDate: vaccineBatch.manufactureDate.split("T")[0], // Convert to YYYY-MM-DD format
       expiryDate: vaccineBatch.expiryDate.split("T")[0], // Convert to YYYY-MM-DD format
-      manufacturer: "", // These fields may not exist in current VaccineBatch type
-      source: "",
-      storageCondition: "",
+      manufacturer: vaccineBatch.manufacturer || "", // Use actual value from vaccineBatch
+      source: vaccineBatch.source || "", // Use actual value from vaccineBatch
+      storageCondition: vaccineBatch.storageCondition || "", // Use actual value from vaccineBatch
     },
   });
 
@@ -74,9 +74,9 @@ export function VaccineBatchUpdateForm({
         vaccineId: vaccineBatch.vaccineId,
         manufactureDate: vaccineBatch.manufactureDate.split("T")[0],
         expiryDate: vaccineBatch.expiryDate.split("T")[0],
-        manufacturer: "", // These fields may not exist in current VaccineBatch type
-        source: "",
-        storageCondition: "",
+        manufacturer: vaccineBatch.manufacturer || "", // Use actual value from vaccineBatch
+        source: vaccineBatch.source || "", // Use actual value from vaccineBatch
+        storageCondition: vaccineBatch.storageCondition || "", // Use actual value from vaccineBatch
       });
     }
   }, [vaccineBatch, form]);

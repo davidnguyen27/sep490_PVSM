@@ -30,7 +30,7 @@ export function AddressTable({ data, isLoading, onEdit, onDelete }: Props) {
             {tableHeaders.map((header) => (
               <TableHead
                 key={header}
-                className="font-nunito px-4 py-3 text-center text-sm font-semibold text-white"
+                className="font-nunito py-3 text-center text-sm text-white"
               >
                 {header}
               </TableHead>
@@ -43,14 +43,14 @@ export function AddressTable({ data, isLoading, onEdit, onDelete }: Props) {
           <TableBody>
             {data.map((address, index) => (
               <TableRow key={address.addressId} className="hover:bg-gray-50">
-                <TableCell className="text-center font-medium">
+                <TableCell className="font-nunito-500 text-center">
                   {index + 1}
                 </TableCell>
                 <TableCell className="text-center">
                   #{address.addressId}
                 </TableCell>
-                <TableCell className="px-4 py-3">
-                  <div className="max-w-md">
+                <TableCell className="py-3 text-center">
+                  <div>
                     <p className="line-clamp-2 text-sm text-gray-900">
                       {address.location}
                     </p>

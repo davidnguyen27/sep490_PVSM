@@ -95,28 +95,28 @@ export default function SettingPage() {
       title: "Cài đặt chung",
       description: "Cấu hình chung của hệ thống",
       icon: <Settings className="h-5 w-5 text-gray-600" />,
-      action: () => navigate("/admin/settings/general"),
+      action: () => navigate("/developing"),
     },
     {
       id: "security",
       title: "Bảo mật",
       description: "Cài đặt bảo mật và quyền truy cập",
       icon: <Shield className="h-5 w-5 text-red-600" />,
-      action: () => navigate("/admin/settings/security"),
+      action: () => navigate("/developing"),
     },
     {
       id: "localization",
       title: "Ngôn ngữ & Khu vực",
       description: "Cài đặt ngôn ngữ và múi giờ",
       icon: <Globe className="h-5 w-5 text-blue-600" />,
-      action: () => navigate("/admin/settings/localization"),
+      action: () => navigate("/developing"),
     },
     {
       id: "backup",
       title: "Sao lưu dữ liệu",
       description: "Quản lý sao lưu và khôi phục dữ liệu",
       icon: <Database className="h-5 w-5 text-green-600" />,
-      action: () => navigate("/admin/settings/backup"),
+      action: () => navigate("/developing"),
     },
   ];
 

@@ -12,7 +12,14 @@ import type { VaccineReceiptDetail } from "../types/vaccine-receipt-detal.type";
 // utils
 import { extractErrorMessage } from "@/shared/utils/error.utils";
 
-export function useDeleteVaccineReceiptDetail() {
+interface UseDeleteVaccineReceiptDetailOptions {
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
+}
+
+export function useDeleteVaccineReceiptDetail(
+  options?: UseDeleteVaccineReceiptDetailOptions,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -35,6 +42,8 @@ export function useDeleteVaccineReceiptDetail() {
       toast.success(successMessage, {
         description: "Đã xóa vaccine khỏi phiếu nhập",
       });
+
+      options?.onSuccess?.();
     },
     onError: (error: AxiosError) => {
       console.error("Delete Error:", error);
@@ -43,6 +52,8 @@ export function useDeleteVaccineReceiptDetail() {
       toast.error("Lỗi xóa vaccine!", {
         description: errorMessage,
       });
+
+      options?.onError?.(errorMessage);
     },
   });
 }
