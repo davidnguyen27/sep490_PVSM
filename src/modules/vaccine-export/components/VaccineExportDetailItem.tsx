@@ -165,7 +165,7 @@ export function VaccineExportDetailItem({
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="hủy lô">Hủy lô</SelectItem>
-                    <SelectItem value="điều phối">Điều phối</SelectItem>
+                    <SelectItem value="trả hàng">Trả hàng</SelectItem>
                     <SelectItem value="tiêm phòng">Tiêm phòng</SelectItem>
                   </SelectContent>
                 </Select>

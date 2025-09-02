@@ -102,7 +102,7 @@ export default function EditVaccineExportPage() {
             quantity: detail.quantity || 1,
             purpose: (detail.purpose || "hủy lô") as
               | "hủy lô"
-              | "điều phối"
+              | "trả hàng"
               | "tiêm phòng",
             notes: detail.notes || "",
             coldChainLog: {
