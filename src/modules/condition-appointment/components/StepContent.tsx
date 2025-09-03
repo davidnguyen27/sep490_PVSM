@@ -152,19 +152,21 @@ export function StepContent({
       />
 
       <div className="flex justify-end gap-4">
-        <Button
-          key="view-detail"
-          variant="outline"
-          className="border-primary text-primary"
-          onClick={() => {
-            const prefix = isVet
-              ? "/vet/condition-appointments"
-              : "/staff/condition-appointments";
-            navigate(`${prefix}/pet-health-certificate`, { state: { data } });
-          }}
-        >
-          Xem chi tiết
-        </Button>
+        {appointmentStatus === 4 && (
+          <Button
+            key="view-detail"
+            variant="outline"
+            className="border-primary text-primary"
+            onClick={() => {
+              const prefix = isVet
+                ? "/vet/condition-appointments"
+                : "/staff/condition-appointments";
+              navigate(`${prefix}/pet-health-certificate`, { state: { data } });
+            }}
+          >
+            Xem chi tiết
+          </Button>
+        )}
         {currentViewStatus === appointmentStatus && (
           <Button
             key="finish"
