@@ -9,7 +9,7 @@ interface WeeklyStatsCardsProps {
     bookedAppointments: number;
     lateAppointments: number;
   };
-  onAddSchedule: () => void;
+  onAddSchedule?: () => void;
   disableAdd?: boolean;
 }
 
@@ -78,24 +78,26 @@ export const WeeklyStatsCards = ({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="p-4">
-          <Button
-            onClick={onAddSchedule}
-            className="h-full min-h-[60px] w-full"
-            variant="outline"
-            disabled={disableAdd}
-            title={
-              disableAdd
-                ? "Không thể tạo lịch cho ngày hiện tại hoặc quá khứ"
-                : undefined
-            }
-          >
-            <Plus className="mr-2 h-5 w-5" />
-            Thêm lịch
-          </Button>
-        </CardContent>
-      </Card>
+      {onAddSchedule && (
+        <Card>
+          <CardContent className="p-4">
+            <Button
+              onClick={onAddSchedule}
+              className="h-full min-h-[60px] w-full"
+              variant="outline"
+              disabled={disableAdd}
+              title={
+                disableAdd
+                  ? "Không thể tạo lịch cho ngày hiện tại hoặc quá khứ"
+                  : undefined
+              }
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              Thêm lịch
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

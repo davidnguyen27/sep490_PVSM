@@ -16,6 +16,36 @@ export const formatData = {
     return `${month}/${day}/${year}`;
   },
 
+  // New function to handle date input field format without timezone issues
+  formatDateForInput: (date: string) => {
+    if (!date) return "";
+
+    // If the date is already in yyyy-mm-dd format, return as is
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return date;
+    }
+
+    // Parse the date string directly without timezone conversion
+    const dateStr = date.includes("T") ? date.split("T")[0] : date;
+
+    // Validate the date format
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return dateStr;
+    }
+
+    // If it's in another format, try to parse and format
+    try {
+      const d = new Date(date);
+      // Use local timezone date components to avoid timezone shift
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    } catch {
+      return "";
+    }
+  },
+
   parseDateDMYtoMDY(date: string): string {
     if (!date) return date;
     if (

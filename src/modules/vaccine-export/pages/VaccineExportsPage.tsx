@@ -109,13 +109,22 @@ export default function VaccineExportsPage() {
           <SearchLabel value={search} onChange={setSearch} />
         </div>
 
-        <Button
-          onClick={handleCreateNew}
-          className="font-nunito-600 bg-primary hover:bg-secondary text-white"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Thêm phiếu xuất kho
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            className="font-nunito-600"
+          >
+            Làm mới dữ liệu
+          </Button>
+          <Button
+            onClick={handleCreateNew}
+            className="font-nunito-600 bg-primary hover:bg-secondary text-white"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Thêm phiếu xuất kho
+          </Button>
+        </div>
       </div>
 
       <VaccineExportTable

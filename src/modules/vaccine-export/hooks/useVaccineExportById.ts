@@ -8,6 +8,6 @@ export function useVaccineExportById(exportId: number) {
     enabled: !!exportId,
     refetchOnWindowFocus: false,
     retry: 1,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // No caching to ensure fresh data after edits
   });
 }

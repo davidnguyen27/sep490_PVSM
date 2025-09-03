@@ -60,10 +60,11 @@ export const vaccineExportDetailService = {
     payload: VaccineExportDetailPayload,
   ): Promise<BaseResponse<VaccineExportDetail>> {
     return await axiosInstance
-      .put(
-        `/api/VaccineExportDetail/update-vaccine-export-detail/${exportDetailId}`,
-        payload,
-      )
+      .put(`/api/VaccineExportDetail/update-vaccine-export-detail`, payload, {
+        params: {
+          exportDetailId: exportDetailId,
+        },
+      })
       .then((res) => res.data);
   },
 

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Schema for vaccine export detail
 const vaccineExportDetailSchema = z.object({
+  vaccineExportDetailId: z.number().optional(), // For existing details
   vaccineBatchId: z.number({
     required_error: "Lô vaccine là bắt buộc",
   }),

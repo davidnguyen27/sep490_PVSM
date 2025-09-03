@@ -28,7 +28,7 @@ interface WeeklyCalendarProps {
     slotId: number,
   ) => "available" | "unavailable" | "booked" | "late";
   onDayClick: (date: Date) => void;
-  onSlotEdit: (date: Date, slotId: number) => void;
+  onSlotEdit?: (date: Date, slotId: number) => void;
   onSlotDelete?: (date: Date, slotId: number) => void;
   onPreviousPeriod: () => void;
   onNextPeriod: () => void;

@@ -9,6 +9,6 @@ export function useExportDetailById(exportDetailId: number | null) {
     enabled: !!exportDetailId,
     refetchOnWindowFocus: false,
     retry: 1,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // No caching to ensure fresh data after edits
   });
 }

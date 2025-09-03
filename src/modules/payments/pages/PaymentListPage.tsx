@@ -111,7 +111,7 @@ export default function PaymentListPage() {
     // Update URL with paymentId param
     setSearchParams({
       ...Object.fromEntries(searchParams.entries()),
-      paymentId: payment.paymentId.toString(),
+      paymentId: payment.paymentId?.toString() || "",
     });
   };
 
@@ -130,7 +130,7 @@ export default function PaymentListPage() {
   };
 
   const handleConfirmDelete = () => {
-    if (paymentToDelete) {
+    if (paymentToDelete && paymentToDelete.paymentId) {
       deletePaymentMutation.mutate(paymentToDelete.paymentId, {
         onSuccess: () => {
           handleCloseDeleteModal();

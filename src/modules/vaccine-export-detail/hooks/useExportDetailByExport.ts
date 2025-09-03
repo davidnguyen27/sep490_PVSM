@@ -7,6 +7,6 @@ export const useExportDetailByExport = (exportId: number | null) => {
     queryFn: () =>
       vaccineExportDetailService.getExportDetailByExportId(exportId),
     enabled: !!exportId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // No caching to ensure fresh data after edits
   });
 };

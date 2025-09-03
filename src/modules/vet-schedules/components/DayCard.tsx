@@ -23,7 +23,7 @@ interface DayCardProps {
     slotId: number,
   ) => "available" | "unavailable" | "booked" | "late";
   onDayClick: (date: Date) => void;
-  onSlotEdit: (date: Date, slotId: number) => void;
+  onSlotEdit?: (date: Date, slotId: number) => void;
   onSlotDelete?: (date: Date, slotId: number) => void;
 }
 
@@ -68,7 +68,7 @@ export const DayCard = ({
               key={slot.id}
               onClick={(e) => {
                 e.stopPropagation();
-                onSlotEdit(day, slot.id);
+                onSlotEdit?.(day, slot.id);
               }}
             >
               <TimeSlotCard
@@ -76,10 +76,14 @@ export const DayCard = ({
                 status={status}
                 statusConfig={statusConfig}
                 onClick={() => {}}
-                showActions={true}
-                onEdit={() => {
-                  onSlotEdit(day, slot.id);
-                }}
+                showActions={!!onSlotEdit || !!onSlotDelete}
+                onEdit={
+                  onSlotEdit
+                    ? () => {
+                        onSlotEdit(day, slot.id);
+                      }
+                    : undefined
+                }
                 onDelete={
                   onSlotDelete
                     ? () => {

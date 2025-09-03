@@ -10,11 +10,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+// utils
+import { formatData } from "@/shared/utils/format.utils";
+
 // types
 import type { CreateVaccineExportFormData } from "../schemas/vaccine-export.schema";
 
 interface VaccineExportDateSectionProps {
   control: Control<CreateVaccineExportFormData>;
+  isEditMode?: boolean;
 }
 
 export function VaccineExportDateSection({
@@ -27,7 +31,7 @@ export function VaccineExportDateSection({
           Thông tin phiếu xuất
         </h4>
         <p className="font-nunito-400 text-sm text-gray-500">
-          Chọn ngày xuất vắc-xin khỏi kho
+          Chọn ngày xuất vắc-xin khỏi kho (định dạng: dd/mm/yyyy)
         </p>
       </div>
 
@@ -39,9 +43,19 @@ export function VaccineExportDateSection({
             <FormItem className="flex flex-col">
               <FormLabel className="font-nunito-600 text-gray-700">
                 Ngày xuất kho <span className="text-red-500">*</span>
+                {field.value && (
+                  <span className="font-nunito-400 ml-2 text-sm text-gray-500">
+                    ({formatData.formatDate(field.value)})
+                  </span>
+                )}
               </FormLabel>
               <FormControl>
-                <Input type="date" {...field} className="w-full max-w-md" />
+                <Input
+                  type="date"
+                  {...field}
+                  className="w-full max-w-md"
+                  placeholder="dd/mm/yyyy"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

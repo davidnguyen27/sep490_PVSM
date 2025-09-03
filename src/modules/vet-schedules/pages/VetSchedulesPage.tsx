@@ -2,12 +2,9 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { PageBreadcrumb } from "@/components/shared";
 import { useScheduleByVet } from "../hooks/useScheduleByVet";
-import { useDeleteSchedule } from "../hooks/useDeleteSchedule";
 import { useDateNavigation } from "../hooks/useDateNavigation";
 import { useDateFormatting } from "../hooks/useDateFormatting";
-import type { VetSchedule } from "../types/vet-schedule.type";
 import {
-  SimpleVetScheduleForm,
   WeeklyStatsCards,
   ScheduleHeader,
   WeeklyCalendar,
@@ -68,21 +65,11 @@ const isSameDay = (date1: Date, date2: Date) => {
 const VetSchedulesPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"week" | "month">("week");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<"add" | "edit">("add");
-  const [selectedSlot, setSelectedSlot] = useState<{
-    date: Date;
-    slotId: number;
-  } | null>(null);
-  const [existingSchedule, setExistingSchedule] = useState<VetSchedule | null>(
-    null,
-  );
 
   // Custom hooks
   const { weekDays, handlePreviousPeriod, handleNextPeriod } =
     useDateNavigation();
   const { formatDateToDMY } = useDateFormatting();
-  const { mutate: deleteSchedule } = useDeleteSchedule();
 
   // Lấy lịch làm việc của bác sĩ hiện tại
   const {
@@ -119,55 +106,6 @@ const VetSchedulesPage = () => {
   // Event handlers
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
-  };
-
-  const handleAddSchedule = () => {
-    setModalMode("add");
-    setSelectedSlot(null);
-    setExistingSchedule(null);
-    setIsModalOpen(true);
-  };
-
-  const handleSlotEdit = (date: Date, slotId: number) => {
-    setSelectedDate(date);
-    setSelectedSlot({ date, slotId });
-
-    // Tìm schedule tương ứng
-    // Sử dụng format date-fns để lấy ngày local, tránh lệch timezone
-    const dateString = format(date, "yyyy-MM-dd");
-    const schedule = validVetSchedules.find((schedule) => {
-      const scheduleDateString = schedule.scheduleDate.split("T")[0];
-      return (
-        scheduleDateString === dateString && schedule.slotNumber === slotId
-      );
-    });
-
-    if (schedule) {
-      // Nếu có schedule -> edit mode
-      setExistingSchedule(schedule);
-      setModalMode("edit");
-    } else {
-      // Nếu không có schedule -> add mode
-      setExistingSchedule(null);
-      setModalMode("add");
-    }
-
-    setIsModalOpen(true);
-  };
-
-  const handleSlotDelete = (date: Date, slotId: number) => {
-    // Tìm schedule tương ứng để lấy ID
-    const dateString = format(date, "yyyy-MM-dd");
-    const schedule = validVetSchedules.find((schedule) => {
-      const scheduleDateString = schedule.scheduleDate.split("T")[0];
-      return (
-        scheduleDateString === dateString && schedule.slotNumber === slotId
-      );
-    });
-
-    if (schedule?.vetScheduleId) {
-      deleteSchedule(schedule.vetScheduleId);
-    }
   };
 
   const getSlotStatus = (date: Date, slotId: number): SlotStatus => {
@@ -220,7 +158,7 @@ const VetSchedulesPage = () => {
       <ScheduleHeader viewMode={viewMode} onViewModeChange={setViewMode} />
 
       {/* Thống kê nhanh */}
-      <WeeklyStatsCards stats={weeklyStats} onAddSchedule={handleAddSchedule} />
+      <WeeklyStatsCards stats={weeklyStats} />
 
       {/* Lịch tuần đơn giản */}
       <WeeklyCalendar
@@ -234,24 +172,12 @@ const VetSchedulesPage = () => {
         isSameDay={isSameDay}
         getSlotStatus={getSlotStatus}
         onDayClick={handleDayClick}
-        onSlotEdit={handleSlotEdit}
-        onSlotDelete={handleSlotDelete}
         onPreviousPeriod={() => handlePreviousPeriod(viewMode)}
         onNextPeriod={() => handleNextPeriod(viewMode)}
       />
 
       {/* Legend đơn giản */}
       <StatusLegend statusConfig={statusConfig} />
-
-      {/* Modal form */}
-      <SimpleVetScheduleForm
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        selectedDate={selectedDate}
-        mode={modalMode}
-        selectedSlot={selectedSlot?.slotId}
-        existingSchedule={existingSchedule || undefined}
-      />
     </div>
   );
 };

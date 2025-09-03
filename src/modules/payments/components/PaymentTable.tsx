@@ -35,7 +35,9 @@ const tableHeaders = [
   "STT",
   "Mã thanh toán",
   "Khách hàng",
+  "Loại dịch vụ",
   "Số tiền",
+  "Voucher",
   "Phương thức",
   "Trạng thái",
   "Ngày thanh toán",
@@ -121,6 +123,32 @@ export function PaymentTable({
     }
   };
 
+  const getServiceTypeText = (serviceType: number) => {
+    switch (serviceType) {
+      case 1:
+        return "Tiêm vaccine";
+      case 2:
+        return "Gắn microchip";
+      case 3:
+        return "Khám bệnh";
+      default:
+        return "Không xác định";
+    }
+  };
+
+  const getServiceTypeColor = (serviceType: number) => {
+    switch (serviceType) {
+      case 1:
+        return "bg-blue-100 text-blue-800";
+      case 2:
+        return "bg-green-100 text-green-800";
+      case 3:
+        return "bg-orange-100 text-orange-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   return (
     <div className="bg-linen shadow-md">
       <Table>
@@ -175,12 +203,12 @@ export function PaymentTable({
                   {(currentPage - 1) * pageSize + index + 1}
                 </TableCell>
                 <TableCell
-                  className={`text-dark font-nunito max-w-[140px] truncate text-center text-sm ${
+                  className={`text-dark font-nunito text-center text-sm ${
                     payment.isDeleted ? "text-gray-500 line-through" : ""
                   }`}
                 >
                   <div className="flex flex-col items-center gap-1">
-                    <span className="truncate" title={payment.paymentCode}>
+                    <span className="break-all" title={payment.paymentCode}>
                       {payment.paymentCode}
                     </span>
                     {payment.isDeleted && (
@@ -197,18 +225,34 @@ export function PaymentTable({
                 >
                   <div className="flex flex-col items-center">
                     <span
-                      className="truncate"
-                      title={`ID: ${payment.customerId}`}
+                      className="truncate font-medium"
+                      title={payment.customer?.fullName || "N/A"}
                     >
-                      ID: {payment.customerId}
+                      {payment.customer?.fullName || "N/A"}
                     </span>
                     <span
-                      className="text-muted-foreground truncate text-sm"
-                      title={`Cuộc hẹn: ${payment.appointmentDetailId}`}
+                      className="text-muted-foreground truncate text-xs"
+                      title={payment.customer?.phoneNumber || "N/A"}
                     >
-                      Cuộc hẹn: {payment.appointmentDetailId}
+                      {payment.customer?.phoneNumber || "N/A"}
                     </span>
                   </div>
+                </TableCell>
+                <TableCell
+                  className={`text-dark font-nunito text-center text-sm ${
+                    payment.isDeleted ? "text-gray-500 line-through" : ""
+                  }`}
+                >
+                  <Badge
+                    variant="secondary"
+                    className={`${getServiceTypeColor(
+                      payment.appointmentDetail?.serviceType || 0,
+                    )}`}
+                  >
+                    {getServiceTypeText(
+                      payment.appointmentDetail?.serviceType || 0,
+                    )}
+                  </Badge>
                 </TableCell>
                 <TableCell
                   className={`text-dark font-nunito text-center text-sm ${
@@ -221,6 +265,22 @@ export function PaymentTable({
                   >
                     {formatData.formatCurrency(payment.amount)}
                   </span>
+                </TableCell>
+                <TableCell
+                  className={`text-dark font-nunito text-center text-sm ${
+                    payment.isDeleted ? "text-gray-500 line-through" : ""
+                  }`}
+                >
+                  {payment.voucherCode ? (
+                    <Badge
+                      variant="outline"
+                      className="border-green-200 bg-green-50 text-green-700"
+                    >
+                      {payment.voucherCode}
+                    </Badge>
+                  ) : (
+                    <span className="text-xs text-gray-400">Không có</span>
+                  )}
                 </TableCell>
                 <TableCell
                   className={`text-dark font-nunito text-center text-sm ${
