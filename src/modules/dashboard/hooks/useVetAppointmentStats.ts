@@ -40,13 +40,13 @@ export const useVetAppointmentStats = (
       dashboardData.totalProcessedAppointmentHealthConditions;
 
     const totalAppointments =
-      (dashboardData.totalProcessingAppointments || 0) +
-      (dashboardData.totalConfirmedAppointments || 0) +
-      totalCheckedInAppointments +
-      totalProcessedAppointments +
-      (dashboardData.totalPaidAppointments || 0) +
-      (dashboardData.totalCompletedAppointments || 0) +
-      (dashboardData.totalCancelledAppointments || 0);
+      dashboardData.totalProcessingAppointments +
+      dashboardData.totalConfirmedAppointments +
+      dashboardData.totalCheckedInAppointments +
+      dashboardData.totalProcessedAppointments +
+      dashboardData.totalPaidAppointments +
+      dashboardData.totalCompletedAppointments +
+      dashboardData.totalCancelledAppointments;
 
     return {
       total: totalAppointments,
