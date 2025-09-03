@@ -44,7 +44,7 @@ const adminSidebarItems = [
     ],
   },
   {
-    label: "Bác sỹ",
+    label: "Bác sĩ",
     icon: <icons.Stethoscope size={20} />,
     path: "/admin/vets",
   },

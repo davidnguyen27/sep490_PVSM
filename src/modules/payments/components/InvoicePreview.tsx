@@ -17,23 +17,42 @@ export const InvoicePreview = ({ data }: Props) => {
   const customer = appointment.customerResponseDTO;
   const pet = appointment.petResponseDTO;
 
-  const serviceName = isMicrochip ? "Cấy microchip" : "Tiêm vaccine";
-  const detailName = isMicrochip
-    ? (data.microchip.microchipItem?.name ?? "Microchip")
-    : (() => {
-        const vaccineDTO = data.vaccineBatch?.vaccineResponseDTO;
-        // Handle case where vaccineResponseDTO might be string or object
-        if (typeof vaccineDTO === "string") {
-          return vaccineDTO;
-        } else if (
-          vaccineDTO &&
-          typeof vaccineDTO === "object" &&
-          "name" in vaccineDTO
-        ) {
-          return (vaccineDTO as { name: string }).name;
-        }
-        return "Vaccine";
-      })();
+  // Determine service type and details
+  const getServiceInfo = () => {
+    if (isMicrochip) {
+      return {
+        serviceName: "Cấy microchip",
+        detailName: data.microchip.microchipItem?.name ?? "Microchip"
+      };
+    } else if (data.vaccineBatch) {
+      // Vaccination service
+      const vaccineDTO = data.vaccineBatch.vaccineResponseDTO;
+      let vaccineName = "Vaccine";
+
+      if (typeof vaccineDTO === "string") {
+        vaccineName = vaccineDTO;
+      } else if (
+        vaccineDTO &&
+        typeof vaccineDTO === "object" &&
+        "name" in vaccineDTO
+      ) {
+        vaccineName = (vaccineDTO as { name: string }).name;
+      }
+
+      return {
+        serviceName: "Tiêm vaccine",
+        detailName: vaccineName
+      };
+    } else {
+      // Health certificate service
+      return {
+        serviceName: "Cấp giấy chứng nhận sức khỏe",
+        detailName: "Giấy chứng nhận sức khỏe thú cưng"
+      };
+    }
+  };
+
+  const { serviceName, detailName } = getServiceInfo();
 
   return (
     <div
@@ -65,8 +84,7 @@ export const InvoicePreview = ({ data }: Props) => {
           Hóa đơn thanh toán
         </h2>
         <div className="text-right text-[10px] text-gray-500">
-          <p>Mã số thuế: 0123456789</p>
-          <p>ĐT: 024.1234.5678</p>
+          <p>Mã số thuế: 45000</p>
         </div>
       </div>
 
@@ -98,7 +116,7 @@ export const InvoicePreview = ({ data }: Props) => {
             <span className="text-[11px]">{payment.paymentCode}</span>
           </p>
           <p className="mb-1 flex items-start gap-1">
-            <span className="w-20 text-[11px] font-semibold">Ngày TT:</span>
+            <span className="w-20 text-[11px] font-semibold">Ngày thanh toán:</span>
             <span className="text-[11px]">
               {formatData.formatDateTime(payment.paymentDate)}
             </span>
@@ -106,15 +124,14 @@ export const InvoicePreview = ({ data }: Props) => {
           <p className="mb-1 flex items-start gap-1">
             <span className="w-20 text-[11px] font-semibold">Phương thức:</span>
             <span
-              className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-                payment.paymentMethod === "Cash" ||
+              className={`rounded-full px-1.5 py-0.5 text-[10px] ${payment.paymentMethod === "Cash" ||
                 payment.paymentMethod === "CASH"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-blue-100 text-blue-800"
-              }`}
+                ? "bg-green-100 text-green-800"
+                : "bg-blue-100 text-blue-800"
+                }`}
             >
               {payment.paymentMethod === "Cash" ||
-              payment.paymentMethod === "CASH"
+                payment.paymentMethod === "CASH"
                 ? "Tiền mặt"
                 : "Chuyển khoản"}
             </span>
@@ -140,7 +157,7 @@ export const InvoicePreview = ({ data }: Props) => {
                 Giống loài:
               </span>
               <span className="text-[11px]">
-                {pet.breed} ({pet.species})
+                {pet.breed} ({pet.species.toLocaleLowerCase() === "dog" ? "Chó" : "Mèo"})
               </span>
             </p>
           </div>

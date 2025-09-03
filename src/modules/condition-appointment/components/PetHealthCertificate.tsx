@@ -4,7 +4,6 @@ import { vi } from "date-fns/locale";
 import {
   Star,
   MapPin,
-  Phone,
   Calendar,
   Shield,
   CheckCircle2,
@@ -29,7 +28,6 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
     const customer = data.appointment?.customerResponseDTO;
     const healthCondition = data.healthCondition;
     const vaccine = data.vaccineBatch;
-    const microchip = data.microchip;
     const vet = data.vet;
 
     const formatDate = (dateString: string) => {
@@ -62,9 +60,9 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
                   <h1 className="font-inter-700 text-primary print:font-inter-700 text-2xl print:text-lg">
                     TRUNG TÂM TIÊM CHỦNG THÚ CƯNG VAXPET
                   </h1>
-                  <h2 className="font-inter-600 text-secondary text-lg print:text-sm">
+                  {/* <h2 className="font-inter-600 text-secondary text-lg print:text-sm">
                     VAXPET PET HEALTH CENTRE
-                  </h2>
+                  </h2> */}
                 </div>
               </div>
 
@@ -83,9 +81,9 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
                 <h3 className="font-nunito-700 text-primary text-3xl print:text-xl">
                   GIẤY CHỨNG NHẬN SỨC KHỎE THÚ CƯNG
                 </h3>
-                <h4 className="font-inter-600 text-secondary text-xl print:text-base">
+                {/* <h4 className="font-inter-600 text-secondary text-xl print:text-base">
                   CERTIFICATE OF VETERINARY INSPECTION
-                </h4>
+                </h4> */}
                 <Badge variant="secondary" className="text-sm print:text-xs">
                   <Award className="mr-1 h-5 w-5 print:h-3 print:w-3" />
                   Chứng nhận chính thức
@@ -101,27 +99,25 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
               <CardHeader className="print:py-2">
                 <h4 className="font-nunito-600 text-primary flex items-center gap-2 text-lg print:text-base">
                   <User className="h-5 w-5 print:h-4 print:w-4" />
-                  Owner or Guardian of the pet animal
+                  Chủ sở hữu của thú cưng
                 </h4>
               </CardHeader>
               <CardContent className="space-y-3 print:space-y-2">
                 <div className="flex items-center gap-2 text-sm print:text-xs">
-                  <User className="text-primary h-4 w-4 print:h-3 print:w-3" />
-                  <span className="font-nunito-600">Name:</span>
+
+                  <span className="font-nunito-600">Tên:</span>
                   <span className="font-nunito-500">
                     {customer?.fullName || ""}
                   </span>
                 </div>
                 <div className="flex items-start gap-2 text-sm print:text-xs">
-                  <MapPin className="text-primary mt-0.5 h-4 w-4 print:h-3 print:w-3" />
-                  <span className="font-nunito-600">Address:</span>
+                  <span className="font-nunito-600">Địa chỉ:</span>
                   <span className="font-nunito-500">
                     {customer?.address || ""}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm print:text-xs">
-                  <Phone className="text-primary h-4 w-4 print:h-3 print:w-3" />
-                  <span className="font-nunito-600">Phone number:</span>
+                  <span className="font-nunito-600">Số điện thoại:</span>
                   <span className="font-nunito-500">
                     {customer?.phoneNumber || ""}
                   </span>
@@ -134,7 +130,7 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
               <CardHeader className="print:py-2">
                 <h4 className="font-nunito-600 text-primary flex items-center gap-2 text-lg print:text-base">
                   <PawPrint className="h-5 w-5 print:h-4 print:w-4" />
-                  Pet animal information
+                  Thông tin thú cưng
                 </h4>
               </CardHeader>
               <CardContent>
@@ -142,42 +138,41 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
                   <div className="space-y-3 print:space-y-2">
                     <div>
                       <span className="font-nunito-600 text-primary">
-                        Species:
+                        Tên:
                       </span>
-                      <p className="font-nunito-500">{pet?.species || ""}</p>
-                    </div>
-                    <div>
-                      <span className="font-nunito-600 text-primary">Sex:</span>
-                      <p className="font-nunito-500">{pet?.gender || ""}</p>
+                      <p className="font-nunito-500">{pet?.name || ""}</p>
                     </div>
                     <div>
                       <span className="font-nunito-600 text-primary">
-                        Date of birth:
+                        Loài:
                       </span>
-                      <p className="font-nunito-500">
-                        {formatDate(pet?.dateOfBirth || "")}
-                      </p>
+                      <p className="font-nunito-500">{pet?.species.toLocaleLowerCase() == "dog" ? "Chó" : "Mèo"}</p>
                     </div>
+                    <div>
+                      <span className="font-nunito-600 text-primary">Giới tính:</span>
+                      <p className="font-nunito-500">{pet?.gender.toLocaleLowerCase() === "male" ? "Đực" : "Cái"}</p>
+                    </div>
+
                   </div>
                   <div className="space-y-3 print:space-y-2">
                     <div>
                       <span className="font-nunito-600 text-primary">
-                        Breed:
+                        Giống:
                       </span>
                       <p className="font-nunito-500">{pet?.breed || ""}</p>
                     </div>
                     <div>
                       <span className="font-nunito-600 text-primary">
-                        Color:
+                        Màu sắc:
                       </span>
                       <p className="font-nunito-500">{pet?.color || ""}</p>
                     </div>
                     <div>
                       <span className="font-nunito-600 text-primary">
-                        Microchip ID:
+                        Ngày sinh:
                       </span>
-                      <p className="bg-primary/10 print:bg-primary/5 rounded px-2 py-1 font-mono text-sm print:px-1 print:py-0.5 print:text-xs">
-                        {microchip?.microchipCode || "N/A"}
+                      <p className="font-nunito-500">
+                        {formatDate(pet?.dateOfBirth || "")}
                       </p>
                     </div>
                   </div>
@@ -191,59 +186,168 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
             <CardHeader className="print:py-2">
               <h4 className="font-nunito-600 text-primary flex items-center justify-center gap-2 text-center text-lg print:text-base">
                 <Shield className="h-5 w-5 print:h-4 print:w-4" />
-                By my signature below I certify that:
+                Tôi xin chứng nhận rằng:
               </h4>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 text-sm print:space-y-2 print:text-xs">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
-                  <span className="font-nunito-500">
-                    The animal is healthy enough to travel.
-                  </span>
+              <div className="space-y-4 text-sm print:space-y-3 print:text-xs">
+                {/* Health Assessment Results */}
+                <div className="space-y-3 print:space-y-2">
+                  <h5 className="font-nunito-600 text-primary text-base print:text-sm">
+                    Kết quả đánh giá sức khỏe:
+                  </h5>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:gap-3">
+                    {healthCondition?.heartRate && (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="text-primary h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Nhịp tim: <span className="font-nunito-600">{healthCondition.heartRate}</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {healthCondition?.breathingRate && (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="text-primary h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Nhịp thở: <span className="font-nunito-600">{healthCondition.breathingRate}</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {healthCondition?.weight && (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="text-primary h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Cân nặng: <span className="font-nunito-600">{healthCondition.weight}</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {healthCondition?.temperature && (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="text-primary h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Nhiệt độ: <span className="font-nunito-600">{healthCondition.temperature}</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
-                  <span className="font-nunito-500">
-                    The animal is free of Fleas - Ticks - Parasites
-                  </span>
+
+                {/* Clinical Observations */}
+                <div className="space-y-3 print:space-y-2">
+                  <h5 className="font-nunito-600 text-primary text-base print:text-sm">
+                    Quan sát lâm sàng:
+                  </h5>
+
+                  <div className="space-y-2 print:space-y-1">
+                    {healthCondition?.skinAFur && (
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Da và lông: <span className="font-nunito-600">{healthCondition.skinAFur}</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {healthCondition?.digestion && (
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Tiêu hóa: <span className="font-nunito-600">{healthCondition.digestion}</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {healthCondition?.respiratory && (
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Hô hấp: <span className="font-nunito-600">{healthCondition.respiratory}</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {healthCondition?.behavior && (
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Hành vi: <span className="font-nunito-600">{healthCondition.behavior}</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {healthCondition?.ehnm && (
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Tai - Mắt - Mũi - Miệng: <span className="font-nunito-600">{healthCondition.ehnm}</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {healthCondition?.excrete && (
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Bài tiết: <span className="font-nunito-600">{healthCondition.excrete}</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {healthCondition?.psycho && (
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Tâm lý: <span className="font-nunito-600">{healthCondition.psycho}</span>
+                        </span>
+                      </div>
+                    )}
+
+                    {healthCondition?.different && (
+                      <div className="flex items-start gap-2">
+                        <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                        <span className="font-nunito-500">
+                          Bất thường khác: <span className="font-nunito-600">{healthCondition.different}</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
-                  <span className="font-nunito-500">
-                    The animal shows no evidence of diseases communicable to
-                    humans
-                  </span>
-                </div>
-                {vaccine && (
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
-                    <span className="font-nunito-500">
-                      The animal has been vaccinated with{" "}
-                      <Badge variant="outline" className="mx-1 print:text-xs">
-                        {vaccine.vaccineResponseDTO?.name}
-                      </Badge>{" "}
-                      on{" "}
-                      <span className="font-nunito-600">
-                        {formatDate(data.appointmentDate)}
+
+                {/* Medical Conclusion */}
+                {healthCondition?.conclusion && (
+                  <div className="space-y-3 print:space-y-2">
+                    <h5 className="font-nunito-600 text-primary text-base print:text-sm">
+                      Kết luận y khoa:
+                    </h5>
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                      <span className="font-nunito-500">{healthCondition.conclusion}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Additional Services */}
+                <div className="space-y-2 print:space-y-1">
+                  {vaccine && (
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
+                      <span className="font-nunito-500">
+                        Thú cưng đã được tiêm vaccine{" "}
+                        <Badge variant="outline" className="mx-1 print:text-xs">
+                          {vaccine.vaccineResponseDTO?.name}
+                        </Badge>{" "}
+                        vào ngày{" "}
+                        <span className="font-nunito-600">
+                          {formatDate(data.appointmentDate)}
+                        </span>
                       </span>
-                    </span>
-                  </div>
-                )}
-                {microchip && (
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 flex-shrink-0 print:h-3 print:w-3" />
-                    <span className="font-nunito-500">
-                      The animal has been microchipped with ID:{" "}
-                      <Badge
-                        variant="outline"
-                        className="mx-1 font-mono print:text-xs"
-                      >
-                        {microchip.microchipCode}
-                      </Badge>
-                    </span>
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -255,27 +359,27 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
                 <div className="space-y-4 text-center print:space-y-2">
                   <h4 className="font-nunito-600 text-primary flex items-center gap-2 text-lg print:text-base">
                     <Stethoscope className="h-5 w-5 print:h-4 print:w-4" />
-                    Licensed Veterinarian Signature
+                    Chữ ký của bác sĩ thú y
                   </h4>
                   <div className="space-y-2 text-sm print:space-y-1 print:text-xs">
                     <div className="flex items-center gap-2">
                       <Calendar className="text-primary h-4 w-4 print:h-3 print:w-3" />
-                      <span className="font-nunito-600">Date:</span>
+                      <span className="font-nunito-600">Ngày:</span>
                       <span className="font-nunito-500">
                         {formatDate(healthCondition?.checkDate || "")}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="text-primary h-4 w-4 print:h-3 print:w-3" />
-                      <span className="font-nunito-600">Place:</span>
+                      <span className="font-nunito-600">Địa chỉ:</span>
                       <span className="font-nunito-500">
-                        VaxPet Health Centre
+                        Trung tâm tiêm chủng thú cưng VaxPet
                       </span>
                     </div>
                   </div>
                   <div className="flex h-16 w-48 items-end border-b-2 border-gray-400 print:h-12 print:w-32">
                     <span className="mb-1 text-xs text-gray-500">
-                      Signature
+                      Chữ ký
                     </span>
                   </div>
                   <Badge
@@ -290,9 +394,9 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
                   <div className="border-primary/30 bg-primary/5 print:border-primary/30 print:bg-primary/5 flex h-24 w-24 items-center justify-center rounded-lg border-2 print:flex print:h-24 print:w-24 print:items-center print:justify-center print:rounded-lg print:border-2">
                     <div className="text-center">
                       <Award className="text-primary mx-auto mb-1 h-8 w-8 print:h-5 print:w-5" />
-                      <span className="font-nunito-600 text-primary text-xs print:text-xs">
-                        Official Seal
-                      </span>
+                      {/* <span className="font-nunito-600 text-primary text-xs print:text-xs">
+                        Con dấu chính thức
+                      </span> */}
                     </div>
                   </div>
                 </div>
@@ -306,7 +410,7 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
             <div className="text-primary flex items-center justify-center gap-2">
               <Heart className="h-5 w-5 print:h-4 print:w-4" />
               <span className="font-nunito-700 text-lg print:text-base">
-                VaxPet Health Centre
+                Trung Tâm Tiêm Chủng Thú Cưng VaxPet
               </span>
               <Heart className="h-5 w-5 print:h-4 print:w-4" />
             </div>
@@ -314,8 +418,8 @@ export const PetHealthCertificate = forwardRef<HTMLDivElement, Props>(
               Tận tâm - Chất lượng - Uy tín
             </p>
             <div className="font-nunito-400 text-xs text-gray-500 print:text-xs">
-              Certificate ID: {healthCondition?.conditionCode || "N/A"} |
-              Issued: {formatDate(healthCondition?.checkDate || "")}
+              Mã giấy chứng nhận: {healthCondition?.conditionCode || "N/A"} |
+              Ngày cấp: {formatDate(healthCondition?.checkDate || "")}
             </div>
           </div>
         </div>

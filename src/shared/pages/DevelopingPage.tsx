@@ -65,20 +65,6 @@ export default function DevelopingPage() {
                 </div>
               </div>
 
-              {/* Progress Bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>Tiến độ phát triển</span>
-                  <span>75%</span>
-                </div>
-                <div className="h-3 w-full rounded-full bg-gray-200">
-                  <div
-                    className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-1000 ease-out"
-                    style={{ width: "75%" }}
-                  ></div>
-                </div>
-              </div>
-
               {/* Call to Action */}
               <div className="pt-4">
                 <Button
